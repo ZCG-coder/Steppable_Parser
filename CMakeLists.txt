@@ -4,7 +4,7 @@ project(tree-sitter-stp
         VERSION "0.1.0"
         DESCRIPTION "Stp grammar for tree-sitter"
         HOMEPAGE_URL "https://github.com/tree-sitter/tree-sitter-stp"
-        LANGUAGES C)
+        LANGUAGES C CXX)
 
 option(BUILD_SHARED_LIBS "Build using shared libraries" ON)
 option(TREE_SITTER_REUSE_ALLOCATOR "Reuse the library allocator" OFF)
@@ -64,3 +64,5 @@ install(FILES ${QUERIES}
 add_custom_target(ts-test "${TREE_SITTER_CLI}" test
                   WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
                   COMMENT "tree-sitter test")
+
+include(buildMain.cmake)
