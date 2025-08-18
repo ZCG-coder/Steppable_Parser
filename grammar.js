@@ -1,105 +1,165 @@
 module.exports = grammar({
-  name: 'stp',
-  conflicts: $ => [
-    [$.function_call, $._expression],
-    [$.function_definition, $._expression],
-  ],
+    name: 'stp',
+    conflicts: $ => [
+        [$.function_definition, $._expression],
+        [$.matrix],
+        [$.identifier_or_member_access, $._expression]
+    ],
 
-  extras: $ => [
-    /\s/,
-    $.comment,
-    /\\\r?\n/
-  ],
+    extras: $ => [
+        /\s/,
+        $.comment,
+        /\\\r?\n/
+    ],
 
-  rules: {
-    source_file: $ => repeat($._statement),
+    rules: {
+        source_file: $ => optional(seq(
+            $._statement,
+            repeat(seq('\n', $._statement)),
+            optional('\n'))),
 
-    _statement: $ => choice(
-      $.assignment,
-      $.object_definition,
-      $.function_definition,
-      $.expression_statement,
-      $.import_statement,
-      $.comment
-    ),
+        _statement: $ => choice(
+            $.assignment,
+            $.if_else_stmt,
+            $.while_stmt,
+            $.foreach_in_stmt,
+            $.object_definition,
+            $.function_definition,
+            $.expression_statement,
+            $.import_statement,
+            $.comment
+        ),
 
-    assignment: $ => seq(
-      $.identifier, '=', $._expression, optional(';')
-    ),
+        loop_statements: $ => choice(
+            $._statement,
+            'break',
+            'cont'
+        ),
 
-    object_definition: $ => seq(
-      $.identifier, '{', repeat($.assignment), '}'
-    ),
+        if_else_stmt: $ => seq(
+            'if', $._expression, '{', repeat($._statement), '}',
+            optional(
+                repeat(seq('elseif', $._expression, '{', repeat($._statement), '}')),
+            ),
+            optional(
+                seq('else', '{', repeat($._statement), '}'),
+            )
+        ),
 
-    member_access: $ => seq(
-      $._expression,
-      '.',
-      $.identifier
-    ),
+        while_stmt: $ => seq(
+            'while', $._expression, '{', repeat($.loop_statements), '}'
+        ),
 
-    function_definition: $ => seq(
-      $.identifier, $.parameter_list, '->', $.type, '{', $._expression, '}'
-    ),
+        foreach_in_stmt: $ => seq(
+            'foreach', alias($.identifier, $.loop_var), 'in', $.identifier_or_member_access, '{',
+            repeat($.loop_statements),
+            '}'
+        ),
 
-    parameter_list: $ => seq(
-      $.type, $.identifier, repeat(seq(',', $.type, $.identifier))
-    ),
+        assignment: $ => seq(
+            $.identifier_or_member_access, '=', $._expression, optional(';')
+        ),
 
-    type: $ => $.identifier,
+        object_definition: $ => seq(
+            alias($.identifier, $.object_name),
+            '{', repeat($.assignment), '}'
+        ),
 
-    import_statement: $ => seq('import', $.identifier, optional(';')),
+        member_access: $ => seq(
+            $._expression,
+            '.',
+            $.identifier
+        ),
 
-    expression_statement: $ => seq($._expression, optional(';')),
+        function_definition: $ => seq(
+            alias($.identifier, $.function_name),
+            $.parameter_list, '->', alias($.identifier, $.type), '{', $._expression, '}'
+        ),
 
-    _expression: $ => choice(
-      $.matrix,
-      $.binary_expression,
-      $.unary_expression,
-      $.function_call,
-      $.identifier,
-      $.member_access,
-      $.number,
-      $.percentage,
-      $.string,
-      seq('(', $._expression, ')')
-    ),
+        parameter_list: $ => seq(
+            alias($.identifier, $.type), alias($.identifier, $.param_name),
+            repeat(seq(',', alias($.identifier, $.type), alias($.identifier, $.param_name)))
+        ),
 
-    matrix: $ => seq(
-      '|',
-      repeat1($.number),
-      '|'
-    ),
+        import_statement: $ => seq('import', $.identifier, optional(';')),
 
-    binary_expression: $ => prec.left(1, seq(
-      $._expression,
-      $.binary_operator,
-      $._expression
-    )),
+        expression_statement: $ => seq($._expression, optional(';')),
 
-    binary_operator: $ => choice(
-      '^', '&', '*', '/', '-', '+',
-      '==', '!=', '>', '<', '>=', '<=',
-      '.*', './', '.^'
-    ),
+        _expression: $ => choice(
+            $.matrix,
+            $.binary_expression,
+            $.modulus_binary_expr,
+            $.unary_expression,
+            $.function_call,
+            $.identifier,
+            $.member_access,
+            $.number,
+            $.percentage,
+            $.string,
+            seq('(', $._expression, ')')
+        ),
 
-    unary_expression: $ => prec.left(2, seq(
-      choice('!', '+', '-'),
-      $._expression
-    )),
+        matrix: $ => seq(
+            '|',
+            repeat1($._expression),
+            '|'
+        ),
 
-    function_call: $ => seq(
-      $.identifier,
-      '(',
-      optional(seq($._expression, repeat(seq(',', $._expression)))),
-      ')'
-    ),
+        binary_expression: $ => prec.left(1, seq(
+            $._expression,
+            $.binary_operator,
+            $._expression
+        )),
 
-    percentage: $ => seq($.number, '%'),
+        binary_operator: $ => choice(
+            '^', '&', '*', '/', '-', '+',
+            '==', '!=', '>', '<', '>=', '<=',
+            '.*', './', '.^'
+        ),
 
-    comment: $ => token(seq('#', /.*/)),
+        modulus_binary_expr: $ => prec.left(2, seq(
+            $._expression,
+            ' mod ',
+            $._expression
+        )),
 
-    identifier: $ => /[a-zA-Z_][a-zA-Z0-9_]*/,
-    number: $ => /\d+(\.\d+)?/,
-    string: $ => /"([^"\\]|\\.)*"/
-  }
+        unary_expression: $ => prec.left(3, seq(
+            choice('!', '+', '-'),
+            $._expression
+        )),
+
+        function_call: $ => seq(
+            $.identifier_or_member_access,
+            '(',
+            optional(seq($._expression, repeat(seq(',', $._expression)))),
+            ')'
+        ),
+
+        percentage: $ => seq($.number, '%'),
+
+        comment: $ => token(seq('#', /.*/)),
+
+        identifier: $ => /[a-zA-Z_][a-zA-Z0-9_]*/,
+        identifier_or_member_access: $ => choice($.identifier, $.member_access),
+        number: $ => /\d+(\.\d+)?/,
+
+        escape_sequence: $ => token.immediate(/\\[rnt"\\]/),
+        formatting_snippet: $ => seq(
+            token.immediate('\\{'),
+            $._expression,
+            token.immediate('\\}')
+        ),
+        string_content: $ => token(prec(1, /[^"\\]+/)),
+        string: $ => seq(
+            '"',
+            repeat(
+                choice(
+                    $.formatting_snippet,
+                    $.string_content,
+                    $.escape_sequence
+                )
+            ),
+            '"'
+        )
+    }
 });

@@ -20,11 +20,19 @@
           "named": true
         },
         {
+          "type": "identifier_or_member_access",
+          "named": true
+        },
+        {
           "type": "matrix",
           "named": true
         },
         {
           "type": "member_access",
+          "named": true
+        },
+        {
+          "type": "modulus_binary_expr",
           "named": true
         },
         {
@@ -76,6 +84,10 @@
         },
         {
           "type": "member_access",
+          "named": true
+        },
+        {
+          "type": "modulus_binary_expr",
           "named": true
         },
         {
@@ -131,6 +143,84 @@
           "named": true
         },
         {
+          "type": "modulus_binary_expr",
+          "named": true
+        },
+        {
+          "type": "number",
+          "named": true
+        },
+        {
+          "type": "percentage",
+          "named": true
+        },
+        {
+          "type": "string",
+          "named": true
+        },
+        {
+          "type": "unary_expression",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "foreach_in_stmt",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": true,
+      "types": [
+        {
+          "type": "identifier_or_member_access",
+          "named": true
+        },
+        {
+          "type": "loop_statements",
+          "named": true
+        },
+        {
+          "type": "loop_var",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "formatting_snippet",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": false,
+      "required": true,
+      "types": [
+        {
+          "type": "binary_expression",
+          "named": true
+        },
+        {
+          "type": "function_call",
+          "named": true
+        },
+        {
+          "type": "identifier",
+          "named": true
+        },
+        {
+          "type": "matrix",
+          "named": true
+        },
+        {
+          "type": "member_access",
+          "named": true
+        },
+        {
+          "type": "modulus_binary_expr",
+          "named": true
+        },
+        {
           "type": "number",
           "named": true
         },
@@ -170,11 +260,19 @@
           "named": true
         },
         {
+          "type": "identifier_or_member_access",
+          "named": true
+        },
+        {
           "type": "matrix",
           "named": true
         },
         {
           "type": "member_access",
+          "named": true
+        },
+        {
+          "type": "modulus_binary_expr",
           "named": true
         },
         {
@@ -213,6 +311,10 @@
           "named": true
         },
         {
+          "type": "function_name",
+          "named": true
+        },
+        {
           "type": "identifier",
           "named": true
         },
@@ -222,6 +324,10 @@
         },
         {
           "type": "member_access",
+          "named": true
+        },
+        {
+          "type": "modulus_binary_expr",
           "named": true
         },
         {
@@ -252,6 +358,112 @@
     }
   },
   {
+    "type": "identifier_or_member_access",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": false,
+      "required": true,
+      "types": [
+        {
+          "type": "identifier",
+          "named": true
+        },
+        {
+          "type": "member_access",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "if_else_stmt",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": true,
+      "types": [
+        {
+          "type": "assignment",
+          "named": true
+        },
+        {
+          "type": "binary_expression",
+          "named": true
+        },
+        {
+          "type": "comment",
+          "named": true
+        },
+        {
+          "type": "expression_statement",
+          "named": true
+        },
+        {
+          "type": "foreach_in_stmt",
+          "named": true
+        },
+        {
+          "type": "function_call",
+          "named": true
+        },
+        {
+          "type": "function_definition",
+          "named": true
+        },
+        {
+          "type": "identifier",
+          "named": true
+        },
+        {
+          "type": "if_else_stmt",
+          "named": true
+        },
+        {
+          "type": "import_statement",
+          "named": true
+        },
+        {
+          "type": "matrix",
+          "named": true
+        },
+        {
+          "type": "member_access",
+          "named": true
+        },
+        {
+          "type": "modulus_binary_expr",
+          "named": true
+        },
+        {
+          "type": "number",
+          "named": true
+        },
+        {
+          "type": "object_definition",
+          "named": true
+        },
+        {
+          "type": "percentage",
+          "named": true
+        },
+        {
+          "type": "string",
+          "named": true
+        },
+        {
+          "type": "unary_expression",
+          "named": true
+        },
+        {
+          "type": "while_stmt",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
     "type": "import_statement",
     "named": true,
     "fields": {},
@@ -267,6 +479,53 @@
     }
   },
   {
+    "type": "loop_statements",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": false,
+      "required": false,
+      "types": [
+        {
+          "type": "assignment",
+          "named": true
+        },
+        {
+          "type": "comment",
+          "named": true
+        },
+        {
+          "type": "expression_statement",
+          "named": true
+        },
+        {
+          "type": "foreach_in_stmt",
+          "named": true
+        },
+        {
+          "type": "function_definition",
+          "named": true
+        },
+        {
+          "type": "if_else_stmt",
+          "named": true
+        },
+        {
+          "type": "import_statement",
+          "named": true
+        },
+        {
+          "type": "object_definition",
+          "named": true
+        },
+        {
+          "type": "while_stmt",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
     "type": "matrix",
     "named": true,
     "fields": {},
@@ -275,7 +534,43 @@
       "required": true,
       "types": [
         {
+          "type": "binary_expression",
+          "named": true
+        },
+        {
+          "type": "function_call",
+          "named": true
+        },
+        {
+          "type": "identifier",
+          "named": true
+        },
+        {
+          "type": "matrix",
+          "named": true
+        },
+        {
+          "type": "member_access",
+          "named": true
+        },
+        {
+          "type": "modulus_binary_expr",
+          "named": true
+        },
+        {
           "type": "number",
+          "named": true
+        },
+        {
+          "type": "percentage",
+          "named": true
+        },
+        {
+          "type": "string",
+          "named": true
+        },
+        {
+          "type": "unary_expression",
           "named": true
         }
       ]
@@ -310,6 +605,61 @@
           "named": true
         },
         {
+          "type": "modulus_binary_expr",
+          "named": true
+        },
+        {
+          "type": "number",
+          "named": true
+        },
+        {
+          "type": "percentage",
+          "named": true
+        },
+        {
+          "type": "string",
+          "named": true
+        },
+        {
+          "type": "unary_expression",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "modulus_binary_expr",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": true,
+      "types": [
+        {
+          "type": "binary_expression",
+          "named": true
+        },
+        {
+          "type": "function_call",
+          "named": true
+        },
+        {
+          "type": "identifier",
+          "named": true
+        },
+        {
+          "type": "matrix",
+          "named": true
+        },
+        {
+          "type": "member_access",
+          "named": true
+        },
+        {
+          "type": "modulus_binary_expr",
+          "named": true
+        },
+        {
           "type": "number",
           "named": true
         },
@@ -341,7 +691,7 @@
           "named": true
         },
         {
-          "type": "identifier",
+          "type": "object_name",
           "named": true
         }
       ]
@@ -356,7 +706,7 @@
       "required": true,
       "types": [
         {
-          "type": "identifier",
+          "type": "param_name",
           "named": true
         },
         {
@@ -403,7 +753,15 @@
           "named": true
         },
         {
+          "type": "foreach_in_stmt",
+          "named": true
+        },
+        {
           "type": "function_definition",
+          "named": true
+        },
+        {
+          "type": "if_else_stmt",
           "named": true
         },
         {
@@ -413,20 +771,32 @@
         {
           "type": "object_definition",
           "named": true
+        },
+        {
+          "type": "while_stmt",
+          "named": true
         }
       ]
     }
   },
   {
-    "type": "type",
+    "type": "string",
     "named": true,
     "fields": {},
     "children": {
-      "multiple": false,
-      "required": true,
+      "multiple": true,
+      "required": false,
       "types": [
         {
-          "type": "identifier",
+          "type": "escape_sequence",
+          "named": true
+        },
+        {
+          "type": "formatting_snippet",
+          "named": true
+        },
+        {
+          "type": "string_content",
           "named": true
         }
       ]
@@ -461,6 +831,10 @@
           "named": true
         },
         {
+          "type": "modulus_binary_expr",
+          "named": true
+        },
+        {
           "type": "number",
           "named": true
         },
@@ -480,11 +854,78 @@
     }
   },
   {
+    "type": "while_stmt",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": true,
+      "types": [
+        {
+          "type": "binary_expression",
+          "named": true
+        },
+        {
+          "type": "function_call",
+          "named": true
+        },
+        {
+          "type": "identifier",
+          "named": true
+        },
+        {
+          "type": "loop_statements",
+          "named": true
+        },
+        {
+          "type": "matrix",
+          "named": true
+        },
+        {
+          "type": "member_access",
+          "named": true
+        },
+        {
+          "type": "modulus_binary_expr",
+          "named": true
+        },
+        {
+          "type": "number",
+          "named": true
+        },
+        {
+          "type": "percentage",
+          "named": true
+        },
+        {
+          "type": "string",
+          "named": true
+        },
+        {
+          "type": "unary_expression",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "\n",
+    "named": false
+  },
+  {
+    "type": " mod ",
+    "named": false
+  },
+  {
     "type": "!",
     "named": false
   },
   {
     "type": "!=",
+    "named": false
+  },
+  {
+    "type": "\"",
     "named": false
   },
   {
@@ -572,7 +1013,19 @@
     "named": false
   },
   {
+    "type": "\\{",
+    "named": false
+  },
+  {
+    "type": "\\}",
+    "named": false
+  },
+  {
     "type": "^",
+    "named": false
+  },
+  {
+    "type": "break",
     "named": false
   },
   {
@@ -581,20 +1034,72 @@
     "extra": true
   },
   {
+    "type": "cont",
+    "named": false
+  },
+  {
+    "type": "else",
+    "named": false
+  },
+  {
+    "type": "elseif",
+    "named": false
+  },
+  {
+    "type": "escape_sequence",
+    "named": true
+  },
+  {
+    "type": "foreach",
+    "named": false
+  },
+  {
+    "type": "function_name",
+    "named": true
+  },
+  {
     "type": "identifier",
     "named": true
+  },
+  {
+    "type": "if",
+    "named": false
   },
   {
     "type": "import",
     "named": false
   },
   {
+    "type": "in",
+    "named": false
+  },
+  {
+    "type": "loop_var",
+    "named": true
+  },
+  {
     "type": "number",
     "named": true
   },
   {
-    "type": "string",
+    "type": "object_name",
     "named": true
+  },
+  {
+    "type": "param_name",
+    "named": true
+  },
+  {
+    "type": "string_content",
+    "named": true
+  },
+  {
+    "type": "type",
+    "named": true
+  },
+  {
+    "type": "while",
+    "named": false
   },
   {
     "type": "{",

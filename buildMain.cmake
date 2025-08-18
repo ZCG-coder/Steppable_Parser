@@ -19,7 +19,6 @@ add_executable(stp_parse
     ${PROJECT_SRC}
     ${TREE_SITTER_SRC}
 )
-# set_target_properties(stp_parse PROPERTIES LINKER_LANGUAGE CXX)
 
 # If using MSVC, set compiler flags for warnings
 if(MSVC)

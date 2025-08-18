@@ -66,3 +66,5 @@ add_custom_target(ts-test "${TREE_SITTER_CLI}" test
                   COMMENT "tree-sitter test")
 
 include(buildMain.cmake)
+
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
