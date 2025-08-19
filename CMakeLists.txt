@@ -6,6 +6,9 @@ project(tree-sitter-stp
         HOMEPAGE_URL "https://github.com/tree-sitter/tree-sitter-stp"
         LANGUAGES C CXX)
 
+set(CMAKE_C_STANDARD 11)
+set(CMAKE_CXX_STANDARD 20)
+
 option(BUILD_SHARED_LIBS "Build using shared libraries" ON)
 option(TREE_SITTER_REUSE_ALLOCATOR "Reuse the library allocator" OFF)
 
