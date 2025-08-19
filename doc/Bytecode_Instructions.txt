@@ -1,0 +1,117 @@
+A_      Pointers
+------------------------------------------------------------------------------------------------------------------------
+AA      Invoke function by name, value stored in TEMP
+        AA [hash("type")] AB [hash("arg1")] AB [hash("arg2")] AC 01 AC 02 FF
+        -> Invoke `type` function on
+            AB arg1 (AB = use variable)
+            AB arg2
+            AC 01   (AC N = use TEMP_N value)
+
+AB      Get pointer to value of a variable
+        AB [hash("var")] FF
+        -> Get the pointer to var
+
+AC      Gets pointer to object from TEMP_n
+        AC 01 FF
+        -> Gets the value of TEMP_01
+
+AD      Gets pointer to function
+
+AE      Gets pointer to object
+
+AF      Continue/break
+        AF 00 FF
+        -> Continue
+        AF 01 FF
+        -> Break
+
+B_      Loading of variables
+------------------------------------------------------------------------------------------------------------------------
+BA      Load object into TEMP_n. n is in range [00, FF]
+        BA 01 AB [hash(arg1)] FF
+        -> Load arg1 as a pointer into TEMP_01
+
+        BA 02 AC 01 FF
+        -> Alias TEMP_02 to TEMP_01
+
+BB      Load object into RET
+
+BC      Create number in TEMP_N
+        BC 01 [bytes("1.0")] FF
+        -> Load 1.0 into TEMP_01
+
+BD      Create matrix in TEMP_N with numbers
+        BD 01 FC [bytes("1.0")] FB FC [bytes("2.0")] FB FC [bytes("3.0")] FB FA
+              FC [bytes("4.0")] FB FC [bytes("5.0")] FB FC [bytes("6.0")] FB FA
+              FC [bytes("7.0")] FB FC [bytes("8.0")] FB FC [bytes("9.0")] FB FA FF
+        -> Load [[1 2 3]; [4 5 6]; [7 8 9]] into TEMP_01
+
+BE      Create a concatenated matrix in TEMP_N with submatrices
+        BE 01 FD AB [hash(mat1)] FB FD AB [hash(mat2)] FB AC 02 FB FA FF
+        -> Load [mat1 mat2] into TEMP_1
+
+BF      Reserved
+
+C_      Member access
+------------------------------------------------------------------------------------------------------------------------
+CA      Member access get function by hash of name
+
+CB      Member access get variable by hash of name
+
+CC      Member access set variable by hash of name
+
+CD      Member access invoke function by hash of name
+        CD [hash("class")] [hash("say_hello")] AB [hash(var1)] AC 01 FF
+        -> Invokes class.say_hello with arguments of pointers to variable var1 and TEMP_01
+
+CE      Member access invoke function by name stored in TEMP_N
+        CE [hash("class")] 01 AB [hash(var1)] AC 02 FF
+        -> Invoke class.[value of TEMP_01] with arguments of pointer TEMP_02
+
+CF      Reserved
+
+D_      Object management
+------------------------------------------------------------------------------------------------------------------------
+DA      Object creation
+
+DB      Object deletion
+
+DC      Reserved
+
+DD      Reserved
+
+DE      Reserved
+
+DF      Reserved
+
+E_      Misc.
+------------------------------------------------------------------------------------------------------------------------
+EA      If
+
+EB      Else if
+
+EC      Else
+
+ED      Foreach
+
+EE      While
+
+EF      Function end
+
+F_      Delimeters
+------------------------------------------------------------------------------------------------------------------------
+FA      Matrix row separation
+
+FB      Matrix col separation
+
+FC      Declares the following element in the matrix a number
+
+FD      Declares the following element in the matrix a pointer to a hash-named matrix
+
+FE      Function start
+
+FF      Statement end
+
+
+FE                                                  ; function start
+44 E4 93 15 95 66 1C 05 9A 52 BE C0 B7 58 E9 B7     ; name

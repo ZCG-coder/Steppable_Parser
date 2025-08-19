@@ -810,32 +810,48 @@
       "value": "\\d+(\\.\\d+)?"
     },
     "escape_sequence": {
-      "type": "IMMEDIATE_TOKEN",
-      "content": {
-        "type": "PATTERN",
-        "value": "\\\\[rnt\"\\\\]"
-      }
+      "type": "PATTERN",
+      "value": "\\\\[rntbf\"\\\\]"
+    },
+    "unicode_escape": {
+      "type": "SEQ",
+      "members": [
+        {
+          "type": "STRING",
+          "value": "\\x"
+        },
+        {
+          "type": "ALIAS",
+          "content": {
+            "type": "IMMEDIATE_TOKEN",
+            "content": {
+              "type": "PATTERN",
+              "value": "[0-9A-Fa-f]{2}"
+            }
+          },
+          "named": true,
+          "value": "hex_digits"
+        }
+      ]
+    },
+    "octal_escape": {
+      "type": "PATTERN",
+      "value": "\\\\[0-7]{3}"
     },
     "formatting_snippet": {
       "type": "SEQ",
       "members": [
         {
-          "type": "IMMEDIATE_TOKEN",
-          "content": {
-            "type": "STRING",
-            "value": "\\{"
-          }
+          "type": "STRING",
+          "value": "\\{"
         },
         {
           "type": "SYMBOL",
           "name": "_expression"
         },
         {
-          "type": "IMMEDIATE_TOKEN",
-          "content": {
-            "type": "STRING",
-            "value": "\\}"
-          }
+          "type": "STRING",
+          "value": "\\}"
         }
       ]
     },
@@ -843,7 +859,7 @@
       "type": "TOKEN",
       "content": {
         "type": "PREC",
-        "value": 1,
+        "value": 5,
         "content": {
           "type": "PATTERN",
           "value": "[^\"\\\\]+"
@@ -873,6 +889,14 @@
               {
                 "type": "SYMBOL",
                 "name": "escape_sequence"
+              },
+              {
+                "type": "SYMBOL",
+                "name": "unicode_escape"
+              },
+              {
+                "type": "SYMBOL",
+                "name": "octal_escape"
               }
             ]
           }

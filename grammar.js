@@ -143,20 +143,27 @@ module.exports = grammar({
         identifier_or_member_access: $ => choice($.identifier, $.member_access),
         number: $ => /\d+(\.\d+)?/,
 
-        escape_sequence: $ => token.immediate(/\\[rnt"\\]/),
-        formatting_snippet: $ => seq(
-            token.immediate('\\{'),
-            $._expression,
-            token.immediate('\\}')
+        escape_sequence: $ => /\\[rntbf"\\]/,
+        unicode_escape: $ => seq(
+            '\\x',
+            alias(token.immediate(/[0-9A-Fa-f]{2}/), $.hex_digits)
         ),
-        string_content: $ => token(prec(1, /[^"\\]+/)),
+        octal_escape: $ => /\\[0-7]{3}/,
+        formatting_snippet: $ => seq(
+            '\\{',
+            $._expression,
+            '\\}'
+        ),
+        string_content: $ => token(prec(5, /[^"\\]+/)),
         string: $ => seq(
             '"',
             repeat(
                 choice(
                     $.formatting_snippet,
                     $.string_content,
-                    $.escape_sequence
+                    $.escape_sequence,
+                    $.unicode_escape,
+                    $.octal_escape,
                 )
             ),
             '"'

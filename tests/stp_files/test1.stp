@@ -60,3 +60,5 @@ stat
 x = symbol("x")
 expr = x^2 == 4
 vals = solve(expr)
+
+"Unicode \xFE\xFF \033[1f;"
