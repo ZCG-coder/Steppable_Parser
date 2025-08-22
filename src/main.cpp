@@ -1,26 +1,30 @@
+#include "include/stpInit.hpp"
+
 #include <fstream>
 #include <iostream>
 #include <string>
 #include <tree_sitter/api.h>
 
 using namespace std::literals;
+constexpr long chunkSize = 1024L * 1024L; // 1MB
+constexpr long overlap = 4096L; // 4KB
 
 extern "C" TSLanguage* tree_sitter_stp();
 
-std::string read_file_chunk(const std::string& path, long offset, long chunk_size, long overlap, bool& eof)
+std::string readFileChunk(const std::string& path, long offset, long chunkSize, long overlap, bool& eof)
 {
     std::ifstream file(path, std::ios::in | std::ios::binary);
-    if (!file)
+    if (not file)
         return "";
 
     file.seekg(offset, std::ios::beg);
-    std::string chunk(chunk_size + overlap, '\0');
-    file.read(chunk.data(), chunk_size + overlap);
-    std::streamsize bytes_read = file.gcount();
+    std::string chunk(chunkSize + overlap, '\0');
+    file.read(chunk.data(), chunkSize + overlap);
+    std::streamsize bytesRead = file.gcount();
 
-    if (bytes_read < static_cast<std::streamsize>(chunk_size + overlap))
+    if (bytesRead < static_cast<std::streamsize>(chunkSize + overlap))
     {
-        chunk.resize(bytes_read);
+        chunk.resize(bytesRead);
         eof = true;
     }
     else
@@ -30,18 +34,18 @@ std::string read_file_chunk(const std::string& path, long offset, long chunk_siz
     return chunk;
 }
 
-void print_node_in_chunk(TSNode node, const std::string& chunk, size_t chunk_start, size_t chunk_end, int indent = 0)
+void processChunk(TSNode node, const std::string& chunk, size_t chunkStart, size_t chunkEnd, int indent = 0)
 {
     std::string type = ts_node_type(node);
     uint32_t start = ts_node_start_byte(node);
     uint32_t end = ts_node_end_byte(node);
 
     // Ensure whole block is fully read
-    if (start >= chunk_start and end <= chunk_end)
+    if (start >= chunkStart and end <= chunkEnd)
     {
         std::string text;
-        if (end - chunk_start <= chunk.size())
-            text = chunk.substr(start - chunk_start, end - start);
+        if (end - chunkStart <= chunk.size())
+            text = chunk.substr(start - chunkStart, end - start);
 
         if (not(type == "\n" // Newline
                 or type == "comment" // Comment
@@ -67,7 +71,7 @@ void print_node_in_chunk(TSNode node, const std::string& chunk, size_t chunk_sta
 
     uint32_t child_count = ts_node_child_count(node);
     for (uint32_t i = 0; i < child_count; ++i)
-        print_node_in_chunk(ts_node_child(node, i), chunk, chunk_start, chunk_end, indent + 1);
+        processChunk(ts_node_child(node, i), chunk, chunkStart, chunkEnd, indent + 1);
 }
 
 int main(int argc, char** argv)
@@ -79,17 +83,17 @@ int main(int argc, char** argv)
     }
 
     std::string path = argv[1];
-    long chunk_size = 1024L * 1024L; // 1MB
-    long overlap = 4096L; // 4KB
     long offset = 0;
     bool eof = false;
     TSParser* parser = ts_parser_new();
     ts_parser_set_language(parser, tree_sitter_stp());
     TSTree* tree = nullptr;
 
+    steppable::parser::STP_init();
+
     while (!eof)
     {
-        std::string chunk = read_file_chunk(path, offset, chunk_size, overlap, eof);
+        std::string chunk = readFileChunk(path, offset, chunkSize, overlap, eof);
         if (chunk.empty())
             break;
 
@@ -98,18 +102,20 @@ int main(int argc, char** argv)
 
         tree = ts_parser_parse_string(parser, nullptr, chunk.c_str(), chunk.size());
 
-        size_t chunk_start = offset;
-        size_t chunk_end = offset + chunk_size;
+        size_t chunkStart = offset;
+        size_t chunk_end = offset + chunkSize;
 
-        TSNode root_node = ts_tree_root_node(tree);
-        print_node_in_chunk(root_node, chunk, chunk_start, chunk_end);
+        TSNode rootNode = ts_tree_root_node(tree);
+        processChunk(rootNode, chunk, chunkStart, chunk_end);
 
-        offset += chunk_size;
+        offset += chunkSize;
     }
 
     if (tree != nullptr)
         ts_tree_delete(tree);
     ts_parser_delete(parser);
+
+    steppable::parser::STP_destroy();
 
     return 0;
 }
