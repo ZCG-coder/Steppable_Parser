@@ -1,11 +1,17 @@
 #include "include/stpInit.hpp"
+#include "include/stpStore.hpp"
 
+#include <cassert>
 #include <fstream>
 #include <iostream>
+#include <memory>
 #include <string>
+#include <string_view>
 #include <tree_sitter/api.h>
 
 using namespace std::literals;
+using namespace steppable::parser;
+
 constexpr long chunkSize = 1024L * 1024L; // 1MB
 constexpr long overlap = 4096L; // 4KB
 
@@ -34,44 +40,192 @@ std::string readFileChunk(const std::string& path, long offset, long chunkSize, 
     return chunk;
 }
 
-void processChunk(TSNode node, const std::string& chunk, size_t chunkStart, size_t chunkEnd, int indent = 0)
+void handleMemberAccess(TSNode* maNode, STP_InterpState state) {}
+
+bool STP_isPureType(const std::string_view& str)
 {
-    std::string type = ts_node_type(node);
-    uint32_t start = ts_node_start_byte(node);
-    uint32_t end = ts_node_end_byte(node);
+    return str == "matrix" or str == "number" or str == "string" or str == "identifier";
+}
 
-    // Ensure whole block is fully read
-    if (start >= chunkStart and end <= chunkEnd)
+STP_LocalValue handleExpr(TSNode* exprNode, STP_InterpState state)
+{
+    assert(exprNode != nullptr);
+
+    std::string exprType = ts_node_type(*exprNode);
+    std::cout << exprType << '\n';
+
+    STP_TypeID typeID = STP_TypeID_NULL;
+    STP_LocalValue retVal;
+
+    if (exprType == "number")
     {
-        std::string text;
-        if (end - chunkStart <= chunk.size())
-            text = chunk.substr(start - chunkStart, end - start);
-
-        if (not(type == "\n" // Newline
-                or type == "comment" // Comment
-                or type == "source_file" // Root node
-                or type == "(" or type == ")" // Parantheses
-                or type == "[" or type == "]" // Square brackets
-                or type == "{" or type == "}" // Braces
-                or type == "=" // Assignment
-                or type == "->" // Return type
-                or type == "," //
-                or type == "." // Member access
-                or type == ";" // Force statement break
-                or type == "\"" // String quotes
-                or type == "|" // Matrix sep
-                or type == "\\{" or type == "\\}" // String formatting
-                ))
+        // Number
+        typeID = STP_TypeID_NUMBER;
+    }
+    else if (exprType == "matrix")
+    {
+        // Matrix
+        typeID = STP_TypeID_MATRIX_2D;
+    }
+    else if (exprType == "string")
+    {
+        // String
+        typeID = STP_TypeID_STRING;
+        std::string data = state->getChunk(exprNode);
+        std::cout << data << "\n";
+        retVal.data = data;
+    }
+    else
+    {
+        // Type is not specified by notation, need to infer.
+        if (exprType == "binary_expression")
         {
-            for (int i = 0; i < indent - 1; ++i)
-                std::cout << "    ";
-            std::cout << "'" << type << "' : \"" << text << "\"\n";
+            // binary_expression := lhs 'operator' rhs
+            TSNode lhsNode = ts_node_child(*exprNode, 0);
+            TSNode operandNode = ts_node_child(ts_node_child(*exprNode, 1), 0);
+            TSNode rhsNode = ts_node_child(*exprNode, 2);
+
+            std::string operandType = ts_node_type(operandNode);
+            std::string lhsType = ts_node_type(lhsNode);
+            std::string rhsType = ts_node_type(rhsNode);
+
+            STP_LocalValue lhs = handleExpr(&lhsNode, state);
+            STP_LocalValue rhs = handleExpr(&rhsNode, state);
+
+            std::cout << lhs.present() << operandType << rhs.present() << '\n';
+        }
+        if (exprType == "unary_expression")
+        {
         }
     }
 
-    uint32_t child_count = ts_node_child_count(node);
+    std::string typeName = STP_typeNames[typeID];
+    retVal.typeID = typeID;
+    retVal.typeName = typeName;
+
+    return retVal;
+}
+
+void handleAssignment(TSNode* node, STP_InterpState state = nullptr)
+{
+    // assignment := nameNode "=" exprNode
+    TSNode nameNode = ts_node_child(*node, 0); // type is identifer or member access
+    TSNode exprNode = ts_node_child(*node, 2);
+    std::string nameNodeType = ts_node_type(nameNode);
+
+    if (nameNodeType == "identifier")
+    {
+        std::string name = state->getChunk(&nameNode);
+        std::cout << name << "\n";
+
+        handleExpr(&exprNode, state);
+        // Write to scope / global variables
+        // state->addVariable(name);
+    }
+    else if (nameNodeType == "member_access")
+    {
+    }
+}
+
+void processChunk(TSNode node, const std::string& chunk, int indent = 0, STP_InterpState state = nullptr)
+{
+    uint32_t child_count = 0;
+    std::string text;
+    std::string type = ts_node_type(node);
+
+    // Ensure whole block is fully read
+    if (state->isChunkFull(&node))
+        return;
+
+    text = state->getChunk(&node);
+
+    if (type == "\n" // Newline
+        or type == "comment" // Comment
+        or type == "(" or type == ")" // Parantheses
+        or type == "[" or type == "]" // Square brackets
+        or type == "{" or type == "}" // Braces
+        or type == "=" // Assignment
+        or type == "->" // Return type
+        or type == "," //
+        or type == "." // Member access
+        or type == ";" // Force statement break
+        or type == "\"" // String quotes
+        or type == "|" // Matrix sep
+        or type == "\\{" or type == "\\}" // String formatting
+        or type == "\\x" // String Unicode escape
+        or type == "^" // Binary operators
+        or type == "&" // Binary operators
+        or type == "*" // Binary operators
+        or type == "/" // Binary operators
+        or type == "-" // Binary operators / Unary operator
+        or type == "+" // Binary operators / Unary operator
+        or type == "==" // Binary operators
+        or type == "!=" // Binary operators
+        or type == ">" // Binary operators
+        or type == "<" // Binary operators
+        or type == ">=" // Binary operators
+        or type == "<=" // Binary operators
+        or type == ".*" // Binary operators
+        or type == "./" // Binary operators
+        or type == ".^" // Binary operators
+        or type == "%" // Percentages
+        or type == "!" // Unary not
+    )
+    {
+        return;
+    }
+
+    for (int i = 0; i < indent - 1; ++i)
+        std::cout << "    ";
+    std::cout << "'" << type << "' : \"" << text << "\"\n";
+
+    // Handle scoped statements before assignment statements
+    if (type == "function_definition")
+    {
+        //
+        return;
+    }
+    if (type == "object_definition")
+    {
+        //
+        return;
+    }
+    if (type == "if_else_stmt")
+    {
+        //
+        return;
+    }
+    if (type == "while_stmt")
+    {
+        //
+        return;
+    }
+    if (type == "foreach_in_stmt")
+    {
+        //
+        return;
+    }
+    if (type == "assignment")
+    {
+        handleAssignment(&node, state);
+        return;
+    }
+    if (type == "expression_statement")
+    {
+        //
+        TSNode exprNode = ts_node_child(node, 0);
+        handleExpr(&exprNode, state);
+        return;
+    }
+    if (type == "import_statement")
+    {
+        //
+        return;
+    }
+
+    child_count = ts_node_child_count(node);
     for (uint32_t i = 0; i < child_count; ++i)
-        processChunk(ts_node_child(node, i), chunk, chunkStart, chunkEnd, indent + 1);
+        processChunk(ts_node_child(node, i), chunk, indent + 1, state);
 }
 
 int main(int argc, char** argv)
@@ -89,9 +243,10 @@ int main(int argc, char** argv)
     ts_parser_set_language(parser, tree_sitter_stp());
     TSTree* tree = nullptr;
 
-    steppable::parser::STP_init();
+    STP_init();
+    STP_InterpState state = STP_getState();
 
-    while (!eof)
+    while (not eof)
     {
         std::string chunk = readFileChunk(path, offset, chunkSize, overlap, eof);
         if (chunk.empty())
@@ -103,10 +258,11 @@ int main(int argc, char** argv)
         tree = ts_parser_parse_string(parser, nullptr, chunk.c_str(), chunk.size());
 
         size_t chunkStart = offset;
-        size_t chunk_end = offset + chunkSize;
+        size_t chunkEnd = offset + chunkSize;
 
         TSNode rootNode = ts_tree_root_node(tree);
-        processChunk(rootNode, chunk, chunkStart, chunk_end);
+        state->setChunk(chunk, chunkStart, chunkEnd);
+        processChunk(rootNode, chunk, 0, state);
 
         offset += chunkSize;
     }
@@ -115,7 +271,7 @@ int main(int argc, char** argv)
         ts_tree_delete(tree);
     ts_parser_delete(parser);
 
-    steppable::parser::STP_destroy();
+    STP_destroy();
 
     return 0;
 }

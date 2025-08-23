@@ -8,6 +8,8 @@ set(TREE_SITTER_SRC
 
 set(PROJECT_SRC
     src/main.cpp
+    src/stpInterp/stpInit.cpp
+    src/stpInterp/stpStore.cpp
 )
 
 include_directories(

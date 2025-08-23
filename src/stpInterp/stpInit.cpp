@@ -1,3 +1,5 @@
+#include "include/stpInit.hpp"
+
 #include "include/stpStore.hpp"
 
 #include <memory>
@@ -5,11 +7,9 @@
 
 namespace steppable::parser
 {
-    using InterpState = std::unique_ptr<STP_InterpStoreLocal>;
-
     namespace
     {
-        std::shared_ptr<STP_InterpStoreLocal> _storage = nullptr;
+        STP_InterpState _storage = nullptr;
     }
 
     int STP_init()
@@ -18,7 +18,7 @@ namespace steppable::parser
         return 0;
     }
 
-    std::shared_ptr<STP_InterpStoreLocal> STP_getState() { return _storage; }
+    STP_InterpState STP_getState() { return _storage; }
 
     int STP_destroy()
     {

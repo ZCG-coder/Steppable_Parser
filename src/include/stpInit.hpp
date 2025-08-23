@@ -4,7 +4,7 @@
 
 namespace steppable::parser
 {
-    using InterpState = std::unique_ptr<STP_InterpStoreLocal>;
+    using STP_InterpState = std::shared_ptr<STP_InterpStoreLocal>;
 
     int STP_init();
 
