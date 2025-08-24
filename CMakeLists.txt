@@ -7,6 +7,9 @@ project(tree-sitter-stp
         LANGUAGES C CXX)
 
 set(CMAKE_C_STANDARD 11)
+set(CMAKE_C_STANDARD_REQUIRED YES)
+set(CMAKE_C_EXTENSIONS YES)
+
 set(CMAKE_CXX_STANDARD 20)
 
 option(BUILD_SHARED_LIBS "Build using shared libraries" ON)

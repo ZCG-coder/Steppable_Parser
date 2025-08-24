@@ -1,10 +1,10 @@
 #pragma once
 
-#include "tree_sitter/api.h"
+extern "C" {
+#include <tree_sitter/api.h>
+}
 
 #include <any>
-#include <cstddef>
-#include <cstdint>
 #include <map>
 #include <memory>
 #include <string>
@@ -26,6 +26,7 @@ namespace steppable::parser
     };
 
     // NOLINTBEGIN(cppcoreguidelines-pro-type-const-cast, cppcoreguidelines-avoid-c-arrays)
+    extern "C" {
     constexpr char* const STP_typeNames[] = {
         [STP_TypeID_NUMBER] = const_cast<char* const>("Number"),
         [STP_TypeID_MATRIX_2D] = const_cast<char* const>("Mat2D"),
@@ -34,6 +35,7 @@ namespace steppable::parser
         [STP_TypeID_OBJECT] = const_cast<char* const>("Object"),
         [STP_TypeID_NULL] = const_cast<char* const>("Null"),
     };
+    }
     // NOLINTEND(cppcoreguidelines-pro-type-const-cast, cppcoreguidelines-avoid-c-arrays)
 
     struct STP_LocalValue
@@ -43,7 +45,9 @@ namespace steppable::parser
 
         std::any data;
 
-        std::string present() const;
+        [[nodiscard]] std::string present() const;
+
+        STP_LocalValue applyOperator(const std::string& operatorStr, const STP_LocalValue& rhs);
     };
 
     using STP_LocalValuePtr = std::shared_ptr<STP_LocalValue>;
@@ -61,7 +65,7 @@ namespace steppable::parser
 
     class STP_InterpStoreLocal
     {
-        size_t currentScope;
+        size_t currentScope = 0;
 
         std::map<size_t, STP_Scope> scopes;
 

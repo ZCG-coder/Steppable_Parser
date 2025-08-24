@@ -7,7 +7,10 @@
 #include <memory>
 #include <string>
 #include <string_view>
+
+extern "C" {
 #include <tree_sitter/api.h>
+}
 
 using namespace std::literals;
 using namespace steppable::parser;
@@ -91,6 +94,8 @@ STP_LocalValue handleExpr(TSNode* exprNode, STP_InterpState state)
 
             STP_LocalValue lhs = handleExpr(&lhsNode, state);
             STP_LocalValue rhs = handleExpr(&rhsNode, state);
+
+            lhs.applyOperator(operandType, rhs);
 
             std::cout << lhs.present() << operandType << rhs.present() << '\n';
         }

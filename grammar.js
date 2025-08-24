@@ -123,9 +123,9 @@ module.exports = grammar({
         )),
 
         binary_operator: $ => choice(
-            "^", "&", "*", "/", "-", "+",
+            "^", "*", "/", "-", "+",
             "==", "!=", ">", "<", ">=", "<=",
-            ".*", "./", ".^"
+            ".*", "./", ".^", "@", "&"
         ),
 
         modulus_binary_expr: $ => prec.left(2, seq(
