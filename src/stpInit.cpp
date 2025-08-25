@@ -1,6 +1,6 @@
-#include "include/stpInit.hpp"
+#include "stpInterp/stpInit.hpp"
 
-#include "include/stpStore.hpp"
+#include "stpInterp/stpStore.hpp"
 
 #include <memory>
 #include <stdexcept>

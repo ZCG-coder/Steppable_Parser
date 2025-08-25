@@ -1,6 +1,6 @@
 #pragma once
 
-#include "include/stpStore.hpp"
+#include "stpInterp/stpStore.hpp"
 
 #include <memory>
 

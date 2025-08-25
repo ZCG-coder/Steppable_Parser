@@ -8,6 +8,7 @@ extern "C" {
 #include <map>
 #include <memory>
 #include <string>
+#include <utility>
 
 /**
  * @namespace steppable::parser
@@ -45,22 +46,25 @@ namespace steppable::parser
 
         std::any data;
 
+        explicit STP_LocalValue(const STP_TypeID& type, std::any data = {}) :
+            typeName(STP_typeNames[type]), typeID(type), data(std::move(data))
+        {
+        }
+
         [[nodiscard]] std::string present() const;
 
         STP_LocalValue applyOperator(const std::string& operatorStr, const STP_LocalValue& rhs);
     };
 
-    using STP_LocalValuePtr = std::shared_ptr<STP_LocalValue>;
-
     struct STP_Scope
     {
-        std::map<std::string, STP_LocalValuePtr> variables;
+        std::map<std::string, STP_LocalValue> variables;
 
         std::shared_ptr<STP_Scope> parentScope = nullptr;
 
-        void addVariable(const std::string& name, const STP_TypeID& typeID, const std::any& data);
+        void addVariable(const std::string& name, const STP_LocalValue& data);
 
-        STP_LocalValuePtr getVariable(const std::string& name);
+        STP_LocalValue getVariable(const std::string& name);
     };
 
     class STP_InterpStoreLocal
@@ -75,16 +79,16 @@ namespace steppable::parser
         size_t chunkStart;
         size_t chunkEnd;
 
-        void addVariable(const std::string& name, const STP_TypeID& typeID, const std::any& data);
+        void addVariable(const std::string& name, const STP_LocalValue& typeID);
 
-        std::any getVariable(const std::string& name);
+        STP_LocalValue getVariable(const std::string& name);
 
         void setScopeLevel(size_t newScope);
 
-        size_t getScopeLevel();
+        size_t getScopeLevel() const;
 
         void setChunk(const std::string& newChunk, size_t chunkStart, size_t chunkEnd);
-        bool isChunkFull(const TSNode* node);
+        bool isChunkFull(const TSNode* node) const;
         std::string getChunk(const TSNode* node = nullptr);
 
         void dbgPrintVariables();

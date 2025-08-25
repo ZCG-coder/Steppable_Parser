@@ -512,10 +512,6 @@
         },
         {
           "type": "SYMBOL",
-          "name": "modulus_binary_expr"
-        },
-        {
-          "type": "SYMBOL",
           "name": "unary_expression"
         },
         {
@@ -543,26 +539,25 @@
           "name": "string"
         },
         {
-          "type": "ALIAS",
-          "content": {
-            "type": "SEQ",
-            "members": [
-              {
-                "type": "STRING",
-                "value": "("
-              },
-              {
-                "type": "SYMBOL",
-                "name": "_expression"
-              },
-              {
-                "type": "STRING",
-                "value": ")"
-              }
-            ]
-          },
-          "named": true,
-          "value": "bracketed_expr"
+          "type": "SYMBOL",
+          "name": "bracketed_expr"
+        }
+      ]
+    },
+    "bracketed_expr": {
+      "type": "SEQ",
+      "members": [
+        {
+          "type": "STRING",
+          "value": "("
+        },
+        {
+          "type": "SYMBOL",
+          "name": "_expression"
+        },
+        {
+          "type": "STRING",
+          "value": ")"
         }
       ]
     },
@@ -643,10 +638,6 @@
         },
         {
           "type": "STRING",
-          "value": "&"
-        },
-        {
-          "type": "STRING",
           "value": "*"
         },
         {
@@ -703,30 +694,13 @@
         },
         {
           "type": "STRING",
-          "value": "#"
+          "value": "&"
+        },
+        {
+          "type": "STRING",
+          "value": " mod "
         }
       ]
-    },
-    "modulus_binary_expr": {
-      "type": "PREC_LEFT",
-      "value": 2,
-      "content": {
-        "type": "SEQ",
-        "members": [
-          {
-            "type": "SYMBOL",
-            "name": "_expression"
-          },
-          {
-            "type": "STRING",
-            "value": " mod "
-          },
-          {
-            "type": "SYMBOL",
-            "name": "_expression"
-          }
-        ]
-      }
     },
     "unary_expression": {
       "type": "PREC_LEFT",

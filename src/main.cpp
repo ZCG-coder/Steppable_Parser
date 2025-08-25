@@ -1,5 +1,7 @@
-#include "include/stpInit.hpp"
-#include "include/stpStore.hpp"
+#include "output.hpp"
+#include "platform.hpp"
+#include "stpInterp/stpInit.hpp"
+#include "stpInterp/stpStore.hpp"
 
 #include <cassert>
 #include <fstream>
@@ -31,7 +33,7 @@ std::string readFileChunk(const std::string& path, long offset, long chunkSize, 
     file.read(chunk.data(), chunkSize + overlap);
     std::streamsize bytesRead = file.gcount();
 
-    if (bytesRead < static_cast<std::streamsize>(chunkSize + overlap))
+    if (bytesRead < chunkSize + overlap)
     {
         chunk.resize(bytesRead);
         eof = true;
@@ -55,10 +57,9 @@ STP_LocalValue handleExpr(TSNode* exprNode, STP_InterpState state)
     assert(exprNode != nullptr);
 
     std::string exprType = ts_node_type(*exprNode);
-    std::cout << exprType << '\n';
 
     STP_TypeID typeID = STP_TypeID_NULL;
-    STP_LocalValue retVal;
+    STP_LocalValue retVal(STP_TypeID_NULL);
 
     if (exprType == "number")
     {
@@ -69,6 +70,42 @@ STP_LocalValue handleExpr(TSNode* exprNode, STP_InterpState state)
     {
         // Matrix
         typeID = STP_TypeID_MATRIX_2D;
+        size_t rows = 0;
+        size_t lastColLength = 0;
+        for (size_t j = 0; j < ts_node_child_count(*exprNode); j++)
+        {
+            TSNode node = ts_node_child(*exprNode, j);
+            if (ts_node_type(node) != "matrix_row"s)
+                continue;
+
+            size_t currentCols = 0;
+            for (size_t i = 0; i < ts_node_child_count(node); i++)
+            {
+                TSNode cell = ts_node_child(node, i);
+                if (ts_node_type(node) == "matrix_row"s)
+                    break;
+                STP_LocalValue val = handleExpr(&cell, state);
+                if (val.typeID != STP_TypeID_NUMBER)
+                {
+                    steppable::output::error("parser"s, "Matrix should contain numbers only."s);
+                    steppable::__internals::utils::programSafeExit(1);
+                }
+                currentCols++;
+            }
+
+            rows++;
+            if (currentCols != lastColLength)
+            {
+                steppable::output::error("parser"s, "Inconsistent matrix dimensions."s);
+                steppable::__internals::utils::programSafeExit(1);
+            }
+            lastColLength = currentCols;
+        }
+
+        TSNode firstNode = ts_node_child(*exprNode, 1);
+        size_t cols = ts_node_child_count(firstNode);
+
+        std::cout << rows << " " << cols << std::endl;
     }
     else if (exprType == "string")
     {
@@ -77,6 +114,12 @@ STP_LocalValue handleExpr(TSNode* exprNode, STP_InterpState state)
         std::string data = state->getChunk(exprNode);
         std::cout << data << "\n";
         retVal.data = data;
+    }
+    else if (exprType == "identifier")
+    {
+        // Get the variable
+        std::string nameNode = state->getChunk(exprNode);
+        return state->getVariable(nameNode);
     }
     else
     {
@@ -94,13 +137,17 @@ STP_LocalValue handleExpr(TSNode* exprNode, STP_InterpState state)
 
             STP_LocalValue lhs = handleExpr(&lhsNode, state);
             STP_LocalValue rhs = handleExpr(&rhsNode, state);
-
-            lhs.applyOperator(operandType, rhs);
-
             std::cout << lhs.present() << operandType << rhs.present() << '\n';
+
+            return lhs.applyOperator(operandType, rhs);
         }
         if (exprType == "unary_expression")
         {
+        }
+        if (exprType == "bracketed_expr")
+        {
+            TSNode innerExpr = ts_node_child(*exprNode, 1);
+            return handleExpr(&innerExpr, state);
         }
     }
 
@@ -123,9 +170,9 @@ void handleAssignment(TSNode* node, STP_InterpState state = nullptr)
         std::string name = state->getChunk(&nameNode);
         std::cout << name << "\n";
 
-        handleExpr(&exprNode, state);
+        STP_LocalValue val = handleExpr(&exprNode, state);
         // Write to scope / global variables
-        // state->addVariable(name);
+        state->addVariable(name, val);
     }
     else if (nameNodeType == "member_access")
     {

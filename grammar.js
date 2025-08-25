@@ -92,7 +92,6 @@ module.exports = grammar({
         _expression: $ => choice(
             $.matrix,
             $.binary_expression,
-            $.modulus_binary_expr,
             $.unary_expression,
             $.function_call,
             $.identifier,
@@ -100,8 +99,10 @@ module.exports = grammar({
             $.number,
             $.percentage,
             $.string,
-            alias(seq("(", $._expression, ")"), $.bracketed_expr),
+            $.bracketed_expr,
         ),
+
+        bracketed_expr: $ => seq("(", $._expression, ")"),
 
         matrix_row: $ => seq(
             repeat1($._expression),
@@ -125,14 +126,8 @@ module.exports = grammar({
         binary_operator: $ => choice(
             "^", "*", "/", "-", "+",
             "==", "!=", ">", "<", ">=", "<=",
-            ".*", "./", ".^", "@", "&"
+            ".*", "./", ".^", "@", "&", " mod "
         ),
-
-        modulus_binary_expr: $ => prec.left(2, seq(
-            $._expression,
-            " mod ",
-            $._expression
-        )),
 
         unary_expression: $ => prec.left(3, seq(
             choice("!", "+", "-"),

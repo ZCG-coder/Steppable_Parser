@@ -32,10 +32,6 @@
           "named": true
         },
         {
-          "type": "modulus_binary_expr",
-          "named": true
-        },
-        {
           "type": "number",
           "named": true
         },
@@ -91,10 +87,6 @@
           "named": true
         },
         {
-          "type": "modulus_binary_expr",
-          "named": true
-        },
-        {
           "type": "number",
           "named": true
         },
@@ -123,62 +115,7 @@
     "named": true,
     "fields": {},
     "children": {
-      "multiple": true,
-      "required": false,
-      "types": [
-        {
-          "type": "binary_expression",
-          "named": true
-        },
-        {
-          "type": "bracketed_expr",
-          "named": true
-        },
-        {
-          "type": "function_call",
-          "named": true
-        },
-        {
-          "type": "identifier",
-          "named": true
-        },
-        {
-          "type": "matrix",
-          "named": true
-        },
-        {
-          "type": "member_access",
-          "named": true
-        },
-        {
-          "type": "modulus_binary_expr",
-          "named": true
-        },
-        {
-          "type": "number",
-          "named": true
-        },
-        {
-          "type": "percentage",
-          "named": true
-        },
-        {
-          "type": "string",
-          "named": true
-        },
-        {
-          "type": "unary_expression",
-          "named": true
-        }
-      ]
-    }
-  },
-  {
-    "type": "expression_statement",
-    "named": true,
-    "fields": {},
-    "children": {
-      "multiple": true,
+      "multiple": false,
       "required": true,
       "types": [
         {
@@ -206,7 +143,54 @@
           "named": true
         },
         {
-          "type": "modulus_binary_expr",
+          "type": "number",
+          "named": true
+        },
+        {
+          "type": "percentage",
+          "named": true
+        },
+        {
+          "type": "string",
+          "named": true
+        },
+        {
+          "type": "unary_expression",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "expression_statement",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": false,
+      "required": true,
+      "types": [
+        {
+          "type": "binary_expression",
+          "named": true
+        },
+        {
+          "type": "bracketed_expr",
+          "named": true
+        },
+        {
+          "type": "function_call",
+          "named": true
+        },
+        {
+          "type": "identifier",
+          "named": true
+        },
+        {
+          "type": "matrix",
+          "named": true
+        },
+        {
+          "type": "member_access",
           "named": true
         },
         {
@@ -256,7 +240,7 @@
     "named": true,
     "fields": {},
     "children": {
-      "multiple": true,
+      "multiple": false,
       "required": true,
       "types": [
         {
@@ -281,10 +265,6 @@
         },
         {
           "type": "member_access",
-          "named": true
-        },
-        {
-          "type": "modulus_binary_expr",
           "named": true
         },
         {
@@ -343,10 +323,6 @@
           "named": true
         },
         {
-          "type": "modulus_binary_expr",
-          "named": true
-        },
-        {
           "type": "number",
           "named": true
         },
@@ -399,10 +375,6 @@
         },
         {
           "type": "member_access",
-          "named": true
-        },
-        {
-          "type": "modulus_binary_expr",
           "named": true
         },
         {
@@ -509,10 +481,6 @@
         },
         {
           "type": "member_access",
-          "named": true
-        },
-        {
-          "type": "modulus_binary_expr",
           "named": true
         },
         {
@@ -652,10 +620,6 @@
           "named": true
         },
         {
-          "type": "modulus_binary_expr",
-          "named": true
-        },
-        {
           "type": "number",
           "named": true
         },
@@ -704,65 +668,6 @@
         },
         {
           "type": "member_access",
-          "named": true
-        },
-        {
-          "type": "modulus_binary_expr",
-          "named": true
-        },
-        {
-          "type": "number",
-          "named": true
-        },
-        {
-          "type": "percentage",
-          "named": true
-        },
-        {
-          "type": "string",
-          "named": true
-        },
-        {
-          "type": "unary_expression",
-          "named": true
-        }
-      ]
-    }
-  },
-  {
-    "type": "modulus_binary_expr",
-    "named": true,
-    "fields": {},
-    "children": {
-      "multiple": true,
-      "required": true,
-      "types": [
-        {
-          "type": "binary_expression",
-          "named": true
-        },
-        {
-          "type": "bracketed_expr",
-          "named": true
-        },
-        {
-          "type": "function_call",
-          "named": true
-        },
-        {
-          "type": "identifier",
-          "named": true
-        },
-        {
-          "type": "matrix",
-          "named": true
-        },
-        {
-          "type": "member_access",
-          "named": true
-        },
-        {
-          "type": "modulus_binary_expr",
           "named": true
         },
         {
@@ -921,7 +826,7 @@
     "named": true,
     "fields": {},
     "children": {
-      "multiple": true,
+      "multiple": false,
       "required": true,
       "types": [
         {
@@ -946,10 +851,6 @@
         },
         {
           "type": "member_access",
-          "named": true
-        },
-        {
-          "type": "modulus_binary_expr",
           "named": true
         },
         {
@@ -1023,10 +924,6 @@
           "named": true
         },
         {
-          "type": "modulus_binary_expr",
-          "named": true
-        },
-        {
           "type": "number",
           "named": true
         },
@@ -1063,10 +960,6 @@
   },
   {
     "type": "\"",
-    "named": false
-  },
-  {
-    "type": "#",
     "named": false
   },
   {

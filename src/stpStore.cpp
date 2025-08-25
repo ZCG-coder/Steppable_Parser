@@ -1,4 +1,6 @@
-#include "include/stpStore.hpp"
+#include "stpInterp/stpStore.hpp"
+
+#include "util.hpp"
 
 #include <any>
 #include <map>
@@ -22,8 +24,11 @@ namespace steppable::parser
         return ret.str();
     }
 
-    STP_LocalValue STP_LocalValue::applyOperator(const std::string& operatorStr, const STP_LocalValue& rhs)
+    STP_LocalValue STP_LocalValue::applyOperator(const std::string& _operatorStr, const STP_LocalValue& rhs)
     {
+        std::string operatorStr = _operatorStr;
+        operatorStr = __internals::stringUtils::bothEndsReplace(operatorStr, ' ');
+
         STP_TypeID lhsType = this->typeID;
         STP_TypeID rhsType = rhs.typeID;
 
@@ -46,6 +51,10 @@ namespace steppable::parser
         // .*           matrix         matrix       matrix              In-place multiplication
         // ./           matrix         matrix       matrix              In-place division
         // .^           matrix         matrix       matrix              In-place power
+        //
+        // mod          matrix         matrix       matrix              Modulus
+        // mod          number         number       number              Simple modulus
+        // mod          matrix         number       matrix              In-place modulus
         //
         //
         // @            matrix         matrix       number              Dot product
@@ -101,12 +110,12 @@ namespace steppable::parser
         }
         else if (operatorStr == ".*" or operatorStr == "./" or operatorStr == ".^" or operatorStr == "&")
         {
-            operationPerformable = (lhsType == STP_TypeID_MATRIX_2D and lhsType == STP_TypeID_MATRIX_2D);
+            operationPerformable = (lhsType == STP_TypeID_MATRIX_2D and rhsType == STP_TypeID_MATRIX_2D);
             retType = STP_TypeID_MATRIX_2D;
         }
         else if (operatorStr == "@")
         {
-            operationPerformable = (lhsType == STP_TypeID_MATRIX_2D and lhsType == STP_TypeID_MATRIX_2D);
+            operationPerformable = (lhsType == STP_TypeID_MATRIX_2D and rhsType == STP_TypeID_MATRIX_2D);
             retType = STP_TypeID_NUMBER;
         }
         else if (operatorStr == "==" or operatorStr == "!=" or operatorStr == ">" or operatorStr == "<" or
@@ -118,48 +127,69 @@ namespace steppable::parser
             else
                 retType = STP_TypeID_NUMBER;
         }
+        else if (operatorStr == "mod")
+        {
+            operationPerformable = (lhsType == STP_TypeID_MATRIX_2D and rhsType == STP_TypeID_MATRIX_2D) or
+                                   (lhsType == STP_TypeID_NUMBER and rhsType == STP_TypeID_NUMBER) or
+                                   (lhsType == STP_TypeID_MATRIX_2D and rhsType == STP_TypeID_NUMBER);
+            if (lhsType == STP_TypeID_MATRIX_2D)
+                retType = STP_TypeID_MATRIX_2D;
+            else
+                retType = STP_TypeID_NUMBER;
+        }
 
         if (not operationPerformable)
             throw std::runtime_error("Cannot perform this oepration.");
 
         std::any value = this->data;
         std::any rhsValue = rhs.data;
+
+        STP_LocalValue returnVal(STP_TypeID_NULL);
+        returnVal.typeID = retType;
+        returnVal.typeName = STP_typeNames[retType];
+        returnVal.data = value;
+
+        return returnVal;
     }
 
-    void STP_Scope::addVariable(const std::string& name, const STP_TypeID& typeID, const std::any& data)
+    void STP_Scope::addVariable(const std::string& name, const STP_LocalValue& data)
     {
-        if (variables.find(name) == variables.end())
+        if (not variables.contains(name))
         {
             // variable exists
             return;
         }
 
-        STP_LocalValuePtr value = std::make_shared<STP_LocalValue>();
-        value->data = data;
-        value->typeName = STP_typeNames[typeID]; // NOLINT(cppcoreguidelines-pro-bounds-constant-array-index)
-        variables[name] = value;
+        variables.at(name) = data;
     }
 
-    STP_LocalValuePtr STP_Scope::getVariable(const std::string& name)
+    STP_LocalValue STP_Scope::getVariable(const std::string& name)
     {
-        if (variables.find(name) == variables.end())
-            return nullptr;
-        return variables[name];
+        if (not variables.contains(name))
+            return STP_LocalValue(STP_TypeID_NULL);
+        return variables.at(name);
     }
 
-    void STP_InterpStoreLocal::addVariable(const std::string& name, const STP_TypeID& typeID, const std::any& data)
+    void STP_InterpStoreLocal::addVariable(const std::string& name, const STP_LocalValue& data)
     {
         STP_Scope scope = scopes[currentScope];
-        scope.addVariable(name, typeID, data);
+        scope.addVariable(name, data);
     }
 
-    std::any STP_InterpStoreLocal::getVariable(const std::string& name)
+    STP_LocalValue STP_InterpStoreLocal::getVariable(const std::string& name)
     {
-        if (scopes.find(currentScope) == scopes.end())
-            return nullptr;
+        if (not scopes.contains(currentScope))
+        {
+            output::error("parser"s, "Variable `{0}` is not defined"s, { name });
+            __internals::utils::programSafeExit(1);
+        }
         STP_Scope scope = scopes[currentScope];
         return scope.getVariable(name);
     }
+
+    void STP_InterpStoreLocal::setScopeLevel(size_t newScope) { currentScope = newScope; }
+
+    size_t STP_InterpStoreLocal::getScopeLevel() const { return currentScope; }
 
     void STP_InterpStoreLocal::setChunk(const std::string& newChunk, size_t chunkStart, size_t chunkEnd)
     {
@@ -168,7 +198,7 @@ namespace steppable::parser
         this->chunkEnd = chunkEnd;
     }
 
-    bool STP_InterpStoreLocal::isChunkFull(const TSNode* node)
+    bool STP_InterpStoreLocal::isChunkFull(const TSNode* node) const
     {
         uint32_t start = ts_node_start_byte(*node);
         uint32_t end = ts_node_end_byte(*node);
@@ -187,10 +217,6 @@ namespace steppable::parser
             text = chunk.substr(start - chunkStart, end - start);
         return text;
     }
-
-    void STP_InterpStoreLocal::setScopeLevel(size_t newScope) { currentScope = newScope; }
-
-    size_t STP_InterpStoreLocal::getScopeLevel() { return currentScope; }
 
     void STP_InterpStoreLocal::dbgPrintVariables() {}
 } // namespace steppable::parser
