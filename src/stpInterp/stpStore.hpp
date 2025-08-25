@@ -56,9 +56,18 @@ namespace steppable::parser
         STP_LocalValue applyOperator(const std::string& operatorStr, const STP_LocalValue& rhs);
     };
 
+    struct STP_Function
+    {
+        std::map<std::string, STP_LocalValue> args;
+
+        STP_TypeID returnType;
+    };
+
     struct STP_Scope
     {
         std::map<std::string, STP_LocalValue> variables;
+
+        std::map<std::string, STP_Function> functions;
 
         std::shared_ptr<STP_Scope> parentScope = nullptr;
 
@@ -71,13 +80,17 @@ namespace steppable::parser
     {
         size_t currentScope = 0;
 
-        std::map<size_t, STP_Scope> scopes;
+        std::map<size_t, STP_Scope> scopes = {
+            { 0, STP_Scope() },
+        };
 
         std::string chunk;
 
     public:
-        size_t chunkStart;
-        size_t chunkEnd;
+        size_t chunkStart = 0;
+        size_t chunkEnd = 0;
+
+        STP_InterpStoreLocal();
 
         void addVariable(const std::string& name, const STP_LocalValue& typeID);
 
@@ -86,6 +99,8 @@ namespace steppable::parser
         void setScopeLevel(size_t newScope);
 
         size_t getScopeLevel() const;
+
+        auto getScopes() -> decltype(scopes) const;
 
         void setChunk(const std::string& newChunk, size_t chunkStart, size_t chunkEnd);
         bool isChunkFull(const TSNode* node) const;

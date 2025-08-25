@@ -121,6 +121,10 @@ STP_LocalValue handleExpr(TSNode* exprNode, STP_InterpState state)
         std::string nameNode = state->getChunk(exprNode);
         return state->getVariable(nameNode);
     }
+    else if (exprType == "function_call")
+    {
+
+    }
     else
     {
         // Type is not specified by notation, need to infer.
@@ -295,7 +299,6 @@ int main(int argc, char** argv)
     ts_parser_set_language(parser, tree_sitter_stp());
     TSTree* tree = nullptr;
 
-    STP_init();
     STP_InterpState state = STP_getState();
 
     while (not eof)

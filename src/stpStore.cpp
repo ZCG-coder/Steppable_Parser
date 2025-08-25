@@ -166,9 +166,18 @@ namespace steppable::parser
     STP_LocalValue STP_Scope::getVariable(const std::string& name)
     {
         if (not variables.contains(name))
-            return STP_LocalValue(STP_TypeID_NULL);
+        {
+            if (parentScope == nullptr)
+            {
+                output::error("parser"s, "Variable {0} is not defined"s, {name});
+                __internals::utils::programSafeExit(1);
+            }
+            return parentScope->getVariable(name);
+        }
         return variables.at(name);
     }
+
+    STP_InterpStoreLocal::STP_InterpStoreLocal() { setScopeLevel(0); }
 
     void STP_InterpStoreLocal::addVariable(const std::string& name, const STP_LocalValue& data)
     {
@@ -190,6 +199,8 @@ namespace steppable::parser
     void STP_InterpStoreLocal::setScopeLevel(size_t newScope) { currentScope = newScope; }
 
     size_t STP_InterpStoreLocal::getScopeLevel() const { return currentScope; }
+
+    auto STP_InterpStoreLocal::getScopes() -> decltype(scopes) const { return scopes; }
 
     void STP_InterpStoreLocal::setChunk(const std::string& newChunk, size_t chunkStart, size_t chunkEnd)
     {

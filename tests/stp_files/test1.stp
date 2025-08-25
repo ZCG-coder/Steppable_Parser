@@ -13,28 +13,28 @@ mat2 = [
 3 2 4 1 2 4 ;
 3 2 4 1 2 4 ;]
 
-obj1 {
-    mat = [ 1 2 3 4 5 ]
-}
+# obj1 {
+#     mat = [ 1 2 3 4 5 ]
+# }
+#
+# fn1 Mat m, Mat n -> Mat {
+#     m * (n + 3)
+# }
+#
+# var1 = (3 mod (2+4) + 5) + 2
+# if type(var1) == "number" {
+#     "Great! \{var1\} is a number. \r \n"
+# } else {
+#     "Totally wrong!"
+# }
 
-fn1 Mat m, Mat n -> Mat {
-    m * (n + 3)
-}
+# obj.mat = mat1;
 
-var1 = (3 mod (2+4) + 5) + 2
-if type(var1) == "number" {
-    "Great! \{var1\} is a number. \r \n"
-} else {
-    "Totally wrong!"
-}
+# a = sin(15)
 
-obj.mat = mat1;
-
-a = sin(15)
-
-foreach x in mat1 {
-    x = x ^ 2
-}
+# foreach x in mat1 {
+#     x = x ^ 2
+# }
 
 mat1 * mat2
 mat1 .* mat2
