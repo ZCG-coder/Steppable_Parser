@@ -13,20 +13,20 @@ mat2 = [
 3 2 4 1 2 4 ;
 3 2 4 1 2 4 ;]
 
-# obj1 {
-#     mat = [ 1 2 3 4 5 ]
-# }
-#
-# fn1 Mat m, Mat n -> Mat {
-#     m * (n + 3)
-# }
-#
-# var1 = (3 mod (2+4) + 5) + 2
-# if type(var1) == "number" {
-#     "Great! \{var1\} is a number. \r \n"
-# } else {
-#     "Totally wrong!"
-# }
+obj1 {
+    mat = [ 1 2 3 4 5 ]
+}
+
+fn1 Mat m, Mat n -> Mat {
+    m * (n + 3)
+}
+
+var1 = (3 mod (2+4) + 5) + 2
+if type(var1) == "number" {
+    "Great! \{var1\} is a number. \r \n"
+} else {
+    "Totally wrong!"
+}
 
 # obj.mat = mat1;
 
@@ -56,10 +56,12 @@ stat
 
 #comment
 
+"string string string"
+
 12% + 11% * (1+2)
 
-x = symbol("x")
-expr = x^2 == 4
-vals = solve(expr)
+# sym x
+# expr = x^2 == 4
+# vals = solve(expr)
 
 "Unicode \xFE\xFF \033[1f;"

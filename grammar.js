@@ -24,6 +24,7 @@ module.exports = grammar({
 
         _statement: $ => choice(
             $.assignment,
+            $.symbol_decl_statement,
             $.if_else_stmt,
             $.while_stmt,
             $.foreach_in_stmt,
@@ -32,6 +33,11 @@ module.exports = grammar({
             $.expression_statement,
             $.import_statement,
             $.comment
+        ),
+
+        symbol_decl_statement: $ => seq(
+            "sym ",
+            field("sym_name", $.identifier)
         ),
 
         loop_statements: $ => choice(
@@ -76,7 +82,11 @@ module.exports = grammar({
         ),
 
         function_definition: $ => seq(
-            alias($.identifier, $.function_name),
+            field(
+                "fn_name",
+                alias($.identifier, $.function_name
+                )
+            ),
             $.parameter_list, "->", alias($.identifier, $.type), "{", $._expression, "}"
         ),
 
@@ -160,17 +170,17 @@ module.exports = grammar({
             $._expression,
             "\\}"
         ),
-        string_content: $ => token(prec(5, /[^"\\]+/)),
+        string_char: $ => token(prec(5, /[^"\\]+/)),
         string: $ => seq(
             "\"",
-            repeat(
-                choice(
+            field("string_chars",
+                repeat(choice(
                     $.formatting_snippet,
-                    $.string_content,
+                    $.string_char,
                     $.escape_sequence,
                     $.unicode_escape,
                     $.octal_escape,
-                )
+                ))
             ),
             "\""
         )

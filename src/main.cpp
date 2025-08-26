@@ -1,5 +1,8 @@
 #include "output.hpp"
 #include "platform.hpp"
+#include "steppable/mat2d.hpp"
+#include "steppable/mat2dBase.hpp"
+#include "steppable/number.hpp"
 #include "stpInterp/stpInit.hpp"
 #include "stpInterp/stpStore.hpp"
 
@@ -64,14 +67,27 @@ STP_LocalValue handleExpr(TSNode* exprNode, STP_InterpState state)
     if (exprType == "number")
     {
         // Number
-        typeID = STP_TypeID_NUMBER;
+        std::string data = state->getChunk(exprNode);
+        STP_LocalValue ret(STP_TypeID_NUMBER, steppable::Number(data));
+        return ret;
     }
-    else if (exprType == "matrix")
+    if (exprType == "percentage")
+    {
+        // percentage := number "%"
+        TSNode numberNode = ts_node_child(*exprNode, 0);
+        std::string number = state->getChunk(&numberNode);
+        steppable::Number value(number);
+        value /= 100;
+
+        STP_LocalValue ret(STP_TypeID_NUMBER, value);
+        return ret;
+    }
+    if (exprType == "matrix")
     {
         // Matrix
-        typeID = STP_TypeID_MATRIX_2D;
         size_t rows = 0;
-        size_t lastColLength = 0;
+        std::unique_ptr<size_t> lastColLength;
+        steppable::MatVec2D<steppable::Number> matVec;
         for (size_t j = 0; j < ts_node_child_count(*exprNode); j++)
         {
             TSNode node = ts_node_child(*exprNode, j);
@@ -79,40 +95,47 @@ STP_LocalValue handleExpr(TSNode* exprNode, STP_InterpState state)
                 continue;
 
             size_t currentCols = 0;
+            std::vector<steppable::Number> currentMatRow;
             for (size_t i = 0; i < ts_node_child_count(node); i++)
             {
                 TSNode cell = ts_node_child(node, i);
-                if (ts_node_type(node) == "matrix_row"s)
-                    break;
+                if (ts_node_type(cell) == ";"s)
+                    continue;
                 STP_LocalValue val = handleExpr(&cell, state);
                 if (val.typeID != STP_TypeID_NUMBER)
                 {
                     steppable::output::error("parser"s, "Matrix should contain numbers only."s);
                     steppable::__internals::utils::programSafeExit(1);
                 }
+                auto value = std::any_cast<steppable::Number>(val.data);
+                currentMatRow.emplace_back(value);
                 currentCols++;
             }
 
             rows++;
-            if (currentCols != lastColLength)
+            if (lastColLength)
             {
-                steppable::output::error("parser"s, "Inconsistent matrix dimensions."s);
-                steppable::__internals::utils::programSafeExit(1);
+                if (currentCols != *lastColLength)
+                {
+                    steppable::output::error("parser"s, "Inconsistent matrix dimensions."s);
+                    steppable::__internals::utils::programSafeExit(1);
+                }
             }
-            lastColLength = currentCols;
+            matVec.emplace_back(currentMatRow);
+            lastColLength = std::make_unique<size_t>(currentCols);
         }
 
-        TSNode firstNode = ts_node_child(*exprNode, 1);
-        size_t cols = ts_node_child_count(firstNode);
-
-        std::cout << rows << " " << cols << std::endl;
+        steppable::Matrix data(matVec);
+        STP_LocalValue retVal(STP_TypeID_MATRIX_2D, data);
+        std::cout << data.present() << "\n";
+        return retVal;
     }
     else if (exprType == "string")
     {
         // String
         typeID = STP_TypeID_STRING;
-        std::string data = state->getChunk(exprNode);
-        std::cout << data << "\n";
+        TSNode stringCharsNode = ts_node_child_by_field_name(*exprNode, "string_chars", 12);
+        std::string data = state->getChunk(&stringCharsNode);
         retVal.data = data;
     }
     else if (exprType == "identifier")
@@ -123,7 +146,6 @@ STP_LocalValue handleExpr(TSNode* exprNode, STP_InterpState state)
     }
     else if (exprType == "function_call")
     {
-
     }
     else
     {
@@ -276,6 +298,17 @@ void processChunk(TSNode node, const std::string& chunk, int indent = 0, STP_Int
     if (type == "import_statement")
     {
         //
+        return;
+    }
+    if (type == "symbol_decl_statement")
+    {
+        TSNode nameNode = ts_node_child_by_field_name(node, "sym_name", 8);
+        const std::string& name = state->getChunk(&nameNode);
+
+        STP_LocalValue assignmentVal(STP_TypeID_SYMBOL);
+        assignmentVal.data = name;
+        assignmentVal.typeName = STP_typeNames[STP_TypeID_SYMBOL];
+        state->addVariable(name, assignmentVal);
         return;
     }
 

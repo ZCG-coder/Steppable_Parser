@@ -56,6 +56,10 @@
         },
         {
           "type": "SYMBOL",
+          "name": "symbol_decl_statement"
+        },
+        {
+          "type": "SYMBOL",
           "name": "if_else_stmt"
         },
         {
@@ -85,6 +89,23 @@
         {
           "type": "SYMBOL",
           "name": "comment"
+        }
+      ]
+    },
+    "symbol_decl_statement": {
+      "type": "SEQ",
+      "members": [
+        {
+          "type": "STRING",
+          "value": "sym "
+        },
+        {
+          "type": "FIELD",
+          "name": "sym_name",
+          "content": {
+            "type": "SYMBOL",
+            "name": "identifier"
+          }
         }
       ]
     },
@@ -361,13 +382,17 @@
       "type": "SEQ",
       "members": [
         {
-          "type": "ALIAS",
+          "type": "FIELD",
+          "name": "fn_name",
           "content": {
-            "type": "SYMBOL",
-            "name": "identifier"
-          },
-          "named": true,
-          "value": "function_name"
+            "type": "ALIAS",
+            "content": {
+              "type": "SYMBOL",
+              "name": "identifier"
+            },
+            "named": true,
+            "value": "function_name"
+          }
         },
         {
           "type": "SYMBOL",
@@ -878,7 +903,7 @@
         }
       ]
     },
-    "string_content": {
+    "string_char": {
       "type": "TOKEN",
       "content": {
         "type": "PREC",
@@ -897,31 +922,35 @@
           "value": "\""
         },
         {
-          "type": "REPEAT",
+          "type": "FIELD",
+          "name": "string_chars",
           "content": {
-            "type": "CHOICE",
-            "members": [
-              {
-                "type": "SYMBOL",
-                "name": "formatting_snippet"
-              },
-              {
-                "type": "SYMBOL",
-                "name": "string_content"
-              },
-              {
-                "type": "SYMBOL",
-                "name": "escape_sequence"
-              },
-              {
-                "type": "SYMBOL",
-                "name": "unicode_escape"
-              },
-              {
-                "type": "SYMBOL",
-                "name": "octal_escape"
-              }
-            ]
+            "type": "REPEAT",
+            "content": {
+              "type": "CHOICE",
+              "members": [
+                {
+                  "type": "SYMBOL",
+                  "name": "formatting_snippet"
+                },
+                {
+                  "type": "SYMBOL",
+                  "name": "string_char"
+                },
+                {
+                  "type": "SYMBOL",
+                  "name": "escape_sequence"
+                },
+                {
+                  "type": "SYMBOL",
+                  "name": "unicode_escape"
+                },
+                {
+                  "type": "SYMBOL",
+                  "name": "octal_escape"
+                }
+              ]
+            }
           }
         },
         {

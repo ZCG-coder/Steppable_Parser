@@ -344,7 +344,18 @@
   {
     "type": "function_definition",
     "named": true,
-    "fields": {},
+    "fields": {
+      "fn_name": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "function_name",
+            "named": true
+          }
+        ]
+      }
+    },
     "children": {
       "multiple": true,
       "required": true,
@@ -359,10 +370,6 @@
         },
         {
           "type": "function_call",
-          "named": true
-        },
-        {
-          "type": "function_name",
           "named": true
         },
         {
@@ -500,6 +507,10 @@
           "named": true
         },
         {
+          "type": "symbol_decl_statement",
+          "named": true
+        },
+        {
           "type": "unary_expression",
           "named": true
         },
@@ -563,6 +574,10 @@
         },
         {
           "type": "object_definition",
+          "named": true
+        },
+        {
+          "type": "symbol_decl_statement",
           "named": true
         },
         {
@@ -784,6 +799,10 @@
           "named": true
         },
         {
+          "type": "symbol_decl_statement",
+          "named": true
+        },
+        {
           "type": "while_stmt",
           "named": true
         }
@@ -793,32 +812,49 @@
   {
     "type": "string",
     "named": true,
-    "fields": {},
-    "children": {
-      "multiple": true,
-      "required": false,
-      "types": [
-        {
-          "type": "escape_sequence",
-          "named": true
-        },
-        {
-          "type": "formatting_snippet",
-          "named": true
-        },
-        {
-          "type": "octal_escape",
-          "named": true
-        },
-        {
-          "type": "string_content",
-          "named": true
-        },
-        {
-          "type": "unicode_escape",
-          "named": true
-        }
-      ]
+    "fields": {
+      "string_chars": {
+        "multiple": true,
+        "required": false,
+        "types": [
+          {
+            "type": "escape_sequence",
+            "named": true
+          },
+          {
+            "type": "formatting_snippet",
+            "named": true
+          },
+          {
+            "type": "octal_escape",
+            "named": true
+          },
+          {
+            "type": "string_char",
+            "named": true
+          },
+          {
+            "type": "unicode_escape",
+            "named": true
+          }
+        ]
+      }
+    }
+  },
+  {
+    "type": "symbol_decl_statement",
+    "named": true,
+    "fields": {
+      "sym_name": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "identifier",
+            "named": true
+          }
+        ]
+      }
     }
   },
   {
@@ -1148,8 +1184,12 @@
     "named": true
   },
   {
-    "type": "string_content",
+    "type": "string_char",
     "named": true
+  },
+  {
+    "type": "sym ",
+    "named": false
   },
   {
     "type": "type",

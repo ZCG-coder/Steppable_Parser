@@ -1,4 +1,5 @@
 #pragma once
+#include "stpTypeName.h"
 
 extern "C" {
 #include <tree_sitter/api.h>
@@ -16,28 +17,9 @@ extern "C" {
  */
 namespace steppable::parser
 {
-    enum STP_TypeID : std::uint8_t
-    {
-        STP_TypeID_NULL = 0,
-        STP_TypeID_NUMBER = 1,
-        STP_TypeID_MATRIX_2D = 2,
-        STP_TypeID_STRING = 3,
-        STP_TypeID_FUNC = 4,
-        STP_TypeID_OBJECT = 5,
-    };
-
-    // NOLINTBEGIN(cppcoreguidelines-pro-type-const-cast, cppcoreguidelines-avoid-c-arrays)
-    extern "C" {
-    constexpr char* const STP_typeNames[] = {
-        [STP_TypeID_NUMBER] = const_cast<char* const>("Number"),
-        [STP_TypeID_MATRIX_2D] = const_cast<char* const>("Mat2D"),
-        [STP_TypeID_STRING] = const_cast<char* const>("Str"),
-        [STP_TypeID_FUNC] = const_cast<char* const>("Func"),
-        [STP_TypeID_OBJECT] = const_cast<char* const>("Object"),
-        [STP_TypeID_NULL] = const_cast<char* const>("Null"),
-    };
-    }
-    // NOLINTEND(cppcoreguidelines-pro-type-const-cast, cppcoreguidelines-avoid-c-arrays)
+    std::unique_ptr<STP_TypeID> determineOperationFeasibility(STP_TypeID lhsType,
+                                                              const std::string& operatorStr,
+                                                              STP_TypeID rhsType);
 
     struct STP_LocalValue
     {
@@ -46,14 +28,11 @@ namespace steppable::parser
 
         std::any data;
 
-        explicit STP_LocalValue(const STP_TypeID& type, std::any data = {}) :
-            typeName(STP_typeNames[type]), typeID(type), data(std::move(data))
-        {
-        }
+        explicit STP_LocalValue(const STP_TypeID& type, const std::any& data = {});
 
         [[nodiscard]] std::string present() const;
 
-        STP_LocalValue applyOperator(const std::string& operatorStr, const STP_LocalValue& rhs);
+        STP_LocalValue applyOperator(const std::string& operatorStr, const STP_LocalValue& rhs) const;
     };
 
     struct STP_Function
@@ -80,9 +59,7 @@ namespace steppable::parser
     {
         size_t currentScope = 0;
 
-        std::map<size_t, STP_Scope> scopes = {
-            { 0, STP_Scope() },
-        };
+        std::map<size_t, STP_Scope> scopes;
 
         std::string chunk;
 
@@ -98,7 +75,7 @@ namespace steppable::parser
 
         void setScopeLevel(size_t newScope);
 
-        size_t getScopeLevel() const;
+        [[nodiscard]] size_t getScopeLevel() const;
 
         auto getScopes() -> decltype(scopes) const;
 

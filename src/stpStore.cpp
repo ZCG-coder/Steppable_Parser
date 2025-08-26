@@ -15,26 +15,10 @@
  */
 namespace steppable::parser
 {
-    std::string STP_LocalValue::present() const
+    std::unique_ptr<STP_TypeID> determineOperationFeasibility(const STP_TypeID lhsType,
+                                                              const std::string& operatorStr,
+                                                              const STP_TypeID rhsType)
     {
-        std::stringstream ret;
-
-        ret << "(" << typeName << ") ";
-
-        return ret.str();
-    }
-
-    STP_LocalValue STP_LocalValue::applyOperator(const std::string& _operatorStr, const STP_LocalValue& rhs)
-    {
-        std::string operatorStr = _operatorStr;
-        operatorStr = __internals::stringUtils::bothEndsReplace(operatorStr, ' ');
-
-        STP_TypeID lhsType = this->typeID;
-        STP_TypeID rhsType = rhs.typeID;
-
-        bool operationPerformable = false;
-        STP_TypeID retType = STP_TypeID_NULL;
-
         // Make sure the operation can be performed
         //
         // Operator     lhsType        rhsType      retType             Desc
@@ -73,7 +57,18 @@ namespace steppable::parser
         //
         // [fn call]    any            any          any                 Depends on implementation
 
-        if (operatorStr == "+" or operatorStr == "-")
+        bool operationPerformable = false;
+        STP_TypeID retType = STP_TypeID_NULL;
+
+        // region Magic
+        if ((lhsType == STP_TypeID_SYMBOL and rhsType != STP_TypeID_STRING) or
+            (lhsType != STP_TypeID_STRING and rhsType == STP_TypeID_SYMBOL))
+        {
+            // Symbols operations are always possible
+            operationPerformable = true;
+            retType = STP_TypeID_SYMBOL;
+        }
+        else if (operatorStr == "+" or operatorStr == "-")
         {
             operationPerformable = (lhsType == STP_TypeID_NUMBER and rhsType == STP_TypeID_NUMBER) or
                                    (lhsType == STP_TypeID_MATRIX_2D and rhsType == STP_TypeID_MATRIX_2D) or
@@ -118,6 +113,16 @@ namespace steppable::parser
             operationPerformable = (lhsType == STP_TypeID_MATRIX_2D and rhsType == STP_TypeID_MATRIX_2D);
             retType = STP_TypeID_NUMBER;
         }
+        else if (operatorStr == "^")
+        {
+            operationPerformable = (lhsType == STP_TypeID_MATRIX_2D and rhsType == STP_TypeID_MATRIX_2D) or
+                                   (lhsType == STP_TypeID_NUMBER and rhsType == STP_TypeID_NUMBER) or
+                                   (lhsType == STP_TypeID_MATRIX_2D and rhsType == STP_TypeID_NUMBER);
+            if (lhsType == STP_TypeID_MATRIX_2D)
+                retType = STP_TypeID_MATRIX_2D;
+            else
+                retType = STP_TypeID_NUMBER;
+        }
         else if (operatorStr == "==" or operatorStr == "!=" or operatorStr == ">" or operatorStr == "<" or
                  operatorStr == ">=" or operatorStr == "<=")
         {
@@ -137,9 +142,40 @@ namespace steppable::parser
             else
                 retType = STP_TypeID_NUMBER;
         }
+        // endregion
 
         if (not operationPerformable)
-            throw std::runtime_error("Cannot perform this oepration.");
+        {
+            output::error("parser"s,
+                          "Operation ({0}) {1} ({2}) cannot be performed."s,
+                          { STP_typeNames[lhsType], operatorStr, STP_typeNames[rhsType] });
+            __internals::utils::programSafeExit(1);
+        }
+
+        return std::make_unique<STP_TypeID>(retType);
+    }
+
+    STP_LocalValue::STP_LocalValue(const STP_TypeID& type, const std::any& data) :
+        typeName(STP_typeNames[type]), typeID(type), data(data)
+    {
+    }
+
+    std::string STP_LocalValue::present() const
+    {
+        std::stringstream ret;
+
+        ret << "(" << typeName << ") ";
+
+        return ret.str();
+    }
+    STP_LocalValue STP_LocalValue::applyOperator(const std::string& _operatorStr, const STP_LocalValue& rhs) const
+    {
+        std::string operatorStr = _operatorStr;
+        operatorStr = __internals::stringUtils::bothEndsReplace(operatorStr, ' ');
+
+        STP_TypeID lhsType = this->typeID;
+        STP_TypeID rhsType = rhs.typeID;
+        STP_TypeID retType = *determineOperationFeasibility(lhsType, operatorStr, rhsType);
 
         std::any value = this->data;
         std::any rhsValue = rhs.data;
@@ -154,13 +190,13 @@ namespace steppable::parser
 
     void STP_Scope::addVariable(const std::string& name, const STP_LocalValue& data)
     {
-        if (not variables.contains(name))
+        if (variables.contains(name))
         {
             // variable exists
             return;
         }
 
-        variables.at(name) = data;
+        variables.emplace(name, data);
     }
 
     STP_LocalValue STP_Scope::getVariable(const std::string& name)
@@ -169,7 +205,7 @@ namespace steppable::parser
         {
             if (parentScope == nullptr)
             {
-                output::error("parser"s, "Variable {0} is not defined"s, {name});
+                output::error("parser"s, "Variable {0} is not defined"s, { name });
                 __internals::utils::programSafeExit(1);
             }
             return parentScope->getVariable(name);
@@ -181,7 +217,7 @@ namespace steppable::parser
 
     void STP_InterpStoreLocal::addVariable(const std::string& name, const STP_LocalValue& data)
     {
-        STP_Scope scope = scopes[currentScope];
+        STP_Scope& scope = scopes[currentScope];
         scope.addVariable(name, data);
     }
 
@@ -196,7 +232,15 @@ namespace steppable::parser
         return scope.getVariable(name);
     }
 
-    void STP_InterpStoreLocal::setScopeLevel(size_t newScope) { currentScope = newScope; }
+    void STP_InterpStoreLocal::setScopeLevel(size_t newScope)
+    {
+        if (not scopes.contains(newScope))
+        {
+            // Create the scope
+            scopes.emplace(newScope, STP_Scope());
+        }
+        currentScope = newScope;
+    }
 
     size_t STP_InterpStoreLocal::getScopeLevel() const { return currentScope; }
 
