@@ -17,10 +17,6 @@ extern "C" {
  */
 namespace steppable::parser
 {
-    std::unique_ptr<STP_TypeID> determineOperationFeasibility(STP_TypeID lhsType,
-                                                              const std::string& operatorStr,
-                                                              STP_TypeID rhsType);
-
     struct STP_LocalValue
     {
         std::string typeName;
@@ -28,7 +24,7 @@ namespace steppable::parser
 
         std::any data;
 
-        explicit STP_LocalValue(const STP_TypeID& type, const std::any& data = {});
+        explicit STP_LocalValue(const STP_TypeID& type, std::any  data = {});
 
         [[nodiscard]] std::string present() const;
 

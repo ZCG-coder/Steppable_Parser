@@ -163,7 +163,6 @@ STP_LocalValue handleExpr(TSNode* exprNode, STP_InterpState state)
 
             STP_LocalValue lhs = handleExpr(&lhsNode, state);
             STP_LocalValue rhs = handleExpr(&rhsNode, state);
-            std::cout << lhs.present() << operandType << rhs.present() << '\n';
 
             return lhs.applyOperator(operandType, rhs);
         }
@@ -359,6 +358,7 @@ int main(int argc, char** argv)
         ts_tree_delete(tree);
     ts_parser_delete(parser);
 
+    state->dbgPrintVariables();
     STP_destroy();
 
     return 0;

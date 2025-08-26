@@ -21,7 +21,7 @@ fn1 Mat m, Mat n -> Mat {
     m * (n + 3)
 }
 
-var1 = (3 mod (2+4) + 5) + 2
+var1 = (5 mod (3+1) + 1)
 if type(var1) == "number" {
     "Great! \{var1\} is a number. \r \n"
 } else {
@@ -36,7 +36,6 @@ if type(var1) == "number" {
 #     x = x ^ 2
 # }
 
-mat1 * mat2
 mat1 .* mat2
 
 # Operators
@@ -47,12 +46,12 @@ mat1 .* mat2
 
 sum(mat1)
 
-mat1 = mat1 * mat2
+mat1 = mat1 + mat2
 
-import module
-stat = module.learn()
+# import module
+# stat = module.learn()
 
-stat
+# stat
 
 #comment
 
