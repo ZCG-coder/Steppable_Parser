@@ -26,7 +26,7 @@ namespace steppable::parser
 
         explicit STP_LocalValue(const STP_TypeID& type, std::any data = {});
 
-        [[nodiscard]] std::string present() const;
+        [[nodiscard]] std::string present(const std::string& name) const;
 
         [[nodiscard]] STP_LocalValue applyOperator(const std::string& operatorStr, const STP_LocalValue& rhs) const;
 

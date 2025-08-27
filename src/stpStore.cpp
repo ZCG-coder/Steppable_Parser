@@ -25,13 +25,13 @@ namespace steppable::parser
     {
     }
 
-    std::string STP_LocalValue::present() const
+    std::string STP_LocalValue::present(const std::string& name) const
     {
         std::stringstream ret;
         std::string presented;
         std::string line;
 
-        ret << "(" << typeName << ")";
+        ret << name << "(" << typeName << ")";
 
         switch (typeID)
         {
@@ -215,8 +215,8 @@ namespace steppable::parser
         for (const auto& [scopeName, scope] : scopes)
         {
             std::cout << "In scope " << scopeName << "\n";
-            for (const auto& var : scope.variables | std::views::values)
-                std::cout << var.present() << "\n";
+            for (const auto& [varName, var] : scope.variables)
+                std::cout << var.present(varName) << "\n";
         }
     }
 

@@ -4,5 +4,8 @@
 
 namespace steppable::parser
 {
-    STP_LocalValue handleExpr(const TSNode* exprNode, const STP_InterpState& state, bool printResult = false);
+    STP_LocalValue handleExpr(const TSNode* exprNode,
+                              const STP_InterpState& state,
+                              bool printResult = false,
+                              const std::string& exprName = "");
 }

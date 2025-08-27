@@ -9,7 +9,10 @@
 
 namespace steppable::parser
 {
-    STP_LocalValue handleExpr(const TSNode* exprNode, const STP_InterpState& state, const bool printResult = false)
+    STP_LocalValue handleExpr(const TSNode* exprNode,
+                              const STP_InterpState& state,
+                              const bool printResult = false,
+                              const std::string& exprName = "")
     {
         assert(exprNode != nullptr);
         if (ts_node_type(*exprNode) == "ERROR"s or ts_node_is_missing(*exprNode))
@@ -123,7 +126,7 @@ namespace steppable::parser
         }
 
         if (printResult)
-            std::cout << retVal.present() << '\n';
+            std::cout << retVal.present(exprName) << '\n';
 
         return retVal;
     }
