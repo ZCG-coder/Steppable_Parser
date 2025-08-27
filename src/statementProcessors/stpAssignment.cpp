@@ -25,6 +25,6 @@ namespace steppable::parser
 
         const STP_LocalValue val = handleExpr(&exprNode, state, printValue, name);
         // Write to scope / global variables
-        state->addVariable(name, val);
+        state->getCurrentScope()->addVariable(name, val);
     }
 } // namespace steppable::parser

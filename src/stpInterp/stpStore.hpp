@@ -28,7 +28,7 @@ namespace steppable::parser
 
         [[nodiscard]] std::string present(const std::string& name) const;
 
-        [[nodiscard]] STP_LocalValue applyOperator(const std::string& operatorStr, const STP_LocalValue& rhs) const;
+        [[nodiscard]] STP_LocalValue applyBinaryOperator(const std::string& operatorStr, const STP_LocalValue& rhs) const;
 
         [[nodiscard]] bool asBool() const;
     };
@@ -36,6 +36,8 @@ namespace steppable::parser
     struct STP_Function
     {
         std::map<std::string, STP_LocalValue> args;
+
+        std::shared_ptr<TSNode> node = nullptr;
 
         STP_TypeID returnType;
     };
@@ -55,9 +57,9 @@ namespace steppable::parser
 
     class STP_InterpStoreLocal
     {
-        size_t currentScope = 0;
+        STP_Scope globalScope;
 
-        std::map<size_t, STP_Scope> scopes;
+        std::shared_ptr<STP_Scope> currentScope = std::make_shared<STP_Scope>(globalScope);
 
         std::string chunk;
         size_t chunkStart = 0;
@@ -66,25 +68,14 @@ namespace steppable::parser
         std::string file = "/dev/null";
 
     public:
-        STP_InterpStoreLocal();
-
-        void addVariable(const std::string& name, const STP_LocalValue& typeID);
-
-        STP_LocalValue getVariable(const std::string& name);
-
-        STP_Function getFunction(const std::string& name);
-
-        void setScopeLevel(const size_t& newScope, const size_t& oldScope = 0);
-
-        [[nodiscard]] size_t getScopeLevel() const;
-
-        auto getScopes() -> decltype(scopes) const;
-
         void setChunk(const std::string& newChunk, const size_t& chunkStart, const size_t& chunkEnd);
-        bool isChunkFull(const TSNode* node) const;
         std::string getChunk(const TSNode* node = nullptr);
 
-        void dbgPrintVariables();
+        [[nodiscard]] STP_Scope addChildScope(std::shared_ptr<STP_Scope> parent = nullptr) const;
+
+        void setCurrentScope(std::shared_ptr<STP_Scope> newScope);
+
+        auto getCurrentScope() { return currentScope; }
 
         void setFile(const std::string& newFile);
 

@@ -89,11 +89,17 @@ namespace steppable::parser
             std::string data = state->getChunk(&stringCharsNode);
             retVal = STP_LocalValue(STP_TypeID_STRING, data);
         }
-        else if (exprType == "identifier")
+        else if (exprType == "identifier_or_member_access")
         {
+            TSNode childNode = ts_node_child(*exprNode, 0);
+            std::string childNodeType = ts_node_type(childNode);
+
             // Get the variable
-            std::string nameNode = state->getChunk(exprNode);
-            retVal = state->getVariable(nameNode);
+            if (childNodeType == "identifier")
+            {
+                std::string nameNode = state->getChunk(&childNode);
+                retVal = state->getCurrentScope()->getVariable(nameNode);
+            }
         }
         else if (exprType == "function_call")
         {
@@ -104,16 +110,17 @@ namespace steppable::parser
             if (exprType == "binary_expression")
             {
                 // binary_expression := lhs 'operator' rhs
-                TSNode lhsNode = ts_node_child(*exprNode, 0);
-                TSNode operandNode = ts_node_child(ts_node_child(*exprNode, 1), 0);
-                TSNode rhsNode = ts_node_child(*exprNode, 2);
+                TSNode binExprNode = ts_node_child(*exprNode, 0);
+                TSNode lhsNode = ts_node_child(binExprNode, 0);
+                TSNode operandNode = ts_node_child(ts_node_child(binExprNode, 1), 0);
+                TSNode rhsNode = ts_node_child(binExprNode, 2);
 
                 std::string operandType = ts_node_type(operandNode);
 
                 STP_LocalValue lhs = handleExpr(&lhsNode, state);
                 STP_LocalValue rhs = handleExpr(&rhsNode, state);
 
-                retVal = lhs.applyOperator(operandType, rhs);
+                retVal = lhs.applyBinaryOperator(operandType, rhs);
             }
             if (exprType == "unary_expression")
             {

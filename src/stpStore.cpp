@@ -56,7 +56,7 @@ namespace steppable::parser
         return ret.str();
     }
 
-    STP_LocalValue STP_LocalValue::applyOperator(const std::string& _operatorStr, const STP_LocalValue& rhs) const
+    STP_LocalValue STP_LocalValue::applyBinaryOperator(const std::string& _operatorStr, const STP_LocalValue& rhs) const
     {
         std::string operatorStr = _operatorStr;
         operatorStr = __internals::stringUtils::bothEndsReplace(operatorStr, ' ');
@@ -125,13 +125,7 @@ namespace steppable::parser
 
     void STP_Scope::addVariable(const std::string& name, const STP_LocalValue& data)
     {
-        if (variables.contains(name))
-        {
-            // variable exists
-            return;
-        }
-
-        variables.emplace(name, data);
+        variables.insert_or_assign(name, data);
     }
 
     STP_LocalValue STP_Scope::getVariable(const std::string& name)
@@ -148,53 +142,11 @@ namespace steppable::parser
         return variables.at(name);
     }
 
-    STP_InterpStoreLocal::STP_InterpStoreLocal() { setScopeLevel(0); }
-
-    void STP_InterpStoreLocal::addVariable(const std::string& name, const STP_LocalValue& data)
-    {
-        STP_Scope& scope = scopes[currentScope];
-        scope.addVariable(name, data);
-    }
-
-    STP_LocalValue STP_InterpStoreLocal::getVariable(const std::string& name)
-    {
-        if (not scopes.contains(currentScope))
-        {
-            output::error("parser"s, "Variable `{0}` is not defined"s, { name });
-            __internals::utils::programSafeExit(1);
-        }
-        STP_Scope scope = scopes[currentScope];
-        return scope.getVariable(name);
-    }
-
-    void STP_InterpStoreLocal::setScopeLevel(const size_t& newScope, const size_t& oldScope)
-    {
-        if (not scopes.contains(newScope))
-        {
-            // Create the scope
-            STP_Scope scope;
-            scope.parentScope = std::make_shared<STP_Scope>(scopes[oldScope]);
-            scopes.emplace(newScope, scope);
-        }
-        currentScope = newScope;
-    }
-
-    size_t STP_InterpStoreLocal::getScopeLevel() const { return currentScope; }
-
-    auto STP_InterpStoreLocal::getScopes() -> decltype(scopes) const { return scopes; }
-
     void STP_InterpStoreLocal::setChunk(const std::string& newChunk, const size_t& chunkStart, const size_t& chunkEnd)
     {
         chunk = newChunk;
         this->chunkStart = chunkStart;
         this->chunkEnd = chunkEnd;
-    }
-
-    bool STP_InterpStoreLocal::isChunkFull(const TSNode* node) const
-    {
-        uint32_t start = ts_node_start_byte(*node);
-        uint32_t end = ts_node_end_byte(*node);
-        return start >= chunkStart and end <= chunkEnd;
     }
 
     std::string STP_InterpStoreLocal::getChunk(const TSNode* node)
@@ -210,14 +162,19 @@ namespace steppable::parser
         return text;
     }
 
-    void STP_InterpStoreLocal::dbgPrintVariables()
+    STP_Scope STP_InterpStoreLocal::addChildScope(std::shared_ptr<STP_Scope> parent) const
     {
-        for (const auto& [scopeName, scope] : scopes)
-        {
-            std::cout << "In scope " << scopeName << "\n";
-            for (const auto& [varName, var] : scope.variables)
-                std::cout << var.present(varName) << "\n";
-        }
+        STP_Scope scope;
+        if (not parent)
+            scope.parentScope = currentScope;
+        else
+            scope.parentScope = std::move(parent);
+        return scope;
+    }
+
+    void STP_InterpStoreLocal::setCurrentScope(std::shared_ptr<STP_Scope> newScope)
+    {
+        currentScope = std::move(newScope);
     }
 
     void STP_InterpStoreLocal::setFile(const std::string& newFile) { file = newFile; }

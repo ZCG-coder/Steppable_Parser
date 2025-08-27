@@ -1,26 +1,21 @@
+Prec = {
+    BINARY_EXPR3: 8,
+    BINARY_EXPR2: 7,
+    BINARY_EXPR1: 6,
+    BINARY_EXPR0: 5,
+    UNARY_EXPR: 4,
+    FN_DEF: 3,
+    STRING_CHAR: 2
+}
+
 module.exports = grammar({
     name: "stp",
     conflicts: $ => [
-        [$.function_definition, $._expression],
-        [$.matrix],
-        [$.matrix_row],
-        [$.identifier_or_member_access, $._expression]
-    ],
-
-    extras: $ => [
-        /\s/,
-        $.comment,
-        /\\\r?\n/
+        [$._expression, $.function_call],
     ],
 
     rules: {
-        source_file: $ => optional(
-            seq(
-                $._statement,
-                repeat(seq("\n", $._statement)),
-                optional("\n")
-            )
-        ),
+        source_file: $ => repeat($._statement),
 
         _statement: $ => choice(
             $.assignment,
@@ -35,7 +30,7 @@ module.exports = grammar({
         ),
 
         symbol_decl_statement: $ => seq(
-            "sym ",
+            "sym",
             field("sym_name", $.identifier)
         ),
 
@@ -86,18 +81,24 @@ module.exports = grammar({
             $.identifier
         ),
 
-        function_definition: $ => seq(
+        function_definition: $ => prec(Prec.FN_DEF, seq(
+            "fn",
             field(
                 "fn_name",
                 alias($.identifier, $.function_name
                 )
             ),
-            $.parameter_list, "->", alias($.identifier, $.type), "{", $._expression, "}"
-        ),
+            "(",
+            $.parameter_list,
+            ")",
+            "{", $._expression, "}"
+        )),
 
         parameter_list: $ => seq(
-            alias($.identifier, $.type), alias($.identifier, $.param_name),
-            repeat(seq(",", alias($.identifier, $.type), alias($.identifier, $.param_name)))
+            alias($.identifier, $.param_name),
+            repeat(
+                seq(",", alias($.identifier, $.param_name))
+            )
         ),
 
         import_statement: $ => seq("import", $.identifier, optional(";")),
@@ -109,8 +110,7 @@ module.exports = grammar({
             $.binary_expression,
             $.unary_expression,
             $.function_call,
-            $.identifier,
-            $.member_access,
+            $.identifier_or_member_access,
             $.number,
             $.percentage,
             $.string,
@@ -119,32 +119,67 @@ module.exports = grammar({
 
         bracketed_expr: $ => seq("(", $._expression, ")"),
 
-        matrix_row: $ => seq(
+        matrix_row: $ => prec.left(seq(
             repeat1($._expression),
-            optional(";")
+            ";"
+        )),
+
+        matrix: $ => seq(
+            "[",
+            repeat1($.matrix_row),
+            optional(";"),
+            "]"
         ),
 
-        matrix: $ => repeat1(
-            seq(
-                "[",
-                repeat1($.matrix_row),
-                "]"
-            )
+        binary_expression: $ => choice(
+            $.binary_expression_left0,
+            $.binary_expression_left1,
+            $.binary_expression_left2,
+            $.binary_expression_right
         ),
 
-        binary_expression: $ => prec.left(1, seq(
+        binary_expression_right: $ => prec.right(Prec.BINARY_EXPR3, seq(
             $._expression,
-            $.binary_operator,
+            $.binary_operator_right,
             $._expression
         )),
 
-        binary_operator: $ => choice(
-            "^", "*", "/", "-", "+",
+        binary_expression_left0: $ => prec.left(Prec.BINARY_EXPR0, seq(
+            $._expression,
+            $.binary_operator_left0,
+            $._expression
+        )),
+
+        binary_expression_left1: $ => prec.left(Prec.BINARY_EXPR1, seq(
+            $._expression,
+            $.binary_operator_left1,
+            $._expression
+        )),
+
+        binary_expression_left2: $ => prec.left(Prec.BINARY_EXPR2, seq(
+            $._expression,
+            $.binary_operator_left2,
+            $._expression
+        )),
+
+        binary_operator_left0: $ => choice(
             "==", "!=", ">", "<", ">=", "<=",
-            ".*", "./", ".^", "@", "&", " mod "
         ),
 
-        unary_expression: $ => prec.left(3, seq(
+        binary_operator_left1: $ => choice(
+            "-", "+",
+        ),
+
+        binary_operator_left2: $ => choice(
+            "*", "/",
+            ".*", "./", " mod ", "@", "&"
+        ),
+
+        binary_operator_right: $ => choice(
+            "^", ".^"
+        ),
+
+        unary_expression: $ => prec.right(Prec.UNARY_EXPR, seq(
             choice("!", "+", "-"),
             $._expression
         )),
@@ -175,7 +210,7 @@ module.exports = grammar({
             $._expression,
             "\\}"
         ),
-        string_char: $ => token(prec(5, /[^"\\]+/)),
+        string_char: $ => token(prec(Prec.STRING_CHAR, /[^"\\]+/)),
         string: $ => seq(
             "\"",
             field("string_chars",

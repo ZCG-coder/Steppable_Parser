@@ -15,6 +15,6 @@ namespace steppable::parser
         STP_LocalValue assignmentVal(STP_TypeID_SYMBOL);
         assignmentVal.data = name;
         assignmentVal.typeName = STP_typeNames[STP_TypeID_SYMBOL];
-        state->addVariable(name, assignmentVal);
+        state->getCurrentScope()->addVariable(name, assignmentVal);
     }
 } // namespace steppable::parser

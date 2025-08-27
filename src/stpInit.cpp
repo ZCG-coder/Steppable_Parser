@@ -8,7 +8,7 @@
 
 namespace steppable::parser
 {
-    const auto _storage = std::make_shared<STP_InterpStoreLocal>(STP_InterpStoreLocal()); // NOLINT(*-err58-cpp)
+    const auto _storage = std::make_shared<STP_InterpStoreLocal>(); // NOLINT(*-err58-cpp)
 
     STP_InterpState STP_getState() { return _storage; }
 

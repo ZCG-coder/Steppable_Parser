@@ -11,11 +11,24 @@ using namespace std::literals;
 
 namespace steppable::parser
 {
-    void STP_processChunkChild(const TSNode& parent, const STP_InterpState& stpState)
+    void STP_processChunkChild(const TSNode& parent, const STP_InterpState& stpState, const bool createNewScope)
     {
+        std::shared_ptr<STP_Scope> newScope;
+        if (createNewScope)
+        {
+            newScope = std::make_shared<STP_Scope>(stpState->addChildScope());
+            stpState->setCurrentScope(newScope);
+        }
+
+        if (ts_node_is_null(parent))
+            return;
+
         const size_t childCount = ts_node_child_count(parent);
         for (uint32_t i = 0; i < childCount; ++i)
             STP_processChunk(ts_node_child(parent, i), stpState);
+
+        if (createNewScope)
+            stpState->setCurrentScope(newScope->parentScope);
     };
 
     void STP_processChunk(const TSNode& node, const STP_InterpState& state)
@@ -24,10 +37,6 @@ namespace steppable::parser
             STP_throwSyntaxError(node, state);
 
         const std::string type = ts_node_type(node);
-
-        // Ensure whole block is fully read
-        if (not state->isChunkFull(&node))
-            return;
 
         if (type == "\n" // Newline
             or type == "comment" // Comment

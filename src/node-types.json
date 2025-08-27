@@ -24,11 +24,11 @@
           "named": true
         },
         {
-          "type": "matrix",
+          "type": "identifier_or_member_access",
           "named": true
         },
         {
-          "type": "member_access",
+          "type": "matrix",
           "named": true
         },
         {
@@ -55,6 +55,33 @@
     "named": true,
     "fields": {},
     "children": {
+      "multiple": false,
+      "required": true,
+      "types": [
+        {
+          "type": "binary_expression_left0",
+          "named": true
+        },
+        {
+          "type": "binary_expression_left1",
+          "named": true
+        },
+        {
+          "type": "binary_expression_left2",
+          "named": true
+        },
+        {
+          "type": "binary_expression_right",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "binary_expression_left0",
+    "named": true,
+    "fields": {},
+    "children": {
       "multiple": true,
       "required": true,
       "types": [
@@ -63,7 +90,7 @@
           "named": true
         },
         {
-          "type": "binary_operator",
+          "type": "binary_operator_left0",
           "named": true
         },
         {
@@ -75,15 +102,11 @@
           "named": true
         },
         {
-          "type": "identifier",
+          "type": "identifier_or_member_access",
           "named": true
         },
         {
           "type": "matrix",
-          "named": true
-        },
-        {
-          "type": "member_access",
           "named": true
         },
         {
@@ -106,7 +129,175 @@
     }
   },
   {
-    "type": "binary_operator",
+    "type": "binary_expression_left1",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": true,
+      "types": [
+        {
+          "type": "binary_expression",
+          "named": true
+        },
+        {
+          "type": "binary_operator_left1",
+          "named": true
+        },
+        {
+          "type": "bracketed_expr",
+          "named": true
+        },
+        {
+          "type": "function_call",
+          "named": true
+        },
+        {
+          "type": "identifier_or_member_access",
+          "named": true
+        },
+        {
+          "type": "matrix",
+          "named": true
+        },
+        {
+          "type": "number",
+          "named": true
+        },
+        {
+          "type": "percentage",
+          "named": true
+        },
+        {
+          "type": "string",
+          "named": true
+        },
+        {
+          "type": "unary_expression",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "binary_expression_left2",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": true,
+      "types": [
+        {
+          "type": "binary_expression",
+          "named": true
+        },
+        {
+          "type": "binary_operator_left2",
+          "named": true
+        },
+        {
+          "type": "bracketed_expr",
+          "named": true
+        },
+        {
+          "type": "function_call",
+          "named": true
+        },
+        {
+          "type": "identifier_or_member_access",
+          "named": true
+        },
+        {
+          "type": "matrix",
+          "named": true
+        },
+        {
+          "type": "number",
+          "named": true
+        },
+        {
+          "type": "percentage",
+          "named": true
+        },
+        {
+          "type": "string",
+          "named": true
+        },
+        {
+          "type": "unary_expression",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "binary_expression_right",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": true,
+      "types": [
+        {
+          "type": "binary_expression",
+          "named": true
+        },
+        {
+          "type": "binary_operator_right",
+          "named": true
+        },
+        {
+          "type": "bracketed_expr",
+          "named": true
+        },
+        {
+          "type": "function_call",
+          "named": true
+        },
+        {
+          "type": "identifier_or_member_access",
+          "named": true
+        },
+        {
+          "type": "matrix",
+          "named": true
+        },
+        {
+          "type": "number",
+          "named": true
+        },
+        {
+          "type": "percentage",
+          "named": true
+        },
+        {
+          "type": "string",
+          "named": true
+        },
+        {
+          "type": "unary_expression",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "binary_operator_left0",
+    "named": true,
+    "fields": {}
+  },
+  {
+    "type": "binary_operator_left1",
+    "named": true,
+    "fields": {}
+  },
+  {
+    "type": "binary_operator_left2",
+    "named": true,
+    "fields": {}
+  },
+  {
+    "type": "binary_operator_right",
     "named": true,
     "fields": {}
   },
@@ -131,15 +322,11 @@
           "named": true
         },
         {
-          "type": "identifier",
+          "type": "identifier_or_member_access",
           "named": true
         },
         {
           "type": "matrix",
-          "named": true
-        },
-        {
-          "type": "member_access",
           "named": true
         },
         {
@@ -248,15 +435,11 @@
           "named": true
         },
         {
-          "type": "identifier",
+          "type": "identifier_or_member_access",
           "named": true
         },
         {
           "type": "matrix",
-          "named": true
-        },
-        {
-          "type": "member_access",
           "named": true
         },
         {
@@ -346,15 +529,11 @@
           "named": true
         },
         {
-          "type": "identifier",
+          "type": "identifier_or_member_access",
           "named": true
         },
         {
           "type": "matrix",
-          "named": true
-        },
-        {
-          "type": "member_access",
           "named": true
         },
         {
@@ -420,15 +599,11 @@
           "named": true
         },
         {
-          "type": "identifier",
+          "type": "identifier_or_member_access",
           "named": true
         },
         {
           "type": "matrix",
-          "named": true
-        },
-        {
-          "type": "member_access",
           "named": true
         },
         {
@@ -471,19 +646,11 @@
           "named": true
         },
         {
-          "type": "identifier",
-          "named": true
-        },
-        {
           "type": "identifier_or_member_access",
           "named": true
         },
         {
           "type": "matrix",
-          "named": true
-        },
-        {
-          "type": "member_access",
           "named": true
         },
         {
@@ -537,15 +704,11 @@
           "named": true
         },
         {
-          "type": "identifier",
+          "type": "identifier_or_member_access",
           "named": true
         },
         {
           "type": "matrix",
-          "named": true
-        },
-        {
-          "type": "member_access",
           "named": true
         },
         {
@@ -562,10 +725,6 @@
         },
         {
           "type": "string",
-          "named": true
-        },
-        {
-          "type": "type",
           "named": true
         },
         {
@@ -670,7 +829,7 @@
           "named": true
         },
         {
-          "type": "identifier",
+          "type": "identifier_or_member_access",
           "named": true
         },
         {
@@ -679,10 +838,6 @@
         },
         {
           "type": "matrix",
-          "named": true
-        },
-        {
-          "type": "member_access",
           "named": true
         },
         {
@@ -802,15 +957,11 @@
           "named": true
         },
         {
-          "type": "identifier",
+          "type": "identifier_or_member_access",
           "named": true
         },
         {
           "type": "matrix",
-          "named": true
-        },
-        {
-          "type": "member_access",
           "named": true
         },
         {
@@ -857,11 +1008,11 @@
           "named": true
         },
         {
-          "type": "matrix",
+          "type": "identifier_or_member_access",
           "named": true
         },
         {
-          "type": "member_access",
+          "type": "matrix",
           "named": true
         },
         {
@@ -893,10 +1044,6 @@
       "types": [
         {
           "type": "param_name",
-          "named": true
-        },
-        {
-          "type": "type",
           "named": true
         }
       ]
@@ -1034,15 +1181,11 @@
           "named": true
         },
         {
-          "type": "identifier",
+          "type": "identifier_or_member_access",
           "named": true
         },
         {
           "type": "matrix",
-          "named": true
-        },
-        {
-          "type": "member_access",
           "named": true
         },
         {
@@ -1100,7 +1243,7 @@
           "named": true
         },
         {
-          "type": "identifier",
+          "type": "identifier_or_member_access",
           "named": true
         },
         {
@@ -1109,10 +1252,6 @@
         },
         {
           "type": "matrix",
-          "named": true
-        },
-        {
-          "type": "member_access",
           "named": true
         },
         {
@@ -1133,10 +1272,6 @@
         }
       ]
     }
-  },
-  {
-    "type": "\n",
-    "named": false
   },
   {
     "type": " mod ",
@@ -1184,10 +1319,6 @@
   },
   {
     "type": "-",
-    "named": false
-  },
-  {
-    "type": "->",
     "named": false
   },
   {
@@ -1272,8 +1403,7 @@
   },
   {
     "type": "comment",
-    "named": true,
-    "extra": true
+    "named": true
   },
   {
     "type": "cont",
@@ -1290,6 +1420,10 @@
   {
     "type": "escape_sequence",
     "named": true
+  },
+  {
+    "type": "fn",
+    "named": false
   },
   {
     "type": "foreach",
@@ -1340,12 +1474,8 @@
     "named": true
   },
   {
-    "type": "sym ",
+    "type": "sym",
     "named": false
-  },
-  {
-    "type": "type",
-    "named": true
   },
   {
     "type": "while",

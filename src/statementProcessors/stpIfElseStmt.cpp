@@ -19,7 +19,7 @@ namespace steppable::parser
 
         if (res.asBool())
         {
-            STP_processChunkChild(ifClauseStmtNode, state);
+            STP_processChunkChild(ifClauseStmtNode, state, true);
             return;
         }
 
@@ -44,7 +44,7 @@ namespace steppable::parser
 
             if (res.asBool())
             {
-                STP_processChunkChild(elseifClauseStmtNode, state);
+                STP_processChunkChild(elseifClauseStmtNode, state, true);
                 return;
             }
         }
@@ -58,6 +58,6 @@ namespace steppable::parser
 
         TSNode elseClauseNode = ts_node_next_named_sibling(lastNode);
         TSNode elseClauseStmtNode = ts_node_named_child(elseClauseNode, 0);
-        STP_processChunkChild(elseClauseStmtNode, state);
+        STP_processChunkChild(elseClauseStmtNode, state, true);
     }
 } // namespace steppable::parser

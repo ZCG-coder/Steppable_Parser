@@ -67,7 +67,6 @@ int main(int argc, char** argv) // NOLINT(*-exception-escape)
         ts_tree_delete(tree);
     ts_parser_delete(parser);
 
-    state->dbgPrintVariables();
     STP_destroy();
 
     return 0;
