@@ -3,6 +3,8 @@
 #include "steppable/mat2d.hpp"
 #include "steppable/mat2dBase.hpp"
 #include "steppable/number.hpp"
+#include "stpInterp/stpBetterTS.hpp"
+#include "stpInterp/stpErrors.hpp"
 #include "stpInterp/stpInit.hpp"
 #include "stpInterp/stpStore.hpp"
 
@@ -19,13 +21,14 @@ extern "C" {
 
 using namespace std::literals;
 using namespace steppable::parser;
+using namespace steppable::__internals;
 
 constexpr long chunkSize = 1024L * 1024L; // 1MB
 constexpr long overlap = 4096L; // 4KB
 
 extern "C" TSLanguage* tree_sitter_stp();
 
-std::string readFileChunk(const std::string& path, long offset, long chunkSize, long overlap, bool& eof)
+std::string readFileChunk(const std::string& path, const long offset, bool& eof)
 {
     std::ifstream file(path, std::ios::in | std::ios::binary);
     if (not file)
@@ -48,28 +51,28 @@ std::string readFileChunk(const std::string& path, long offset, long chunkSize, 
     return chunk;
 }
 
-void handleMemberAccess(TSNode* maNode, STP_InterpState state) {}
+// void handleMemberAccess(TSNode* maNode, STP_InterpState state) {}
 
 bool STP_isPureType(const std::string_view& str)
 {
     return str == "matrix" or str == "number" or str == "string" or str == "identifier";
 }
 
-STP_LocalValue handleExpr(TSNode* exprNode, STP_InterpState state)
+STP_LocalValue handleExpr(TSNode* exprNode, const STP_InterpState& state, const bool printResult = false)
 {
     assert(exprNode != nullptr);
+    if (ts_node_type(*exprNode) == "ERROR"s or ts_node_is_missing(*exprNode))
+        STP_throwSyntaxError(*exprNode, state);
 
     std::string exprType = ts_node_type(*exprNode);
 
-    STP_TypeID typeID = STP_TypeID_NULL;
     STP_LocalValue retVal(STP_TypeID_NULL);
 
     if (exprType == "number")
     {
         // Number
         std::string data = state->getChunk(exprNode);
-        STP_LocalValue ret(STP_TypeID_NUMBER, steppable::Number(data));
-        return ret;
+        retVal = STP_LocalValue(STP_TypeID_NUMBER, steppable::Number(data));
     }
     if (exprType == "percentage")
     {
@@ -77,15 +80,13 @@ STP_LocalValue handleExpr(TSNode* exprNode, STP_InterpState state)
         TSNode numberNode = ts_node_child(*exprNode, 0);
         std::string number = state->getChunk(&numberNode);
         steppable::Number value(number);
-        value /= 100;
+        value /= 100; // NOLINT(*-avoid-magic-numbers)
 
-        STP_LocalValue ret(STP_TypeID_NUMBER, value);
-        return ret;
+        retVal = STP_LocalValue(STP_TypeID_NUMBER, value);
     }
     if (exprType == "matrix")
     {
         // Matrix
-        size_t rows = 0;
         std::unique_ptr<size_t> lastColLength;
         steppable::MatVec2D<steppable::Number> matVec;
         for (size_t j = 0; j < ts_node_child_count(*exprNode); j++)
@@ -105,20 +106,19 @@ STP_LocalValue handleExpr(TSNode* exprNode, STP_InterpState state)
                 if (val.typeID != STP_TypeID_NUMBER)
                 {
                     steppable::output::error("parser"s, "Matrix should contain numbers only."s);
-                    steppable::__internals::utils::programSafeExit(1);
+                    utils::programSafeExit(1);
                 }
                 auto value = std::any_cast<steppable::Number>(val.data);
                 currentMatRow.emplace_back(value);
                 currentCols++;
             }
 
-            rows++;
             if (lastColLength)
             {
                 if (currentCols != *lastColLength)
                 {
                     steppable::output::error("parser"s, "Inconsistent matrix dimensions."s);
-                    steppable::__internals::utils::programSafeExit(1);
+                    utils::programSafeExit(1);
                 }
             }
             matVec.emplace_back(currentMatRow);
@@ -126,23 +126,20 @@ STP_LocalValue handleExpr(TSNode* exprNode, STP_InterpState state)
         }
 
         steppable::Matrix data(matVec);
-        STP_LocalValue retVal(STP_TypeID_MATRIX_2D, data);
-        std::cout << data.present() << "\n";
-        return retVal;
+        retVal = STP_LocalValue(STP_TypeID_MATRIX_2D, data);
     }
-    else if (exprType == "string")
+    if (exprType == "string")
     {
         // String
-        typeID = STP_TypeID_STRING;
-        TSNode stringCharsNode = ts_node_child_by_field_name(*exprNode, "string_chars", 12);
+        TSNode stringCharsNode = ts_node_child_by_field_name(*exprNode, "string_chars"s);
         std::string data = state->getChunk(&stringCharsNode);
-        retVal.data = data;
+        retVal = STP_LocalValue(STP_TypeID_STRING, data);
     }
     else if (exprType == "identifier")
     {
         // Get the variable
         std::string nameNode = state->getChunk(exprNode);
-        return state->getVariable(nameNode);
+        retVal = state->getVariable(nameNode);
     }
     else if (exprType == "function_call")
     {
@@ -158,13 +155,11 @@ STP_LocalValue handleExpr(TSNode* exprNode, STP_InterpState state)
             TSNode rhsNode = ts_node_child(*exprNode, 2);
 
             std::string operandType = ts_node_type(operandNode);
-            std::string lhsType = ts_node_type(lhsNode);
-            std::string rhsType = ts_node_type(rhsNode);
 
             STP_LocalValue lhs = handleExpr(&lhsNode, state);
             STP_LocalValue rhs = handleExpr(&rhsNode, state);
 
-            return lhs.applyOperator(operandType, rhs);
+            retVal = lhs.applyOperator(operandType, rhs);
         }
         if (exprType == "unary_expression")
         {
@@ -172,109 +167,121 @@ STP_LocalValue handleExpr(TSNode* exprNode, STP_InterpState state)
         if (exprType == "bracketed_expr")
         {
             TSNode innerExpr = ts_node_child(*exprNode, 1);
-            return handleExpr(&innerExpr, state);
+            retVal = handleExpr(&innerExpr, state);
         }
     }
 
-    std::string typeName = STP_typeNames[typeID];
-    retVal.typeID = typeID;
-    retVal.typeName = typeName;
+    if (printResult)
+        std::cout << retVal.present() << '\n';
 
     return retVal;
 }
 
-void handleAssignment(TSNode* node, STP_InterpState state = nullptr)
+void handleAssignment(TSNode* node, const STP_InterpState& state = nullptr)
 {
     // assignment := nameNode "=" exprNode
-    TSNode nameNode = ts_node_child(*node, 0); // type is identifer or member access
+    TSNode nameNode = ts_node_child(*node, 0);
     TSNode exprNode = ts_node_child(*node, 2);
-    std::string nameNodeType = ts_node_type(nameNode);
 
-    if (nameNodeType == "identifier")
-    {
-        std::string name = state->getChunk(&nameNode);
-        std::cout << name << "\n";
+    std::string name = state->getChunk(&nameNode);
 
-        STP_LocalValue val = handleExpr(&exprNode, state);
-        // Write to scope / global variables
-        state->addVariable(name, val);
-    }
-    else if (nameNodeType == "member_access")
-    {
-    }
+    STP_LocalValue val = handleExpr(&exprNode, state);
+    // Write to scope / global variables
+    state->addVariable(name, val);
 }
 
-void processChunk(TSNode node, const std::string& chunk, int indent = 0, STP_InterpState state = nullptr)
+void processChunk(TSNode node, const std::string& chunk, int indent = 0, const STP_InterpState& state = nullptr)
 {
-    uint32_t child_count = 0;
+    if (ts_node_type(node) == "ERROR"s or ts_node_is_missing(node))
+        STP_throwSyntaxError(node, state);
+
+    size_t childCount = 0;
     std::string text;
     std::string type = ts_node_type(node);
 
     // Ensure whole block is fully read
-    if (state->isChunkFull(&node))
+    if (not state->isChunkFull(&node))
         return;
 
     text = state->getChunk(&node);
 
     if (type == "\n" // Newline
         or type == "comment" // Comment
-        or type == "(" or type == ")" // Parantheses
-        or type == "[" or type == "]" // Square brackets
-        or type == "{" or type == "}" // Braces
-        or type == "=" // Assignment
-        or type == "->" // Return type
-        or type == "," //
-        or type == "." // Member access
-        or type == ";" // Force statement break
-        or type == "\"" // String quotes
-        or type == "|" // Matrix sep
-        or type == "\\{" or type == "\\}" // String formatting
-        or type == "\\x" // String Unicode escape
-        or type == "^" // Binary operators
-        or type == "&" // Binary operators
-        or type == "*" // Binary operators
-        or type == "/" // Binary operators
-        or type == "-" // Binary operators / Unary operator
-        or type == "+" // Binary operators / Unary operator
-        or type == "==" // Binary operators
-        or type == "!=" // Binary operators
-        or type == ">" // Binary operators
-        or type == "<" // Binary operators
-        or type == ">=" // Binary operators
-        or type == "<=" // Binary operators
-        or type == ".*" // Binary operators
-        or type == "./" // Binary operators
-        or type == ".^" // Binary operators
-        or type == "%" // Percentages
-        or type == "!" // Unary not
     )
     {
         return;
     }
 
-    for (int i = 0; i < indent - 1; ++i)
-        std::cout << "    ";
-    std::cout << "'" << type << "' : \"" << text << "\"\n";
-
     // Handle scoped statements before assignment statements
     if (type == "function_definition")
     {
-        //
-        return;
-    }
-    if (type == "object_definition")
-    {
-        //
+        // std::string fnName = ;
         return;
     }
     if (type == "if_else_stmt")
     {
-        //
+        // if_else_stmt := 'if'      expr '{' if_clause_stmt '}'
+        //                 'else if' expr '{' statement '}'
+        //                 'else'         '{' else_clause_stmt '}'
+        TSNode exprNode = ts_node_named_child(node, 0);
+        STP_LocalValue res = handleExpr(&exprNode, state);
+        TSNode ifClauseStmtNode = ts_node_next_named_sibling(exprNode);
+        TSNode lastNode = ifClauseStmtNode;
+
+        if (res.asBool())
+        {
+            childCount = ts_node_child_count(ifClauseStmtNode);
+            for (uint32_t i = 0; i < childCount; ++i)
+                processChunk(ts_node_child(ifClauseStmtNode, i), chunk, indent + 1, state);
+            return;
+        }
+
+        if (ts_node_is_null(lastNode))
+        {
+            // Don't go further if there is no elseif and else statements
+            return;
+        }
+
+        while (true)
+        {
+            TSNode elseifClauseNode = ts_node_next_named_sibling(lastNode);
+            if (ts_node_is_null(elseifClauseNode))
+                break;
+            if (ts_node_type(elseifClauseNode) != "elseif_clause"s)
+                break;
+            lastNode = elseifClauseNode;
+
+            TSNode elseifExprNode = ts_node_named_child(elseifClauseNode, 0);
+            TSNode elseifClauseStmtNode = ts_node_named_child(elseifClauseNode, 1);
+            res = handleExpr(&elseifExprNode, state);
+
+            if (res.asBool())
+            {
+                childCount = ts_node_child_count(elseifClauseStmtNode);
+                for (uint32_t i = 0; i < childCount; ++i)
+                    processChunk(ts_node_child(elseifClauseStmtNode, i), chunk, indent + 1, state);
+                return;
+            }
+        }
+
+        // Handle else statement
+        if (ts_node_is_null(lastNode))
+        {
+            // If there is no else statement, skip it
+            return;
+        }
+
+        TSNode elseClauseNode = ts_node_next_named_sibling(lastNode);
+        TSNode elseClauseStmtNode = ts_node_named_child(elseClauseNode, 0);
+        childCount = ts_node_child_count(elseClauseStmtNode);
+        for (uint32_t i = 0; i < childCount; ++i)
+            processChunk(ts_node_child(elseClauseStmtNode, i), chunk, indent + 1, state);
         return;
     }
     if (type == "while_stmt")
     {
-        //
+        TSNode exprNode = ts_node_next_named_sibling(node);
+        std::cout << ts_node_type(exprNode) << "\n";
         return;
     }
     if (type == "foreach_in_stmt")
@@ -289,9 +296,8 @@ void processChunk(TSNode node, const std::string& chunk, int indent = 0, STP_Int
     }
     if (type == "expression_statement")
     {
-        //
         TSNode exprNode = ts_node_child(node, 0);
-        handleExpr(&exprNode, state);
+        handleExpr(&exprNode, state, true);
         return;
     }
     if (type == "import_statement")
@@ -301,7 +307,7 @@ void processChunk(TSNode node, const std::string& chunk, int indent = 0, STP_Int
     }
     if (type == "symbol_decl_statement")
     {
-        TSNode nameNode = ts_node_child_by_field_name(node, "sym_name", 8);
+        TSNode nameNode = ts_node_child_by_field_name(node, "sym_name"s);
         const std::string& name = state->getChunk(&nameNode);
 
         STP_LocalValue assignmentVal(STP_TypeID_SYMBOL);
@@ -311,12 +317,19 @@ void processChunk(TSNode node, const std::string& chunk, int indent = 0, STP_Int
         return;
     }
 
-    child_count = ts_node_child_count(node);
-    for (uint32_t i = 0; i < child_count; ++i)
+    if (type != "source_file")
+    {
+        for (int i = 0; i < indent - 1; ++i)
+            std::cout << "    ";
+        std::cout << "'" << type << "' : \"" << text << "\"\n";
+    }
+
+    childCount = ts_node_child_count(node);
+    for (uint32_t i = 0; i < childCount; ++i)
         processChunk(ts_node_child(node, i), chunk, indent + 1, state);
 }
 
-int main(int argc, char** argv)
+int main(int argc, char** argv) // NOLINT(*-exception-escape)
 {
     if (argc < 2)
     {
@@ -324,18 +337,19 @@ int main(int argc, char** argv)
         return 1;
     }
 
-    std::string path = argv[1];
+    const std::string path = argv[1];
     long offset = 0;
     bool eof = false;
     TSParser* parser = ts_parser_new();
     ts_parser_set_language(parser, tree_sitter_stp());
     TSTree* tree = nullptr;
 
-    STP_InterpState state = STP_getState();
+    const STP_InterpState state = STP_getState();
+    state->setFile(path);
 
     while (not eof)
     {
-        std::string chunk = readFileChunk(path, offset, chunkSize, overlap, eof);
+        std::string chunk = readFileChunk(path, offset, eof);
         if (chunk.empty())
             break;
 
@@ -347,7 +361,7 @@ int main(int argc, char** argv)
         size_t chunkStart = offset;
         size_t chunkEnd = offset + chunkSize;
 
-        TSNode rootNode = ts_tree_root_node(tree);
+        const TSNode rootNode = ts_tree_root_node(tree);
         state->setChunk(chunk, chunkStart, chunkEnd);
         processChunk(rootNode, chunk, 0, state);
 

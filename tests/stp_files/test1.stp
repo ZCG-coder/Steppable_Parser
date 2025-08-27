@@ -13,19 +13,20 @@ mat2 = [
 3 2 4 1 2 4 ;
 3 2 4 1 2 4 ;]
 
-obj1 {
-    mat = [ 1 2 3 4 5 ]
-}
-
 fn1 Mat m, Mat n -> Mat {
     m * (n + 3)
 }
 
 var1 = (5 mod (3+1) + 1)
-if type(var1) == "number" {
-    "Great! \{var1\} is a number. \r \n"
+if var1 == 1 {
+    "This should not be printed"
+} elseif 0 {
+    "This too should not get printed 1"
+} elseif 0 {
+    "This too should not get printed 2"
 } else {
-    "Totally wrong!"
+    "Totally wrong?"
+    "Totally correct!"
 }
 
 # obj.mat = mat1;
@@ -64,3 +65,5 @@ mat1 = mat1 + mat2
 # vals = solve(expr)
 
 "Unicode \xFE\xFF \033[1f;"
+
+if var1 == 1 {}

@@ -24,11 +24,13 @@ namespace steppable::parser
 
         std::any data;
 
-        explicit STP_LocalValue(const STP_TypeID& type, std::any  data = {});
+        explicit STP_LocalValue(const STP_TypeID& type, std::any data = {});
 
         [[nodiscard]] std::string present() const;
 
-        STP_LocalValue applyOperator(const std::string& operatorStr, const STP_LocalValue& rhs) const;
+        [[nodiscard]] STP_LocalValue applyOperator(const std::string& operatorStr, const STP_LocalValue& rhs) const;
+
+        [[nodiscard]] bool asBool() const;
     };
 
     struct STP_Function
@@ -58,27 +60,34 @@ namespace steppable::parser
         std::map<size_t, STP_Scope> scopes;
 
         std::string chunk;
-
-    public:
         size_t chunkStart = 0;
         size_t chunkEnd = 0;
 
+        std::string file = "/dev/null";
+
+    public:
         STP_InterpStoreLocal();
 
         void addVariable(const std::string& name, const STP_LocalValue& typeID);
 
         STP_LocalValue getVariable(const std::string& name);
 
-        void setScopeLevel(size_t newScope);
+        STP_Function getFunction(const std::string& name);
+
+        void setScopeLevel(const size_t& newScope, const size_t& oldScope = 0);
 
         [[nodiscard]] size_t getScopeLevel() const;
 
         auto getScopes() -> decltype(scopes) const;
 
-        void setChunk(const std::string& newChunk, size_t chunkStart, size_t chunkEnd);
+        void setChunk(const std::string& newChunk, const size_t& chunkStart, const size_t& chunkEnd);
         bool isChunkFull(const TSNode* node) const;
         std::string getChunk(const TSNode* node = nullptr);
 
         void dbgPrintVariables();
+
+        void setFile(const std::string& newFile);
+
+        [[nodiscard]] std::string getFile() const;
     };
 } // namespace steppable::parser

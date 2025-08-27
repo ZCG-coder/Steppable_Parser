@@ -8,6 +8,7 @@
 #include <any>
 #include <map>
 #include <memory>
+#include <ranges>
 #include <sstream>
 #include <stdexcept>
 #include <string>
@@ -27,8 +28,30 @@ namespace steppable::parser
     std::string STP_LocalValue::present() const
     {
         std::stringstream ret;
+        std::string presented;
+        std::string line;
 
         ret << "(" << typeName << ")";
+
+        switch (typeID)
+        {
+        case STP_TypeID_NUMBER:
+            presented = std::any_cast<Number>(data).present();
+            break;
+        case STP_TypeID_MATRIX_2D:
+            presented = std::any_cast<Matrix>(data).present();
+            break;
+        case STP_TypeID_STRING:
+            presented = "\"" + std::any_cast<std::string>(data) + "\"";
+            break;
+        default:
+            break;
+        }
+
+        std::istringstream iss(presented);
+        ret << "\n";
+        while (getline(iss, line))
+            ret << "    " << line << "\n";
 
         return ret.str();
     }
@@ -59,6 +82,45 @@ namespace steppable::parser
         returnVal.data = returnValueAny;
 
         return returnVal;
+    }
+
+    bool STP_LocalValue::asBool() const
+    {
+        switch (typeID)
+        {
+        case STP_TypeID_NULL:
+            return false;
+        case STP_TypeID_NUMBER:
+        {
+            const auto val = std::any_cast<Number>(data);
+            return val != 0;
+        }
+        case STP_TypeID_MATRIX_2D:
+        {
+            const auto val = std::any_cast<Matrix>(data);
+            return std::ranges::all_of(val.getData(), [](const std::vector<Number>& vec) {
+                return std::ranges::all_of(vec, [](const Number& n) { return n != 0; });
+            });
+        }
+        case STP_TypeID_STRING:
+        {
+            const auto val = std::any_cast<std::string>(data);
+            return not val.empty();
+        }
+        case STP_TypeID_FUNC:
+        {
+            output::error("parser"s, "Cannot convert Func to a logical type"s);
+            __internals::utils::programSafeExit(1);
+        }
+        case STP_TypeID_SYMBOL:
+        {
+            output::error("parser"s, "Cannot convert Symbol to a logical type"s);
+            __internals::utils::programSafeExit(1);
+        }
+        }
+
+        // Should not reach this
+        return false;
     }
 
     void STP_Scope::addVariable(const std::string& name, const STP_LocalValue& data)
@@ -105,12 +167,14 @@ namespace steppable::parser
         return scope.getVariable(name);
     }
 
-    void STP_InterpStoreLocal::setScopeLevel(size_t newScope)
+    void STP_InterpStoreLocal::setScopeLevel(const size_t& newScope, const size_t& oldScope)
     {
         if (not scopes.contains(newScope))
         {
             // Create the scope
-            scopes.emplace(newScope, STP_Scope());
+            STP_Scope scope;
+            scope.parentScope = std::make_shared<STP_Scope>(scopes[oldScope]);
+            scopes.emplace(newScope, scope);
         }
         currentScope = newScope;
     }
@@ -119,7 +183,7 @@ namespace steppable::parser
 
     auto STP_InterpStoreLocal::getScopes() -> decltype(scopes) const { return scopes; }
 
-    void STP_InterpStoreLocal::setChunk(const std::string& newChunk, size_t chunkStart, size_t chunkEnd)
+    void STP_InterpStoreLocal::setChunk(const std::string& newChunk, const size_t& chunkStart, const size_t& chunkEnd)
     {
         chunk = newChunk;
         this->chunkStart = chunkStart;
@@ -130,7 +194,7 @@ namespace steppable::parser
     {
         uint32_t start = ts_node_start_byte(*node);
         uint32_t end = ts_node_end_byte(*node);
-        return start < chunkStart or end > chunkEnd;
+        return start >= chunkStart and end <= chunkEnd;
     }
 
     std::string STP_InterpStoreLocal::getChunk(const TSNode* node)
@@ -151,28 +215,12 @@ namespace steppable::parser
         for (const auto& [scopeName, scope] : scopes)
         {
             std::cout << "In scope " << scopeName << "\n";
-            for (const auto& [varName, var] : scope.variables)
-            {
-                std::cout << "    " << varName << "(" << var.typeName << ")" << "\n";
-                std::string presented;
-
-                switch (var.typeID)
-                {
-                case STP_TypeID_NUMBER:
-                    presented = std::any_cast<Number>(var.data).present();
-                    break;
-                case STP_TypeID_MATRIX_2D:
-                    presented = std::any_cast<Matrix>(var.data).present();
-                    break;
-                default:
-                    break;
-                }
-
-                std::string line;
-                std::istringstream iss(presented);
-                while (getline(iss, line))
-                    std::cout << "        " << line << "\n";
-            }
+            for (const auto& var : scope.variables | std::views::values)
+                std::cout << var.present() << "\n";
         }
     }
+
+    void STP_InterpStoreLocal::setFile(const std::string& newFile) { file = newFile; }
+
+    std::string STP_InterpStoreLocal::getFile() const { return file; }
 } // namespace steppable::parser

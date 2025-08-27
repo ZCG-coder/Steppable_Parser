@@ -28,7 +28,6 @@ module.exports = grammar({
             $.if_else_stmt,
             $.while_stmt,
             $.foreach_in_stmt,
-            $.object_definition,
             $.function_definition,
             $.expression_statement,
             $.import_statement,
@@ -46,14 +45,25 @@ module.exports = grammar({
             "cont"
         ),
 
+        elseif_clause: $ => seq(
+            "elseif",
+            $._expression,
+            "{",
+            alias(repeat($._statement), $.elseif_clause_stmt),
+            "}"
+        ),
+
+        else_clause: $ => seq(
+            "else",
+            "{",
+            alias(repeat($._statement), $.else_clause_stmt),
+            "}"
+        ),
+
         if_else_stmt: $ => seq(
-            "if", $._expression, "{", repeat($._statement), "}",
-            optional(
-                repeat(seq("elseif", $._expression, "{", repeat($._statement), "}")),
-            ),
-            optional(
-                seq("else", "{", repeat($._statement), "}"),
-            )
+            "if", $._expression, "{", alias(repeat($._statement), $.if_clause_stmt), "}",
+            repeat($.elseif_clause),
+            optional($.else_clause)
         ),
 
         while_stmt: $ => seq(
@@ -67,12 +77,7 @@ module.exports = grammar({
         ),
 
         assignment: $ => seq(
-            choice($.identifier, $.member_access), "=", $._expression, optional(";")
-        ),
-
-        object_definition: $ => seq(
-            alias($.identifier, $.object_name),
-            "{", repeat($.assignment), "}"
+            $.identifier, "=", $._expression, optional(";")
         ),
 
         member_access: $ => seq(
