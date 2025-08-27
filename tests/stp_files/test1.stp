@@ -25,7 +25,6 @@ if var1 == 1 {
 } elseif 0 {
     "This too should not get printed 2"
 } else {
-    "Totally wrong?"
     "Totally correct!"
 }
 

@@ -3,7 +3,20 @@ SET(TREE_SITTER_LANG "${CMAKE_CURRENT_SOURCE_DIR}/src")
 
 SET(TREE_SITTER_SRC ${TREE_SITTER_RUNTIME}/src/lib.c ${TREE_SITTER_LANG}/parser.c)
 
-SET(PROJECT_SRC_COMMON src/stpInit.cpp src/stpStore.cpp src/stpParseUtils.cpp src/stpTypeNames.c src/stpApplyOperator.cpp src/stpErrors.cpp)
+SET(PROJECT_SRC_COMMON
+    src/stpInit.cpp
+    src/stpStore.cpp
+    src/stpParseUtils.cpp
+    src/stpTypeNames.c
+    src/stpApplyOperator.cpp
+    src/stpErrors.cpp
+    src/stpExprHandler.cpp
+    # Statement processors
+    src/statementProcessors/stpAssignment.cpp
+    src/statementProcessors/stpChunkProcessor.cpp
+    src/statementProcessors/stpIfElseStmt.cpp
+    src/statementProcessors/stpSymbolDecl.cpp
+)
 SET(PROJECT_SRC src/main.cpp ${PROJECT_SRC_COMMON})
 SET(PROJECT_SRC_DBG src/mainTest.cpp ${PROJECT_SRC_COMMON})
 
