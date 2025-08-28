@@ -14,11 +14,12 @@ SET(PROJECT_SRC_COMMON
     # Statement processors
     src/statementProcessors/stpAssignment.cpp
     src/statementProcessors/stpChunkProcessor.cpp
+    src/statementProcessors/stpFunctionDeclStmt.cpp
     src/statementProcessors/stpIfElseStmt.cpp
     src/statementProcessors/stpSymbolDecl.cpp
 )
 SET(PROJECT_SRC src/main.cpp ${PROJECT_SRC_COMMON})
-SET(PROJECT_SRC_DBG src/mainTest.cpp ${PROJECT_SRC_COMMON})
+SET(PROJECT_SRC_DBG src/mainTest.cpp)
 
 IF(NOT DEFINED STP_BASE_DIRECTORY)
     MESSAGE(FATAL_ERROR "This project is not supposed to be build standalone without Steppable.")

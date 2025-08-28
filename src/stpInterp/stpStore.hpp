@@ -28,23 +28,26 @@ namespace steppable::parser
 
         [[nodiscard]] std::string present(const std::string& name) const;
 
-        [[nodiscard]] STP_LocalValue applyBinaryOperator(const std::string& operatorStr, const STP_LocalValue& rhs) const;
+        [[nodiscard]] STP_LocalValue applyBinaryOperator(const std::string& operatorStr,
+                                                         const STP_LocalValue& rhs) const;
 
         [[nodiscard]] bool asBool() const;
     };
 
+    using STP_StringValMap = std::map<std::string, STP_LocalValue>;
+
     struct STP_Function
     {
-        std::map<std::string, STP_LocalValue> args;
+        std::vector<std::string> argNames;
 
-        std::shared_ptr<TSNode> node = nullptr;
+        std::function<void(STP_StringValMap)> fn;
 
-        STP_TypeID returnType;
+        void operator()(const STP_StringValMap& args) const { fn(args); }
     };
 
     struct STP_Scope
     {
-        std::map<std::string, STP_LocalValue> variables;
+        STP_StringValMap variables;
 
         std::map<std::string, STP_Function> functions;
 

@@ -61,7 +61,7 @@ int main(int argc, char** argv) // NOLINT(*-exception-escape)
     tree = ts_parser_parse_string(parser, nullptr, source.c_str(), source.size());
     TSNode rootNode = ts_tree_root_node(tree);
     state->setChunk(source, 0, static_cast<long>(source.size()));
-    STP_processChunk(rootNode, state);
+    STP_processChunkChild(rootNode, state);
 
     if (tree != nullptr)
         ts_tree_delete(tree);

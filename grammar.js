@@ -1,3 +1,4 @@
+const {identifier} = require("js-beautify/js/src/javascript/acorn");
 Prec = {
     BINARY_EXPR3: 8,
     BINARY_EXPR2: 7,
@@ -13,6 +14,8 @@ module.exports = grammar({
     conflicts: $ => [
         [$._expression, $.function_call],
     ],
+
+    extras: $ => [/\s/, $.comment],
 
     rules: {
         source_file: $ => repeat($._statement),
@@ -38,6 +41,11 @@ module.exports = grammar({
             $._statement,
             "break",
             "cont"
+        ),
+
+        return_stmt: $ => seq(
+            "ret",
+            field("ret_expr", $._expression)
         ),
 
         elseif_clause: $ => seq(
@@ -75,11 +83,11 @@ module.exports = grammar({
             $.identifier, "=", $._expression, optional(";")
         ),
 
-        member_access: $ => seq(
+        member_access: $ => prec.left(seq(
             $._expression,
             ".",
             $.identifier
-        ),
+        )),
 
         function_definition: $ => prec(Prec.FN_DEF, seq(
             "fn",
@@ -89,9 +97,20 @@ module.exports = grammar({
                 )
             ),
             "(",
-            $.parameter_list,
+            field(
+                "parameter_list",
+                $.parameter_list,
+            ),
             ")",
-            "{", $._expression, "}"
+            "{",
+            alias(field(
+                "fn_body",
+                repeat(choice(
+                    $._statement,
+                    $.return_stmt,
+                ))
+            ), $.fn_body),
+            "}"
         )),
 
         parameter_list: $ => seq(
@@ -124,10 +143,15 @@ module.exports = grammar({
             ";"
         )),
 
+        matrix_row_last: $ => prec.left(seq(
+            repeat1($._expression),
+            optional(";")
+        )),
+
         matrix: $ => seq(
             "[",
-            repeat1($.matrix_row),
-            optional(";"),
+            repeat($.matrix_row),
+            $.matrix_row_last,
             "]"
         ),
 
@@ -193,11 +217,11 @@ module.exports = grammar({
 
         percentage: $ => seq($.number, "%"),
 
-        comment: $ => token(seq("#", /.*/)),
+        comment: _ => token(seq("#", /.*/)),
 
-        identifier: $ => /[a-zA-Z_][a-zA-Z0-9_]*/,
+        identifier: _ => token(/[a-zA-Z_][a-zA-Z0-9_]*/),
         identifier_or_member_access: $ => choice($.identifier, $.member_access),
-        number: $ => /\d+(\.\d+)?/,
+        number: $ => token(/\d+(\.\d+)?/),
 
         escape_sequence: $ => /\\[rntbf"\\]/,
         unicode_escape: $ => seq(

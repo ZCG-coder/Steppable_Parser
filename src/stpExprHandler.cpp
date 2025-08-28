@@ -46,7 +46,8 @@ namespace steppable::parser
             for (size_t j = 0; j < ts_node_child_count(*exprNode); j++)
             {
                 TSNode node = ts_node_child(*exprNode, j);
-                if (ts_node_type(node) != "matrix_row"s)
+                if (const std::string& nodeType = ts_node_type(node);
+                    nodeType != "matrix_row" and nodeType != "matrix_row_last")
                     continue;
 
                 size_t currentCols = 0;
@@ -103,6 +104,7 @@ namespace steppable::parser
         }
         else if (exprType == "function_call")
         {
+
         }
         else
         {
