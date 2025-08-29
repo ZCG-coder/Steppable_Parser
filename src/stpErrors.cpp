@@ -24,8 +24,8 @@ namespace steppable::parser
         std::string errorChunk = state->getChunk(&node);
         auto lines = stringUtils::split(errorChunk, '\n');
 
-        const auto& endLineLen = static_cast<size_t>(log10l(endRow + 1) + 1);
-        const auto& startLineLen = static_cast<size_t>(log10l(startRow + 1) + 1);
+        const auto& endLineLen = static_cast<size_t>(log10(endRow + 1) + 1);
+        const auto& startLineLen = static_cast<size_t>(log10(startRow + 1) + 1);
         const size_t& padding = std::max(startLineLen, endLineLen);
 
         for (size_t i = 0; i < lines.size(); i++)
