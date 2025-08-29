@@ -34,22 +34,22 @@ namespace steppable::parser
         [[nodiscard]] bool asBool() const;
     };
 
-    using STP_StringValMap = std::map<std::string, STP_LocalValue>;
+    using STP_StringValMap = std::unordered_map<std::string, STP_LocalValue>;
 
-    struct STP_Function
+    struct STP_FunctionDefinition
     {
         std::vector<std::string> argNames;
 
-        std::function<void(STP_StringValMap)> fn;
+        std::function<void(STP_StringValMap)> interpFn;
 
-        void operator()(const STP_StringValMap& args) const { fn(args); }
+        void operator()(const STP_StringValMap& args) const { interpFn(args); }
     };
 
     struct STP_Scope
     {
         STP_StringValMap variables;
 
-        std::map<std::string, STP_Function> functions;
+        std::map<std::string, STP_FunctionDefinition> functions;
 
         std::shared_ptr<STP_Scope> parentScope = nullptr;
 
@@ -79,6 +79,8 @@ namespace steppable::parser
         void setCurrentScope(std::shared_ptr<STP_Scope> newScope);
 
         auto getCurrentScope() { return currentScope; }
+
+        auto getGlobalScope() { return std::make_shared<STP_Scope>(globalScope); };
 
         void setFile(const std::string& newFile);
 

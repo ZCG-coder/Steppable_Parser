@@ -57,8 +57,8 @@ namespace steppable::parser
 
             TSNode bodyNode = ts_node_child_by_field_name(node, "fn_body"s);
 
-            STP_Function fn;
-            fn.fn = [&](const STP_StringValMap& map) {
+            STP_FunctionDefinition fn;
+            fn.interpFn = [&](const STP_StringValMap& map) {
                 STP_Scope scope = state->addChildScope();
                 scope.variables = map;
                 state->setCurrentScope(std::make_shared<STP_Scope>(scope));
