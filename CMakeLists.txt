@@ -18,20 +18,11 @@ ENDIF()
 
 INCLUDE(GNUInstallDirs)
 
-FIND_PROGRAM(TREE_SITTER_CLI ${CMAKE_CURRENT_SOURCE_DIR}/node_modules/.bin/tree-sitter DOC "Tree-sitter CLI")
-
-ADD_CUSTOM_COMMAND(
-    OUTPUT "${CMAKE_CURRENT_SOURCE_DIR}/src/parser.c"
-    DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/src/grammar.json"
-    COMMAND "${TREE_SITTER_CLI}" generate src/grammar.json --abi=${TREE_SITTER_ABI_VERSION}
-    WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
-    COMMENT "Generating parser.c"
-)
-
 ADD_LIBRARY(tree-sitter-stp src/parser.c)
 IF(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/src/scanner.c)
     TARGET_SOURCES(tree-sitter-stp PRIVATE src/scanner.c)
 ENDIF()
+
 TARGET_INCLUDE_DIRECTORIES(
     tree-sitter-stp
     PRIVATE src
@@ -65,13 +56,6 @@ INSTALL(TARGETS tree-sitter-stp LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}")
 
 FILE(GLOB QUERIES queries/*.scm)
 INSTALL(FILES ${QUERIES} DESTINATION "${CMAKE_INSTALL_DATADIR}/tree-sitter/queries/stp")
-
-ADD_CUSTOM_TARGET(
-    ts-test
-    "${TREE_SITTER_CLI}" test
-    WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
-    COMMENT "tree-sitter test"
-)
 
 INCLUDE(buildMain.cmake)
 
