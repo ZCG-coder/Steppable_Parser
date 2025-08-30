@@ -4,6 +4,8 @@
 #include "stpInterp/stpInit.hpp"
 #include "util.hpp"
 
+#include <cmath>
+
 namespace steppable::parser
 {
     using namespace steppable::__internals;
@@ -15,12 +17,12 @@ namespace steppable::parser
         auto [endRow, endCol] = ts_node_end_point(node);
 
         output::error("parser"s,
-                                 "At {0} : Ln {1}, Col {2}"s,
-                                 {
-                                     state->getFile(),
-                                     std::to_string(startRow + 1),
-                                     std::to_string(startCol),
-                                 });
+                      "At {0} : Ln {1}, Col {2}"s,
+                      {
+                          state->getFile(),
+                          std::to_string(startRow + 1),
+                          std::to_string(startCol),
+                      });
         std::string errorChunk = state->getChunk(&node);
         auto lines = stringUtils::split(errorChunk, '\n');
 
