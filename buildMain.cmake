@@ -29,12 +29,3 @@ LINK_LIBRARIES(steppable)
 
 ADD_EXECUTABLE(stp_parse ${PROJECT_SRC} ${TREE_SITTER_SRC})
 ADD_EXECUTABLE(stp_parse_d ${PROJECT_SRC_DBG} ${TREE_SITTER_SRC})
-
-# If using MSVC, set compiler flags for warnings
-IF(MSVC)
-    TARGET_COMPILE_OPTIONS(stp_parse PRIVATE /W4 /WX)
-    TARGET_COMPILE_OPTIONS(stp_parse_d PRIVATE /W4 /WX)
-ELSE()
-    TARGET_COMPILE_OPTIONS(stp_parse PRIVATE -Wall -Wextra -pedantic)
-    TARGET_COMPILE_OPTIONS(stp_parse_d PRIVATE -Wall -Wextra -pedantic)
-ENDIF()
