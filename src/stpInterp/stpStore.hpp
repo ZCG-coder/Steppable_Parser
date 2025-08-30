@@ -1,5 +1,5 @@
 #pragma once
-#include "stpTypeName.h"
+#include "stpTypeName.hpp"
 
 extern "C" {
 #include <tree_sitter/api.h>

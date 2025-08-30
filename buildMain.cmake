@@ -7,7 +7,6 @@ SET(PROJECT_SRC_COMMON
     src/stpInit.cpp
     src/stpStore.cpp
     src/stpParseUtils.cpp
-    src/stpTypeNames.c
     src/stpApplyOperator.cpp
     src/stpErrors.cpp
     src/stpExprHandler.cpp

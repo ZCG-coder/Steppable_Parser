@@ -21,7 +21,7 @@
 namespace steppable::parser
 {
     STP_LocalValue::STP_LocalValue(const STP_TypeID& type, std::any data) :
-        typeName(STP_typeNames[type]), typeID(type), data(std::move(data))
+        typeName(STP_typeNames.at(type)), typeID(type), data(std::move(data))
     {
     }
 
@@ -70,7 +70,7 @@ namespace steppable::parser
 
         STP_LocalValue returnVal(STP_TypeID_NULL);
         returnVal.typeID = retType;
-        returnVal.typeName = STP_typeNames[retType];
+        returnVal.typeName = STP_typeNames.at(retType);
 
         std::any returnValueAny = performOperation(lhsType, value, operatorStr, rhsType, rhsValue);
 

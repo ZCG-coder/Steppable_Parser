@@ -1,7 +1,7 @@
 #include "stpInterp/stpBetterTS.hpp"
 #include "stpInterp/stpInit.hpp"
 #include "stpInterp/stpStore.hpp"
-#include "stpInterp/stpTypeName.h"
+#include "stpInterp/stpTypeName.hpp"
 
 using namespace std::literals;
 
@@ -14,7 +14,7 @@ namespace steppable::parser
 
         STP_LocalValue assignmentVal(STP_TypeID_SYMBOL);
         assignmentVal.data = name;
-        assignmentVal.typeName = STP_typeNames[STP_TypeID_SYMBOL];
+        assignmentVal.typeName = STP_typeNames.at(STP_TypeID_SYMBOL);
         state->getCurrentScope()->addVariable(name, assignmentVal);
     }
 } // namespace steppable::parser

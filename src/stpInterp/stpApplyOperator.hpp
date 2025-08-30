@@ -1,7 +1,7 @@
 #pragma once
 
 #include "steppable/number.hpp"
-#include "stpTypeName.h"
+#include "stpTypeName.hpp"
 
 #include <any>
 

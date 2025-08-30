@@ -137,7 +137,7 @@ namespace steppable::parser
         {
             output::error("parser"s,
                           "Operation ({0}) {1} ({2}) cannot be performed."s,
-                          { STP_typeNames[lhsType], operatorStr, STP_typeNames[rhsType] });
+                          { STP_typeNames.at(lhsType), operatorStr, STP_typeNames.at(rhsType) });
             __internals::utils::programSafeExit(1);
         }
 
