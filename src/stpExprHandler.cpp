@@ -86,8 +86,40 @@ namespace steppable::parser
         if (exprType == "string")
         {
             // String
-            TSNode stringCharsNode = ts_node_child_by_field_name(*exprNode, "string_chars"s);
-            std::string data = state->getChunk(&stringCharsNode);
+            std::string data;
+            for (size_t i = 0; i < ts_node_child_count(*exprNode); i++)
+            {
+                auto childNode = ts_node_child(*exprNode, i);
+                const std::string childNodeType = ts_node_type(childNode);
+
+                if (childNodeType == "string_char")
+                    data += state->getChunk(&childNode);
+                else if (childNodeType == "unicode_escape")
+                {
+                    auto hexDigitsNode = ts_node_named_child(childNode, 0);
+                    const std::string hexCode = state->getChunk(&hexDigitsNode);
+
+                    int codePoint = std::stoul(hexCode, nullptr, 16);
+                    std::string text = __internals::stringUtils::unicodeToUtf8(codePoint);
+                    data += text;
+                }
+                else if (childNodeType == "octal_escape")
+                {
+                    std::string octDigits = state->getChunk(&childNode);
+                    octDigits.erase(octDigits.begin()); // Erase leading '\' character
+
+                    int codePoint = std::stoul(octDigits, nullptr, 8);
+                    std::string text = __internals::stringUtils::unicodeToUtf8(codePoint);
+                    data += text;
+                }
+                else if (childNodeType == "formatting_snippet")
+                {
+                    auto formatExprNode = ts_node_child_by_field_name(childNode, "formatting_expr"s);
+                    STP_LocalValue value = handleExpr(&formatExprNode, state, printResult, exprName);
+
+                    data += value.present("", false);
+                }
+            }
             retVal = STP_LocalValue(STP_TypeID_STRING, data);
         }
         else if (exprType == "identifier_or_member_access")
@@ -104,7 +136,6 @@ namespace steppable::parser
         }
         else if (exprType == "function_call")
         {
-
         }
         else
         {

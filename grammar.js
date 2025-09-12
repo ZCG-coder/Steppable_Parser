@@ -226,12 +226,12 @@ module.exports = grammar({
         escape_sequence: $ => /\\[rntbf"\\]/,
         unicode_escape: $ => seq(
             "\\x",
-            alias(token.immediate(/[0-9A-Fa-f]{2}/), $.hex_digits)
+            alias(token.immediate(/[0-9A-Fa-f]{2}|[0-9A-Fa-f]{4}|[0-9A-Fa-f]{8}/), $.hex_digits)
         ),
         octal_escape: $ => /\\[0-7]{3}/,
         formatting_snippet: $ => seq(
             "\\{",
-            $._expression,
+            field("formatting_expr", $._expression),
             "\\}"
         ),
         string_char: $ => token(prec(Prec.STRING_CHAR, /[^"\\]+/)),

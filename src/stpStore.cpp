@@ -25,13 +25,17 @@ namespace steppable::parser
     {
     }
 
-    std::string STP_LocalValue::present(const std::string& name) const
+    std::string STP_LocalValue::present(const std::string& name, const bool longFormat) const
     {
         std::stringstream ret;
         std::string presented;
         std::string line;
 
-        ret << name << "(" << typeName << ")";
+        if (longFormat)
+        {
+            ret << name << "(" << typeName << ")";
+            ret << "\n";
+        }
 
         switch (typeID)
         {
@@ -48,10 +52,14 @@ namespace steppable::parser
             break;
         }
 
-        std::istringstream iss(presented);
-        ret << "\n";
-        while (getline(iss, line))
-            ret << "    " << line << "\n";
+        if (longFormat)
+        {
+            std::istringstream iss(presented);
+            while (getline(iss, line))
+                ret << "    " << line << "\n";
+        }
+        else
+            ret << presented;
 
         return ret.str();
     }

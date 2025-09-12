@@ -28,7 +28,7 @@ namespace steppable::parser
 
         explicit STP_LocalValue(const STP_TypeID& type, std::any data = {});
 
-        [[nodiscard]] std::string present(const std::string& name) const;
+        [[nodiscard]] std::string present(const std::string& name, bool longFormat = true) const;
 
         [[nodiscard]] STP_LocalValue applyBinaryOperator(const std::string& operatorStr,
                                                          const STP_LocalValue& rhs) const;
