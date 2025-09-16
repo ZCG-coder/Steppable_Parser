@@ -33,6 +33,8 @@ namespace steppable::parser
         [[nodiscard]] STP_LocalValue applyBinaryOperator(const std::string& operatorStr,
                                                          const STP_LocalValue& rhs) const;
 
+        [[nodiscard]] STP_LocalValue applyUnaryOperator(const std::string& operatorStr) const;
+
         [[nodiscard]] bool asBool() const;
     };
 

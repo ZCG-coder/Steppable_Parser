@@ -60,7 +60,7 @@ mat1.sum()
 
 "string string string"
 
-12% + 11% * (1+2)
+(-12%) + 11% * (1+2)
 
 # sym x
 # expr = x^2 == 4

@@ -71,7 +71,7 @@ namespace steppable::parser
 
         STP_TypeID lhsType = this->typeID;
         STP_TypeID rhsType = rhs.typeID;
-        STP_TypeID retType = *determineOperationFeasibility(lhsType, operatorStr, rhsType);
+        STP_TypeID retType = *determineBinaryOperationFeasibility(lhsType, operatorStr, rhsType);
 
         std::any value = this->data;
         std::any rhsValue = rhs.data;
@@ -80,7 +80,7 @@ namespace steppable::parser
         returnVal.typeID = retType;
         returnVal.typeName = STP_typeNames.at(retType);
 
-        std::any returnValueAny = performOperation(lhsType, value, operatorStr, rhsType, rhsValue);
+        std::any returnValueAny = performBinaryOperation(lhsType, value, operatorStr, rhsType, rhsValue);
 
         if (not returnValueAny.has_value())
         {
@@ -90,6 +90,17 @@ namespace steppable::parser
         returnVal.data = returnValueAny;
 
         return returnVal;
+    }
+
+    STP_LocalValue STP_LocalValue::applyUnaryOperator(const std::string& _operatorStr) const
+    {
+        std::string operatorStr = _operatorStr;
+        operatorStr = __internals::stringUtils::bothEndsReplace(operatorStr, ' ');
+
+        std::any returnValAny = performUnaryOperation(typeID, operatorStr, data);
+
+        STP_LocalValue returnValue(typeID, returnValAny);
+        return returnValue;
     }
 
     bool STP_LocalValue::asBool() const

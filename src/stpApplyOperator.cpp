@@ -4,9 +4,9 @@
 
 namespace steppable::parser
 {
-    std::unique_ptr<STP_TypeID> determineOperationFeasibility(const STP_TypeID lhsType,
-                                                              const std::string& operatorStr,
-                                                              const STP_TypeID rhsType)
+    std::unique_ptr<STP_TypeID> determineBinaryOperationFeasibility(const STP_TypeID lhsType,
+                                                                    const std::string& operatorStr,
+                                                                    const STP_TypeID rhsType)
     {
         // Make sure the operation can be performed
         //
@@ -144,11 +144,26 @@ namespace steppable::parser
         return std::make_unique<STP_TypeID>(retType);
     }
 
-    std::any performOperation(STP_TypeID lhsType,
-                              std::any value,
-                              std::string operatorStr,
-                              STP_TypeID rhsType,
-                              std::any rhsValue)
+    std::unique_ptr<STP_TypeID> determineUnaryOperationFeasibility(const std::string& operatorString,
+                                                                   const STP_TypeID type)
+    {
+        bool operationPerformable = type == STP_TypeID_NUMBER or type == STP_TypeID_MATRIX_2D;
+        STP_TypeID retType = type;
+
+        if (operationPerformable)
+            return std::make_unique<STP_TypeID>(retType);
+
+        output::error(
+            "parser"s, "Operation {0}({1}) cannot be performed."s, { operatorString, STP_typeNames.at(type) });
+        __internals::utils::programSafeExit(1);
+        return nullptr; // not reachable
+    }
+
+    std::any performBinaryOperation(STP_TypeID lhsType,
+                                    std::any value,
+                                    std::string operatorStr,
+                                    STP_TypeID rhsType,
+                                    std::any rhsValue)
     {
         std::any returnValueAny;
         if (operatorStr == "+")
@@ -242,7 +257,8 @@ namespace steppable::parser
             else if (lhsType == STP_TypeID_STRING and rhsType == STP_TypeID_STRING)
                 returnValueAny = Number(std::any_cast<std::string>(value) == std::any_cast<std::string>(rhsValue));
             else if (lhsType == STP_TypeID_MATRIX_2D and rhsType == STP_TypeID_MATRIX_2D)
-                returnValueAny = Number(std::any_cast<Matrix>(value) == std::any_cast<Matrix>(rhsValue));
+                returnValueAny =
+                    Number(static_cast<bool>(std::any_cast<Matrix>(value) == std::any_cast<Matrix>(rhsValue)));
             // else if (lhsType == STP_TypeID_MATRIX_2D and rhsType == STP_TypeID_NUMBER)
             //     returnValueAny = Number(std::any_cast<Matrix>(value) == std::any_cast<Number>(rhsValue));
         }
@@ -253,7 +269,8 @@ namespace steppable::parser
             else if (lhsType == STP_TypeID_STRING and rhsType == STP_TypeID_STRING)
                 returnValueAny = Number(std::any_cast<std::string>(value) != std::any_cast<std::string>(rhsValue));
             else if (lhsType == STP_TypeID_MATRIX_2D and rhsType == STP_TypeID_MATRIX_2D)
-                returnValueAny = Number(std::any_cast<Matrix>(value) != std::any_cast<Matrix>(rhsValue));
+                returnValueAny =
+                    Number(static_cast<bool>(std::any_cast<Matrix>(value) != std::any_cast<Matrix>(rhsValue)));
             // else if (lhsType == STP_TypeID_MATRIX_2D and rhsType == STP_TypeID_NUMBER)
             //     returnValueAny = Number(std::any_cast<Matrix>(value) != std::any_cast<Number>(rhsValue));
         }
@@ -315,5 +332,57 @@ namespace steppable::parser
         }
 
         return returnValueAny;
+    }
+
+    std::any performUnaryOperation(STP_TypeID type, const std::string& operatorString, const std::any& value)
+    {
+        determineUnaryOperationFeasibility(operatorString, type);
+
+        if (operatorString == "!")
+        {
+            if (type == STP_TypeID_MATRIX_2D)
+            {
+                const auto result = std::any_cast<Matrix>(value);
+                return not result;
+            }
+            if (type == STP_TypeID_NUMBER)
+            {
+                const auto result = std::any_cast<Number>(value);
+                return not result;
+            }
+            if (type == STP_TypeID_STRING)
+            {
+                const auto result = std::any_cast<std::string>(value);
+                return not result.empty();
+            }
+        }
+        else if (operatorString == "+")
+        {
+            if (type == STP_TypeID_MATRIX_2D)
+            {
+                const auto result = std::any_cast<Matrix>(value);
+                return +result;
+            }
+            if (type == STP_TypeID_NUMBER)
+            {
+                const auto result = std::any_cast<Number>(value);
+                return +result;
+            }
+        }
+        else if (operatorString == "-")
+        {
+            if (type == STP_TypeID_MATRIX_2D)
+            {
+                const auto result = std::any_cast<Matrix>(value);
+                return -result;
+            }
+            if (type == STP_TypeID_NUMBER)
+            {
+                const auto result = std::any_cast<Number>(value);
+                return -result;
+            }
+        }
+
+        return std::make_any<nullptr_t>(nullptr);
     }
 } // namespace steppable::parser

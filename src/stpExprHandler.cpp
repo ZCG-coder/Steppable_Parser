@@ -157,6 +157,12 @@ namespace steppable::parser
             }
             if (exprType == "unary_expression")
             {
+                TSNode operandNode = ts_node_child(*exprNode, 0);
+                TSNode child = ts_node_child(*exprNode, 1);
+                std::string operandType = ts_node_type(operandNode);
+
+                STP_LocalValue childVal = handleExpr(&child, state);
+                retVal = childVal.applyUnaryOperator(operandType);
             }
             if (exprType == "bracketed_expr")
             {
