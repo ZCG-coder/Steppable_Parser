@@ -34,7 +34,7 @@ if var1 == 1 {
 
 # obj.mat = mat1;
 
-# a = sin(15)
+sin(15)
 
 # foreach x in mat1 {
 #     x = x ^ 2
@@ -50,7 +50,7 @@ mat1 .* mat2
 
 mat1 = mat1 + mat2
 
-mat1.sum()
+# mat1.sum()
 # import module
 # stat = module.learn()
 

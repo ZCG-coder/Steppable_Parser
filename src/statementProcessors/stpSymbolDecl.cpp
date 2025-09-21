@@ -1,7 +1,7 @@
 #include "stpInterp/stpBetterTS.hpp"
 #include "stpInterp/stpInit.hpp"
 #include "stpInterp/stpStore.hpp"
-#include "stpInterp/stpTypeName.hpp"
+#include "steppable/stpTypeName.hpp"
 
 using namespace std::literals;
 

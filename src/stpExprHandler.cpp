@@ -1,5 +1,6 @@
 #include "steppable/mat2d.hpp"
 #include "steppable/number.hpp"
+#include "steppable/stpArgSpace.hpp"
 #include "stpInterp/stpBetterTS.hpp"
 #include "stpInterp/stpErrors.hpp"
 #include "stpInterp/stpInit.hpp"
@@ -136,6 +137,30 @@ namespace steppable::parser
         }
         else if (exprType == "function_call")
         {
+            TSNode nameNode = ts_node_child(ts_node_child(*exprNode, 0), 0);
+            std::string nameNodeType = ts_node_type(nameNode);
+
+            if (nameNodeType == "identifier")
+            {
+                std::string funcName = state->getChunk(&nameNode);
+                funcName = "STP_" + funcName;
+
+                auto stpLib = state->getLoadedLib(0);
+                auto funcPtr = stpLib->getSymbol(funcName);
+
+                if (funcPtr == nullptr)
+                {
+                    output::error("runtime"s, "Function {0} is not defined."s, { funcName });
+                    programSafeExit(1);
+                }
+
+                auto args = STP_ArgContainer(
+                    {
+                        STP_Argument("", Number("10"), STP_TypeID_NUMBER)
+                    }, {}
+                );
+                funcPtr(&args);
+            }
         }
         else
         {

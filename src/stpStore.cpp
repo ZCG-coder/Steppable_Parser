@@ -13,6 +13,11 @@
 #include <stdexcept>
 #include <string>
 #include <utility>
+#if defined(_WIN32)
+    #include <windows.h>
+#else
+    #include <dlfcn.h>
+#endif
 
 /**
  * @namespace steppable::parser
@@ -20,6 +25,53 @@
  */
 namespace steppable::parser
 {
+    STP_DynamicLibrary::STP_DynamicLibrary(const std::string& _path) : handle(nullptr)
+    {
+        std::string path = _path;
+#if defined(WINDOWS)
+        path += ".dll";
+        handle = (void*)LoadLibraryA(path.c_str());
+#elif defined(MACOSX)
+        path = "lib" + path + ".dylib";
+        handle = dlopen(path.c_str(), RTLD_LAZY);
+#else
+        path = "lib" + path + ".so";
+        handle = dlopen(path.c_str(), RTLD_LAZY);
+#endif
+    }
+
+    STP_DynamicLibrary::~STP_DynamicLibrary()
+    {
+#if defined(_WIN32)
+        if (handle)
+            FreeLibrary((HMODULE)handle);
+#else
+        if (handle)
+            dlclose(handle);
+#endif
+    }
+
+    STP_ExportFuncT STP_DynamicLibrary::getSymbol(const std::string& name)
+    {
+#if defined(_WIN32)
+        if (handle)
+        {
+            auto* ptr = reinterpret_cast<void (*)(void*)>(GetProcAddress((HMODULE)handle, name.c_str()));
+            return ptr;
+        }
+        return nullptr;
+#else
+        if (handle)
+        {
+            auto* ptr = reinterpret_cast<void (*)(void*)>(dlsym(handle, name.c_str()));
+            return ptr;
+        }
+        return nullptr;
+#endif
+    }
+
+    bool STP_DynamicLibrary::isLoaded() const { return handle != nullptr; }
+
     STP_LocalValue::STP_LocalValue(const STP_TypeID& type, std::any data) :
         typeName(STP_typeNames.at(type)), typeID(type), data(std::move(data))
     {
@@ -159,6 +211,12 @@ namespace steppable::parser
             return parentScope->getVariable(name);
         }
         return variables.at(name);
+    }
+
+    STP_InterpStoreLocal::STP_InterpStoreLocal()
+    {
+        STP_DynamicLibrary stpFnLib("steppable");
+        loadedLibraries.push_back(stpFnLib);
     }
 
     void STP_InterpStoreLocal::setChunk(const std::string& newChunk, const size_t& chunkStart, const size_t& chunkEnd)

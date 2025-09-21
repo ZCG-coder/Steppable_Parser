@@ -1,5 +1,6 @@
 #pragma once
-#include "stpTypeName.hpp"
+#include "../../../include/steppable/stpTypeName.hpp"
+#include "fn/calc.hpp"
 
 extern "C" {
 #include <tree_sitter/api.h>
@@ -19,6 +20,20 @@ extern "C" {
  */
 namespace steppable::parser
 {
+    class STP_DynamicLibrary
+    {
+    public:
+        explicit STP_DynamicLibrary(const std::string& path);
+        ~STP_DynamicLibrary();
+
+        STP_ExportFuncT getSymbol(const std::string& name);
+
+        bool isLoaded() const;
+
+    private:
+        void* handle;
+    };
+
     struct STP_LocalValue
     {
         std::string typeName;
@@ -74,7 +89,11 @@ namespace steppable::parser
 
         std::string file = "/dev/null";
 
+        std::vector<STP_DynamicLibrary> loadedLibraries;
+
     public:
+        STP_InterpStoreLocal();
+
         void setChunk(const std::string& newChunk, const size_t& chunkStart, const size_t& chunkEnd);
         std::string getChunk(const TSNode* node = nullptr);
 
@@ -89,5 +108,12 @@ namespace steppable::parser
         void setFile(const std::string& newFile);
 
         [[nodiscard]] std::string getFile() const;
+
+        std::unique_ptr<STP_DynamicLibrary> getLoadedLib(const size_t& count)
+        {
+            if (count > loadedLibraries.size())
+                return nullptr;
+            return std::make_unique<STP_DynamicLibrary>(loadedLibraries[count]);
+        }
     };
 } // namespace steppable::parser

@@ -1,4 +1,3 @@
-const {identifier} = require("js-beautify/js/src/javascript/acorn");
 Prec = {
     BINARY_EXPR3: 8,
     BINARY_EXPR2: 7,
@@ -128,6 +127,7 @@ module.exports = grammar({
             $.matrix,
             $.binary_expression,
             $.unary_expression,
+            $.suffix_expression,
             $.function_call,
             $.identifier_or_member_access,
             $.number,
@@ -208,8 +208,13 @@ module.exports = grammar({
             $._expression
         )),
 
+        suffix_expression: $ => prec.left(Prec.UNARY_EXPR, seq(
+            $._expression,
+            token.immediate(choice("'"))
+        )),
+
         function_call: $ => seq(
-            $.identifier_or_member_access,
+            field("fn_name", $.identifier_or_member_access),
             "(",
             optional(seq($._expression, repeat(seq(",", $._expression)))),
             ")"
@@ -221,9 +226,9 @@ module.exports = grammar({
 
         identifier: _ => token(/[a-zA-Z_][a-zA-Z0-9_]*/),
         identifier_or_member_access: $ => choice($.identifier, $.member_access),
-        number: $ => token(/\d+(\.\d+)?/),
+        number: _ => token(/\d+(\.\d+)?/),
 
-        escape_sequence: $ => /\\[rntbf"\\]/,
+        escape_sequence: _ => /\\[rntbf"\\]/,
         unicode_escape: $ => seq(
             "\\x",
             alias(token.immediate(/[0-9A-Fa-f]{2}|[0-9A-Fa-f]{4}|[0-9A-Fa-f]{8}/), $.hex_digits)

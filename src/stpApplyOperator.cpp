@@ -383,6 +383,6 @@ namespace steppable::parser
             }
         }
 
-        return std::make_any<nullptr_t>(nullptr);
+        return std::make_any<std::nullptr_t>(nullptr);
     }
 } // namespace steppable::parser

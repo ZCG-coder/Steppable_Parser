@@ -507,6 +507,10 @@
         },
         {
           "type": "SYMBOL",
+          "name": "suffix_expression"
+        },
+        {
+          "type": "SYMBOL",
           "name": "function_call"
         },
         {
@@ -843,12 +847,41 @@
         ]
       }
     },
+    "suffix_expression": {
+      "type": "PREC_LEFT",
+      "value": 4,
+      "content": {
+        "type": "SEQ",
+        "members": [
+          {
+            "type": "SYMBOL",
+            "name": "_expression"
+          },
+          {
+            "type": "IMMEDIATE_TOKEN",
+            "content": {
+              "type": "CHOICE",
+              "members": [
+                {
+                  "type": "STRING",
+                  "value": "'"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
     "function_call": {
       "type": "SEQ",
       "members": [
         {
-          "type": "SYMBOL",
-          "name": "identifier_or_member_access"
+          "type": "FIELD",
+          "name": "fn_name",
+          "content": {
+            "type": "SYMBOL",
+            "name": "identifier_or_member_access"
+          }
         },
         {
           "type": "STRING",

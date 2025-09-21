@@ -44,6 +44,10 @@
           "named": true
         },
         {
+          "type": "suffix_expression",
+          "named": true
+        },
+        {
           "type": "unary_expression",
           "named": true
         }
@@ -122,6 +126,10 @@
           "named": true
         },
         {
+          "type": "suffix_expression",
+          "named": true
+        },
+        {
           "type": "unary_expression",
           "named": true
         }
@@ -170,6 +178,10 @@
         },
         {
           "type": "string",
+          "named": true
+        },
+        {
+          "type": "suffix_expression",
           "named": true
         },
         {
@@ -224,6 +236,10 @@
           "named": true
         },
         {
+          "type": "suffix_expression",
+          "named": true
+        },
+        {
           "type": "unary_expression",
           "named": true
         }
@@ -272,6 +288,10 @@
         },
         {
           "type": "string",
+          "named": true
+        },
+        {
+          "type": "suffix_expression",
           "named": true
         },
         {
@@ -339,6 +359,10 @@
         },
         {
           "type": "string",
+          "named": true
+        },
+        {
+          "type": "suffix_expression",
           "named": true
         },
         {
@@ -455,6 +479,10 @@
           "named": true
         },
         {
+          "type": "suffix_expression",
+          "named": true
+        },
+        {
           "type": "unary_expression",
           "named": true
         }
@@ -546,6 +574,10 @@
         },
         {
           "type": "string",
+          "named": true
+        },
+        {
+          "type": "suffix_expression",
           "named": true
         },
         {
@@ -670,6 +702,10 @@
             "named": true
           },
           {
+            "type": "suffix_expression",
+            "named": true
+          },
+          {
             "type": "unary_expression",
             "named": true
           }
@@ -680,10 +716,21 @@
   {
     "type": "function_call",
     "named": true,
-    "fields": {},
+    "fields": {
+      "fn_name": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "identifier_or_member_access",
+            "named": true
+          }
+        ]
+      }
+    },
     "children": {
       "multiple": true,
-      "required": true,
+      "required": false,
       "types": [
         {
           "type": "binary_expression",
@@ -715,6 +762,10 @@
         },
         {
           "type": "string",
+          "named": true
+        },
+        {
+          "type": "suffix_expression",
           "named": true
         },
         {
@@ -879,6 +930,10 @@
           "named": true
         },
         {
+          "type": "suffix_expression",
+          "named": true
+        },
+        {
           "type": "unary_expression",
           "named": true
         }
@@ -1007,6 +1062,10 @@
           "named": true
         },
         {
+          "type": "suffix_expression",
+          "named": true
+        },
+        {
           "type": "unary_expression",
           "named": true
         }
@@ -1051,6 +1110,10 @@
         },
         {
           "type": "string",
+          "named": true
+        },
+        {
+          "type": "suffix_expression",
           "named": true
         },
         {
@@ -1102,6 +1165,10 @@
         },
         {
           "type": "string",
+          "named": true
+        },
+        {
+          "type": "suffix_expression",
           "named": true
         },
         {
@@ -1179,6 +1246,10 @@
           },
           {
             "type": "string",
+            "named": true
+          },
+          {
+            "type": "suffix_expression",
             "named": true
           },
           {
@@ -1270,6 +1341,57 @@
     }
   },
   {
+    "type": "suffix_expression",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": false,
+      "required": true,
+      "types": [
+        {
+          "type": "binary_expression",
+          "named": true
+        },
+        {
+          "type": "bracketed_expr",
+          "named": true
+        },
+        {
+          "type": "function_call",
+          "named": true
+        },
+        {
+          "type": "identifier_or_member_access",
+          "named": true
+        },
+        {
+          "type": "matrix",
+          "named": true
+        },
+        {
+          "type": "number",
+          "named": true
+        },
+        {
+          "type": "percentage",
+          "named": true
+        },
+        {
+          "type": "string",
+          "named": true
+        },
+        {
+          "type": "suffix_expression",
+          "named": true
+        },
+        {
+          "type": "unary_expression",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
     "type": "symbol_decl_statement",
     "named": true,
     "fields": {
@@ -1323,6 +1445,10 @@
         },
         {
           "type": "string",
+          "named": true
+        },
+        {
+          "type": "suffix_expression",
           "named": true
         },
         {
@@ -1389,6 +1515,10 @@
         },
         {
           "type": "string",
+          "named": true
+        },
+        {
+          "type": "suffix_expression",
           "named": true
         },
         {
