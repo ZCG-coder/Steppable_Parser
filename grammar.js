@@ -12,6 +12,7 @@ module.exports = grammar({
     name: "stp",
     conflicts: $ => [
         [$._expression, $.function_call],
+        [$.fn_pos_arg_list]
     ],
 
     extras: $ => [/\s/, $.comment],
@@ -213,10 +214,30 @@ module.exports = grammar({
             token.immediate(choice("'"))
         )),
 
+        fn_keyword_arg: $ => seq(
+            field(
+                "argument_name",
+                alias($.identifier, $.param_name)
+            ),
+            ":",
+            $._expression
+        ),
+
+        fn_pos_arg_list: $ => seq(
+            $._expression,
+            repeat(seq(",", $._expression))
+        ),
+
+        fn_keyword_arg_list: $ => seq(
+            $.fn_keyword_arg,
+            repeat(seq(",", $.fn_keyword_arg))
+        ),
+
         function_call: $ => seq(
             field("fn_name", $.identifier_or_member_access),
             "(",
-            optional(seq($._expression, repeat(seq(",", $._expression)))),
+            optional($.fn_pos_arg_list),
+            optional(seq(",", $.fn_keyword_arg_list)),
             ")"
         ),
 

@@ -154,7 +154,41 @@ namespace steppable::parser
                     programSafeExit(1);
                 }
 
-                auto args = STP_ArgContainer({ STP_Argument("", Number("10"), STP_TypeID_NUMBER) }, {});
+                std::vector<STP_Argument> fnArgsVec;
+
+                TSNode posArgumentsNode = ts_node_named_child(*exprNode, 1);
+                if (not ts_node_is_null(posArgumentsNode))
+                {
+                    size_t posArgumentsCount = ts_node_named_child_count(posArgumentsNode);
+
+                    for (size_t i = 0; i < posArgumentsCount; i++)
+                    {
+                        TSNode argNode = ts_node_named_child(posArgumentsNode, i);
+                        STP_Value res = handleExpr(&argNode, state);
+                        STP_Argument argument("", res.data, res.typeID);
+                        fnArgsVec.emplace_back(argument);
+                    }
+
+                    TSNode kwArgumentsNode = ts_node_named_child(*exprNode, 2);
+                    if (not ts_node_is_null(kwArgumentsNode))
+                    {
+                        size_t keywordArgumentCount = ts_node_named_child_count(kwArgumentsNode);
+                        for (size_t i = 0; i < keywordArgumentCount; i++)
+                        {
+                            TSNode argNode = ts_node_named_child(kwArgumentsNode, i);
+                            TSNode argNameNode = ts_node_child_by_field_name(argNode, "argument_name"s);
+                            TSNode argExprNode = ts_node_next_named_sibling(argNameNode);
+
+                            std::string argName = state->getChunk(&argNameNode);
+
+                            STP_Value res = handleExpr(&argExprNode, state);
+                            STP_Argument argument(argName, res.data, res.typeID);
+                            fnArgsVec.emplace_back(argument);
+                        }
+                    }
+                }
+
+                auto args = STP_ArgContainer(fnArgsVec, {});
                 auto* val = static_cast<STP_ValuePrimitive*>(funcPtr(&args));
                 std::cout << val->present("") << std::endl;
                 delete val;

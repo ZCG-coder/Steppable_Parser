@@ -6,7 +6,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "gen": "npx tree-sitter generate",
-    "beautify": "js-beautify -r grammar.js"
+    "beautify": "js-beautify -r grammar.js",
+    "test_cst": "npx tree-sitter parse -r --cst tests/stp_files/test1.stp"
   },
   "keywords": [],
   "author": "",
