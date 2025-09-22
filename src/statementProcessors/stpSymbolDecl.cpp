@@ -12,7 +12,7 @@ namespace steppable::parser
         TSNode nameNode = ts_node_child_by_field_name(*node, "sym_name"s);
         const std::string& name = state->getChunk(&nameNode);
 
-        STP_LocalValue assignmentVal(STP_TypeID_SYMBOL);
+        STP_Value assignmentVal(STP_TypeID_SYMBOL);
         assignmentVal.data = name;
         assignmentVal.typeName = STP_typeNames.at(STP_TypeID_SYMBOL);
         state->getCurrentScope()->addVariable(name, assignmentVal);

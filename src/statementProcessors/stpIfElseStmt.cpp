@@ -13,7 +13,7 @@ namespace steppable::parser
         //                 'else if' expr '{' statement '}'
         //                 'else'         '{' else_clause_stmt '}'
         TSNode exprNode = ts_node_named_child(*node, 0);
-        STP_LocalValue res = handleExpr(&exprNode, state);
+        STP_Value res = handleExpr(&exprNode, state);
         TSNode ifClauseStmtNode = ts_node_next_named_sibling(exprNode);
         TSNode lastNode = ifClauseStmtNode;
 

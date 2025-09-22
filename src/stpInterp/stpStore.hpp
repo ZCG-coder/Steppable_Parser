@@ -1,6 +1,7 @@
 #pragma once
 #include "../../../include/steppable/stpTypeName.hpp"
 #include "fn/calc.hpp"
+#include "steppable/stpArgSpace.hpp"
 
 extern "C" {
 #include <tree_sitter/api.h>
@@ -34,26 +35,18 @@ namespace steppable::parser
         void* handle;
     };
 
-    struct STP_LocalValue
+    struct STP_Value : STP_ValuePrimitive
     {
-        std::string typeName;
-        STP_TypeID typeID;
+        [[nodiscard]] STP_Value applyBinaryOperator(const std::string& operatorStr, const STP_Value& rhs) const;
 
-        std::any data;
-
-        explicit STP_LocalValue(const STP_TypeID& type, std::any data = {});
-
-        [[nodiscard]] std::string present(const std::string& name, bool longFormat = true) const;
-
-        [[nodiscard]] STP_LocalValue applyBinaryOperator(const std::string& operatorStr,
-                                                         const STP_LocalValue& rhs) const;
-
-        [[nodiscard]] STP_LocalValue applyUnaryOperator(const std::string& operatorStr) const;
+        [[nodiscard]] STP_Value applyUnaryOperator(const std::string& operatorStr) const;
 
         [[nodiscard]] bool asBool() const;
+
+        explicit STP_Value(const STP_TypeID& type, const std::any& data = {}) : STP_ValuePrimitive(type, data) {}
     };
 
-    using STP_StringValMap = std::unordered_map<std::string, STP_LocalValue>;
+    using STP_StringValMap = std::unordered_map<std::string, STP_Value>;
 
     struct STP_FunctionDefinition
     {
@@ -72,9 +65,9 @@ namespace steppable::parser
 
         std::shared_ptr<STP_Scope> parentScope = nullptr;
 
-        void addVariable(const std::string& name, const STP_LocalValue& data);
+        void addVariable(const std::string& name, const STP_Value& data);
 
-        STP_LocalValue getVariable(const std::string& name);
+        STP_Value getVariable(const std::string& name);
     };
 
     class STP_InterpStoreLocal

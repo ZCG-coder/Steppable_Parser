@@ -10,7 +10,6 @@
 #include <memory>
 #include <ranges>
 #include <sstream>
-#include <stdexcept>
 #include <string>
 #include <utility>
 #if defined(_WIN32)
@@ -43,10 +42,10 @@ namespace steppable::parser
     STP_DynamicLibrary::~STP_DynamicLibrary()
     {
 #if defined(_WIN32)
-        if (handle)
+        if (handle != nullptr)
             FreeLibrary((HMODULE)handle);
 #else
-        if (handle)
+        if (handle != nullptr)
             dlclose(handle);
 #endif
     }
@@ -54,16 +53,16 @@ namespace steppable::parser
     STP_ExportFuncT STP_DynamicLibrary::getSymbol(const std::string& name)
     {
 #if defined(_WIN32)
-        if (handle)
+        if (handle != nullptr)
         {
-            auto* ptr = reinterpret_cast<void (*)(void*)>(GetProcAddress((HMODULE)handle, name.c_str()));
+            auto* ptr = reinterpret_cast<void* (*)(void*)>(GetProcAddress((HMODULE)handle, name.c_str()));
             return ptr;
         }
         return nullptr;
 #else
-        if (handle)
+        if (handle != nullptr)
         {
-            auto* ptr = reinterpret_cast<void (*)(void*)>(dlsym(handle, name.c_str()));
+            auto* ptr = reinterpret_cast<STP_ExportFuncPtr*>(dlsym(handle, name.c_str()));
             return ptr;
         }
         return nullptr;
@@ -72,51 +71,7 @@ namespace steppable::parser
 
     bool STP_DynamicLibrary::isLoaded() const { return handle != nullptr; }
 
-    STP_LocalValue::STP_LocalValue(const STP_TypeID& type, std::any data) :
-        typeName(STP_typeNames.at(type)), typeID(type), data(std::move(data))
-    {
-    }
-
-    std::string STP_LocalValue::present(const std::string& name, const bool longFormat) const
-    {
-        std::stringstream ret;
-        std::string presented;
-        std::string line;
-
-        if (longFormat)
-        {
-            ret << name << "(" << typeName << ")";
-            ret << "\n";
-        }
-
-        switch (typeID)
-        {
-        case STP_TypeID_NUMBER:
-            presented = std::any_cast<Number>(data).present();
-            break;
-        case STP_TypeID_MATRIX_2D:
-            presented = std::any_cast<Matrix>(data).present();
-            break;
-        case STP_TypeID_STRING:
-            presented = "\"" + std::any_cast<std::string>(data) + "\"";
-            break;
-        default:
-            break;
-        }
-
-        if (longFormat)
-        {
-            std::istringstream iss(presented);
-            while (getline(iss, line))
-                ret << "    " << line << "\n";
-        }
-        else
-            ret << presented;
-
-        return ret.str();
-    }
-
-    STP_LocalValue STP_LocalValue::applyBinaryOperator(const std::string& _operatorStr, const STP_LocalValue& rhs) const
+    STP_Value STP_Value::applyBinaryOperator(const std::string& _operatorStr, const STP_Value& rhs) const
     {
         std::string operatorStr = _operatorStr;
         operatorStr = __internals::stringUtils::bothEndsReplace(operatorStr, ' ');
@@ -128,7 +83,7 @@ namespace steppable::parser
         std::any value = this->data;
         std::any rhsValue = rhs.data;
 
-        STP_LocalValue returnVal(STP_TypeID_NULL);
+        STP_Value returnVal(STP_TypeID_NULL);
         returnVal.typeID = retType;
         returnVal.typeName = STP_typeNames.at(retType);
 
@@ -137,25 +92,25 @@ namespace steppable::parser
         if (not returnValueAny.has_value())
         {
             output::error("parser"s, "This operation is not supported at present"s);
-            __internals::utils::programSafeExit(1);
+            programSafeExit(1);
         }
         returnVal.data = returnValueAny;
 
         return returnVal;
     }
 
-    STP_LocalValue STP_LocalValue::applyUnaryOperator(const std::string& _operatorStr) const
+    STP_Value STP_Value::applyUnaryOperator(const std::string& _operatorStr) const
     {
         std::string operatorStr = _operatorStr;
         operatorStr = __internals::stringUtils::bothEndsReplace(operatorStr, ' ');
 
         std::any returnValAny = performUnaryOperation(typeID, operatorStr, data);
 
-        STP_LocalValue returnValue(typeID, returnValAny);
+        STP_Value returnValue(typeID, returnValAny);
         return returnValue;
     }
 
-    bool STP_LocalValue::asBool() const
+    bool STP_Value::asBool() const
     {
         switch (typeID)
         {
@@ -181,12 +136,12 @@ namespace steppable::parser
         case STP_TypeID_FUNC:
         {
             output::error("parser"s, "Cannot convert Func to a logical type"s);
-            __internals::utils::programSafeExit(1);
+            programSafeExit(1);
         }
         case STP_TypeID_SYMBOL:
         {
             output::error("parser"s, "Cannot convert Symbol to a logical type"s);
-            __internals::utils::programSafeExit(1);
+            programSafeExit(1);
         }
         }
 
@@ -194,19 +149,19 @@ namespace steppable::parser
         return false;
     }
 
-    void STP_Scope::addVariable(const std::string& name, const STP_LocalValue& data)
+    void STP_Scope::addVariable(const std::string& name, const STP_Value& data)
     {
         variables.insert_or_assign(name, data);
     }
 
-    STP_LocalValue STP_Scope::getVariable(const std::string& name)
+    STP_Value STP_Scope::getVariable(const std::string& name)
     {
         if (not variables.contains(name))
         {
             if (parentScope == nullptr)
             {
                 output::error("parser"s, "Variable {0} is not defined"s, { name });
-                __internals::utils::programSafeExit(1);
+                programSafeExit(1);
             }
             return parentScope->getVariable(name);
         }

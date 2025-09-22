@@ -10,10 +10,10 @@
 
 namespace steppable::parser
 {
-    STP_LocalValue handleExpr(const TSNode* exprNode,
-                              const STP_InterpState& state,
-                              const bool printResult = false,
-                              const std::string& exprName = "")
+    STP_Value handleExpr(const TSNode* exprNode,
+                         const STP_InterpState& state,
+                         const bool printResult = false,
+                         const std::string& exprName = "")
     {
         assert(exprNode != nullptr);
         if (ts_node_type(*exprNode) == "ERROR"s or ts_node_is_missing(*exprNode))
@@ -21,13 +21,13 @@ namespace steppable::parser
 
         std::string exprType = ts_node_type(*exprNode);
 
-        STP_LocalValue retVal(STP_TypeID_NULL);
+        STP_Value retVal(STP_TypeID_NULL);
 
         if (exprType == "number")
         {
             // Number
             std::string data = state->getChunk(exprNode);
-            retVal = STP_LocalValue(STP_TypeID_NUMBER, Number(data));
+            retVal = STP_Value(STP_TypeID_NUMBER, Number(data));
         }
         if (exprType == "percentage")
         {
@@ -37,7 +37,7 @@ namespace steppable::parser
             Number value(number);
             value /= 100; // NOLINT(*-avoid-magic-numbers)
 
-            retVal = STP_LocalValue(STP_TypeID_NUMBER, value);
+            retVal = STP_Value(STP_TypeID_NUMBER, value);
         }
         if (exprType == "matrix")
         {
@@ -58,7 +58,7 @@ namespace steppable::parser
                     TSNode cell = ts_node_child(node, i);
                     if (ts_node_type(cell) == ";"s)
                         continue;
-                    STP_LocalValue val = handleExpr(&cell, state);
+                    STP_Value val = handleExpr(&cell, state);
                     if (val.typeID != STP_TypeID_NUMBER)
                     {
                         output::error("parser"s, "Matrix should contain numbers only."s);
@@ -82,7 +82,7 @@ namespace steppable::parser
             }
 
             Matrix data(matVec);
-            retVal = STP_LocalValue(STP_TypeID_MATRIX_2D, data);
+            retVal = STP_Value(STP_TypeID_MATRIX_2D, data);
         }
         if (exprType == "string")
         {
@@ -116,12 +116,12 @@ namespace steppable::parser
                 else if (childNodeType == "formatting_snippet")
                 {
                     auto formatExprNode = ts_node_child_by_field_name(childNode, "formatting_expr"s);
-                    STP_LocalValue value = handleExpr(&formatExprNode, state, printResult, exprName);
+                    STP_Value value = handleExpr(&formatExprNode, state, printResult, exprName);
 
                     data += value.present("", false);
                 }
             }
-            retVal = STP_LocalValue(STP_TypeID_STRING, data);
+            retVal = STP_Value(STP_TypeID_STRING, data);
         }
         else if (exprType == "identifier_or_member_access")
         {
@@ -154,12 +154,10 @@ namespace steppable::parser
                     programSafeExit(1);
                 }
 
-                auto args = STP_ArgContainer(
-                    {
-                        STP_Argument("", Number("10"), STP_TypeID_NUMBER)
-                    }, {}
-                );
-                funcPtr(&args);
+                auto args = STP_ArgContainer({ STP_Argument("", Number("10"), STP_TypeID_NUMBER) }, {});
+                auto* val = static_cast<STP_ValuePrimitive*>(funcPtr(&args));
+                std::cout << val->present("") << std::endl;
+                delete val;
             }
         }
         else
@@ -175,8 +173,8 @@ namespace steppable::parser
 
                 std::string operandType = ts_node_type(operandNode);
 
-                STP_LocalValue lhs = handleExpr(&lhsNode, state);
-                STP_LocalValue rhs = handleExpr(&rhsNode, state);
+                STP_Value lhs = handleExpr(&lhsNode, state);
+                STP_Value rhs = handleExpr(&rhsNode, state);
 
                 retVal = lhs.applyBinaryOperator(operandType, rhs);
             }
@@ -186,7 +184,7 @@ namespace steppable::parser
                 TSNode child = ts_node_child(*exprNode, 1);
                 std::string operandType = ts_node_type(operandNode);
 
-                STP_LocalValue childVal = handleExpr(&child, state);
+                STP_Value childVal = handleExpr(&child, state);
                 retVal = childVal.applyUnaryOperator(operandType);
             }
             if (exprType == "bracketed_expr")

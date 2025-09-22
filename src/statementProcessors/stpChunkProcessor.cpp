@@ -29,7 +29,7 @@ namespace steppable::parser
         {
             // Handle return statement
             TSNode exprNode = ts_node_child_by_field_name(node, "ret_expr"s);
-            STP_LocalValue val = handleExpr(&exprNode, state);
+            STP_Value val = handleExpr(&exprNode, state);
 
             // By writing to a illegally-named variable,
             state->getCurrentScope()->addVariable("04795", val);
