@@ -18,9 +18,9 @@ namespace steppable::parser
 
         if (not ts_node_is_null(posArgsNode))
         {
-            const size_t posArgsCount = ts_node_named_child_count(posArgsNode);
+            const uint32_t posArgsCount = ts_node_named_child_count(posArgsNode);
 
-            for (size_t i = 0; i < posArgsCount; i++)
+            for (uint32_t i = 0; i < posArgsCount; i++)
             {
                 TSNode paramNode = ts_node_named_child(posArgsNode, i);
                 std::string paramName = state->getChunk(&paramNode);
@@ -31,9 +31,9 @@ namespace steppable::parser
         }
         if (not ts_node_is_null(keywordArgsNode))
         {
-            const size_t keywordArgsCount = ts_node_named_child_count(posArgsNode);
+            const uint32_t keywordArgsCount = ts_node_named_child_count(posArgsNode);
 
-            for (size_t i = 0; i < keywordArgsCount; i++)
+            for (uint32_t i = 0; i < keywordArgsCount; i++)
             {
                 TSNode paramNode = ts_node_named_child(keywordArgsNode, i);
                 TSNode paramNameNode = ts_node_named_child(paramNode, 0);

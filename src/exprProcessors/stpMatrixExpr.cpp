@@ -9,6 +9,7 @@
 #include "stpInterp/stpStore.hpp"
 
 #include <cassert>
+#include <cstdint>
 
 namespace steppable::parser
 {
@@ -17,7 +18,7 @@ namespace steppable::parser
         // Matrix
         std::unique_ptr<size_t> lastColLength;
         MatVec2D<Number> matVec;
-        for (size_t j = 0; j < ts_node_child_count(*exprNode); j++)
+        for (uint32_t j = 0; j < ts_node_child_count(*exprNode); j++)
         {
             TSNode node = ts_node_child(*exprNode, j);
             if (const std::string& nodeType = ts_node_type(node);
@@ -26,7 +27,7 @@ namespace steppable::parser
 
             size_t currentCols = 0;
             std::vector<Number> currentMatRow;
-            for (size_t i = 0; i < ts_node_child_count(node); i++)
+            for (uint32_t i = 0; i < ts_node_child_count(node); i++)
             {
                 TSNode cell = ts_node_child(node, i);
                 if (ts_node_type(cell) == ";"s)

@@ -58,7 +58,7 @@ int main(int argc, char** argv) // NOLINT(*-exception-escape)
     const std::string source((std::istreambuf_iterator(file)), std::istreambuf_iterator<char>());
     file.close();
 
-    tree = ts_parser_parse_string(parser, nullptr, source.c_str(), source.size());
+    tree = ts_parser_parse_string(parser, nullptr, source.c_str(), static_cast<uint32_t>(source.size()));
     TSNode rootNode = ts_tree_root_node(tree);
     state->setChunk(source, 0, static_cast<long>(source.size()));
     STP_processChunkChild(rootNode, state);

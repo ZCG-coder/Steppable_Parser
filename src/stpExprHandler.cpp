@@ -9,6 +9,7 @@
 #include "stpInterp/stpStore.hpp"
 
 #include <cassert>
+#include <cstdint>
 
 namespace steppable::parser
 {
@@ -192,9 +193,9 @@ namespace steppable::parser
         TSNode posArgumentsNode = ts_node_named_child(*exprNode, 1);
         if (not ts_node_is_null(posArgumentsNode))
         {
-            size_t posArgumentsCount = ts_node_named_child_count(posArgumentsNode);
+            uint32_t posArgumentsCount = ts_node_named_child_count(posArgumentsNode);
 
-            for (size_t i = 0; i < posArgumentsCount; i++)
+            for (uint32_t i = 0; i < posArgumentsCount; i++)
             {
                 TSNode argNode = ts_node_named_child(posArgumentsNode, i);
                 STP_Value res = handleExpr(&argNode, state);
@@ -205,8 +206,8 @@ namespace steppable::parser
             TSNode kwArgumentsNode = ts_node_named_child(*exprNode, 2);
             if (not ts_node_is_null(kwArgumentsNode))
             {
-                size_t keywordArgumentCount = ts_node_named_child_count(kwArgumentsNode);
-                for (size_t i = 0; i < keywordArgumentCount; i++)
+                uint32_t keywordArgumentCount = ts_node_named_child_count(kwArgumentsNode);
+                for (uint32_t i = 0; i < keywordArgumentCount; i++)
                 {
                     TSNode argNode = ts_node_named_child(kwArgumentsNode, i);
                     TSNode argNameNode = ts_node_child_by_field_name(argNode, "argument_name"s);

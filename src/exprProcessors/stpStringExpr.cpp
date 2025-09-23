@@ -8,7 +8,7 @@ namespace steppable::parser
         using namespace __internals;
         // String
         std::string data;
-        for (size_t i = 0; i < ts_node_child_count(*exprNode); i++)
+        for (uint32_t i = 0; i < ts_node_child_count(*exprNode); i++)
         {
             auto childNode = ts_node_child(*exprNode, i);
             const std::string childNodeType = ts_node_type(childNode);
