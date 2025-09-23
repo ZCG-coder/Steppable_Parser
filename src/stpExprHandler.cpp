@@ -1,3 +1,5 @@
+#include "stpInterp/stpExprHandler.hpp"
+
 #include "steppable/mat2d.hpp"
 #include "steppable/number.hpp"
 #include "steppable/stpArgSpace.hpp"
@@ -14,8 +16,8 @@ namespace steppable::parser
 
     STP_Value handleExpr(const TSNode* exprNode,
                          const STP_InterpState& state,
-                         const bool printResult = false,
-                         const std::string& exprName = "")
+                         const bool printResult,
+                         const std::string& exprName)
     {
         assert(exprNode != nullptr);
         if (ts_node_type(*exprNode) == "ERROR"s or ts_node_is_missing(*exprNode))
@@ -42,89 +44,10 @@ namespace steppable::parser
             retVal = STP_Value(STP_TypeID_NUMBER, value);
         }
         if (exprType == "matrix")
-        {
-            // Matrix
-            std::unique_ptr<size_t> lastColLength;
-            MatVec2D<Number> matVec;
-            for (size_t j = 0; j < ts_node_child_count(*exprNode); j++)
-            {
-                TSNode node = ts_node_child(*exprNode, j);
-                if (const std::string& nodeType = ts_node_type(node);
-                    nodeType != "matrix_row" and nodeType != "matrix_row_last")
-                    continue;
-
-                size_t currentCols = 0;
-                std::vector<Number> currentMatRow;
-                for (size_t i = 0; i < ts_node_child_count(node); i++)
-                {
-                    TSNode cell = ts_node_child(node, i);
-                    if (ts_node_type(cell) == ";"s)
-                        continue;
-                    STP_Value val = handleExpr(&cell, state);
-                    if (val.typeID != STP_TypeID_NUMBER)
-                    {
-                        output::error("parser"s, "Matrix should contain numbers only."s);
-                        programSafeExit(1);
-                    }
-                    auto value = std::any_cast<Number>(val.data);
-                    currentMatRow.emplace_back(value);
-                    currentCols++;
-                }
-
-                if (lastColLength)
-                {
-                    if (currentCols != *lastColLength)
-                    {
-                        output::error("parser"s, "Inconsistent matrix dimensions."s);
-                        programSafeExit(1);
-                    }
-                }
-                matVec.emplace_back(currentMatRow);
-                lastColLength = std::make_unique<size_t>(currentCols);
-            }
-
-            Matrix data(matVec);
-            retVal = STP_Value(STP_TypeID_MATRIX_2D, data);
-        }
+            retVal = STP_handleMatrixExpr(exprNode, state);
         if (exprType == "string")
         {
-            using namespace __internals;
-            // String
-            std::string data;
-            for (size_t i = 0; i < ts_node_child_count(*exprNode); i++)
-            {
-                auto childNode = ts_node_child(*exprNode, i);
-                const std::string childNodeType = ts_node_type(childNode);
-
-                if (childNodeType == "string_char")
-                    data += state->getChunk(&childNode);
-                else if (childNodeType == "unicode_escape")
-                {
-                    auto hexDigitsNode = ts_node_named_child(childNode, 0);
-                    const std::string hexCode = state->getChunk(&hexDigitsNode);
-
-                    unsigned long codePoint = std::stoul(hexCode, nullptr, 16);
-                    std::string text = stringUtils::unicodeToUtf8(static_cast<int>(codePoint));
-                    data += text;
-                }
-                else if (childNodeType == "octal_escape")
-                {
-                    std::string octDigits = state->getChunk(&childNode);
-                    octDigits.erase(octDigits.begin()); // Erase leading '\' character
-
-                    unsigned long codePoint = std::stoul(octDigits, nullptr, 8);
-                    std::string text = stringUtils::unicodeToUtf8(static_cast<int>(codePoint));
-                    data += text;
-                }
-                else if (childNodeType == "formatting_snippet")
-                {
-                    auto formatExprNode = ts_node_child_by_field_name(childNode, "formatting_expr"s);
-                    STP_Value value = handleExpr(&formatExprNode, state, printResult, exprName);
-
-                    data += value.present("", false);
-                }
-            }
-            retVal = STP_Value(STP_TypeID_STRING, data);
+            retVal = STP_handleStringExpr(exprNode, state);
         }
         else if (exprType == "identifier_or_member_access")
         {
@@ -140,92 +63,88 @@ namespace steppable::parser
         }
         else if (exprType == "function_call")
         {
-            TSNode nameNode = ts_node_child(ts_node_child(*exprNode, 0), 0);
+            TSNode nameNode = ts_node_child_by_field_name(*exprNode, "fn_name"s);
 
-            if (ts_node_type(nameNode) == "identifier"s)
+            std::string funcNameOrig = state->getChunk(&nameNode);
+            std::string funcName = "STP_" + funcNameOrig;
+
+            auto stpLib = state->getLoadedLib(0);
+            auto funcPtr = stpLib->getSymbol(funcName);
+
+            auto functionsVec = state->getCurrentScope()->functions;
+            bool executed = false;
+
+            if (funcPtr == nullptr)
             {
-                std::string funcNameOrig = state->getChunk(&nameNode);
-                std::string funcName = "STP_" + funcNameOrig;
-
-                auto stpLib = state->getLoadedLib(0);
-                auto funcPtr = stpLib->getSymbol(funcName);
-
-                auto functionsVec = state->getCurrentScope()->functions;
-                bool executed = false;
-
-                if (funcPtr == nullptr)
+                if (functionsVec.contains(funcNameOrig))
                 {
-                    if (functionsVec.contains(funcNameOrig))
-                    {
-                        // call from Steppable-defined functions
-                        auto function = functionsVec[funcNameOrig];
-                        std::vector<STP_Argument> fnArgsVec = extractArgVector(exprNode, state);
-
-                        std::vector<STP_Argument> posArgs;
-                        std::vector<STP_Argument> keywordArgs;
-
-                        STP_StringValMap declaredKeywordArgs = function.keywordArgs;
-                        STP_StringValMap givenKeywordArgs;
-
-                        std::ranges::copy_if(fnArgsVec, std::back_inserter(posArgs), [](const STP_Argument& arg) {
-                            return arg.name.empty();
-                        });
-                        std::ranges::copy_if(fnArgsVec, std::back_inserter(keywordArgs), [](const STP_Argument& arg) {
-                            return not arg.name.empty();
-                        });
-
-                        std::ranges::transform(
-                            keywordArgs, std::inserter(givenKeywordArgs, givenKeywordArgs.end()), [](const auto& pair) {
-                                return std::make_pair(pair.name, STP_Value(pair.typeID, pair.value));
-                            });
-
-                        if (posArgs.size() != function.posArgNames.size())
-                        {
-                            std::vector<std::string> missingArgsNames;
-                            std::copy(function.posArgNames.begin() + static_cast<ssize_t>(function.posArgNames.size()) -
-                                          static_cast<ssize_t>(posArgs.size()),
-                                      function.posArgNames.end(),
-                                      missingArgsNames.begin());
-
-                            output::error("runtime"s,
-                                          "Missing positional arguments. Expect {0}"s,
-                                          {
-                                              __internals::stringUtils::join(missingArgsNames, ","s),
-                                          });
-                            programSafeExit(1);
-                        }
-
-                        STP_StringValMap argMap;
-                        for (size_t i = 0; i < posArgs.size(); i++)
-                        {
-                            std::string posArgName = function.posArgNames[i];
-                            const STP_Argument& currentArg = posArgs[i];
-                            argMap.insert_or_assign(posArgName, STP_Value(currentArg.typeID, currentArg.value));
-                        }
-                        argMap.merge(declaredKeywordArgs);
-                        argMap.merge(givenKeywordArgs);
-
-                        retVal = function.interpFn(argMap);
-                        executed = true;
-                    }
-                    else
-                    {
-                        output::error("runtime"s, "Function {0} is not defined."s, { funcNameOrig });
-                        programSafeExit(1);
-                    }
-                }
-
-                if (not executed)
-                {
+                    // call from Steppable-defined functions
+                    auto function = functionsVec[funcNameOrig];
                     std::vector<STP_Argument> fnArgsVec = extractArgVector(exprNode, state);
 
-                    auto args = STP_ArgContainer(fnArgsVec, {});
-                    auto* val = static_cast<STP_ValuePrimitive*>(funcPtr(&args));
+                    std::vector<STP_Argument> posArgs;
+                    std::vector<STP_Argument> keywordArgs;
 
-                    retVal = STP_Value(val->typeID, val->data);
+                    STP_StringValMap declaredKeywordArgs = function.keywordArgs;
+                    STP_StringValMap givenKeywordArgs;
+
+                    std::ranges::copy_if(fnArgsVec, std::back_inserter(posArgs), [](const STP_Argument& arg) {
+                        return arg.name.empty();
+                    });
+                    std::ranges::copy_if(fnArgsVec, std::back_inserter(keywordArgs), [](const STP_Argument& arg) {
+                        return not arg.name.empty();
+                    });
+
+                    std::ranges::transform(
+                        keywordArgs, std::inserter(givenKeywordArgs, givenKeywordArgs.end()), [](const auto& pair) {
+                            return std::make_pair(pair.name, STP_Value(pair.typeID, pair.value));
+                        });
+
+                    if (posArgs.size() != function.posArgNames.size())
+                    {
+                        std::vector<std::string> missingArgsNames;
+                        std::copy(function.posArgNames.begin() + static_cast<ssize_t>(function.posArgNames.size()) -
+                                      static_cast<ssize_t>(posArgs.size()),
+                                  function.posArgNames.end(),
+                                  missingArgsNames.begin());
+
+                        output::error("runtime"s,
+                                      "Missing positional arguments. Expect {0}"s,
+                                      {
+                                          __internals::stringUtils::join(missingArgsNames, ","s),
+                                      });
+                        programSafeExit(1);
+                    }
+
+                    STP_StringValMap argMap;
+                    for (size_t i = 0; i < posArgs.size(); i++)
+                    {
+                        std::string posArgName = function.posArgNames[i];
+                        const STP_Argument& currentArg = posArgs[i];
+                        argMap.insert_or_assign(posArgName, STP_Value(currentArg.typeID, currentArg.value));
+                    }
+                    argMap.merge(declaredKeywordArgs);
+                    argMap.merge(givenKeywordArgs);
+
+                    retVal = function.interpFn(argMap);
+                    executed = true;
+                }
+                else
+                {
+                    output::error("runtime"s, "Function {0} is not defined."s, { funcNameOrig });
+                    programSafeExit(1);
                 }
             }
-            // Member access function
+
+            if (not executed)
+            {
+                std::vector<STP_Argument> fnArgsVec = extractArgVector(exprNode, state);
+
+                auto args = STP_ArgContainer(fnArgsVec, {});
+                auto* val = static_cast<STP_ValuePrimitive*>(funcPtr(&args));
+
+                retVal = STP_Value(val->typeID, val->data);
+            }
         }
         else
         {

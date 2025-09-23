@@ -13,4 +13,5 @@ namespace steppable::parser
 
     void handleSymbolDeclStmt(const TSNode* node, const STP_InterpState& state);
 
+    void STP_processFuncDefinition(const TSNode* node, const STP_InterpState& state);
 } // namespace steppable::parser

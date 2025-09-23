@@ -52,9 +52,11 @@ mat1 .* mat2
 
 mat1 = mat1 + mat2
 
-mat1.sum()
+#sum(mat1)
 # import module
 # stat = module.learn()
+
+logb(2, 10)
 
 # stat
 

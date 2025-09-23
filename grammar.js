@@ -11,7 +11,7 @@ Prec = {
 module.exports = grammar({
     name: "stp",
     conflicts: $ => [
-        [$._expression, $.function_call],
+        [$.function_call, $.identifier_or_member_access],
         [$.fn_pos_arg_list],
         [$.pos_args_decl]
     ],
@@ -241,7 +241,7 @@ module.exports = grammar({
         ),
 
         function_call: $ => seq(
-            field("fn_name", $.identifier_or_member_access),
+            field("fn_name", $.identifier),
             "(",
             optional($.fn_pos_arg_list),
             optional(seq(",", $.fn_keyword_arg_list)),

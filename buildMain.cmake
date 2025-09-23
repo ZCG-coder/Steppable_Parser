@@ -18,6 +18,9 @@ SET(PROJECT_SRC_COMMON
     src/statementProcessors/stpFunctionDeclStmt.cpp
     src/statementProcessors/stpIfElseStmt.cpp
     src/statementProcessors/stpSymbolDecl.cpp
+    # Expression processors
+    src/exprProcessors/stpStringExpr.cpp
+    src/exprProcessors/stpMatrixExpr.cpp
 )
 SET(PROJECT_SRC src/main.cpp ${PROJECT_SRC_COMMON})
 SET(PROJECT_SRC_DBG src/mainTest.cpp)

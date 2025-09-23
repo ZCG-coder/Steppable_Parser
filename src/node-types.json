@@ -850,7 +850,7 @@
         "required": true,
         "types": [
           {
-            "type": "identifier_or_member_access",
+            "type": "identifier",
             "named": true
           }
         ]

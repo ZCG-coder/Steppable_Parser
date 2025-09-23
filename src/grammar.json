@@ -1006,7 +1006,7 @@
           "name": "fn_name",
           "content": {
             "type": "SYMBOL",
-            "name": "identifier_or_member_access"
+            "name": "identifier"
           }
         },
         {
@@ -1227,8 +1227,8 @@
   ],
   "conflicts": [
     [
-      "_expression",
-      "function_call"
+      "function_call",
+      "identifier_or_member_access"
     ],
     [
       "fn_pos_arg_list"
