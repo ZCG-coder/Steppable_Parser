@@ -21,7 +21,7 @@ extern "C" {
  */
 namespace steppable::parser
 {
-    class STP_DynamicLibrary
+    class STP_DynamicLibrary // NOLINT(*-special-member-functions)
     {
     public:
         explicit STP_DynamicLibrary(const std::string& path);
@@ -29,7 +29,7 @@ namespace steppable::parser
 
         STP_ExportFuncT getSymbol(const std::string& name);
 
-        bool isLoaded() const;
+        [[nodiscard]] bool isLoaded() const;
 
     private:
         void* handle;

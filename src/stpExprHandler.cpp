@@ -64,7 +64,7 @@ namespace steppable::parser
                     if (val.typeID != STP_TypeID_NUMBER)
                     {
                         output::error("parser"s, "Matrix should contain numbers only."s);
-                        __internals::utils::programSafeExit(1);
+                        programSafeExit(1);
                     }
                     auto value = std::any_cast<Number>(val.data);
                     currentMatRow.emplace_back(value);
@@ -76,7 +76,7 @@ namespace steppable::parser
                     if (currentCols != *lastColLength)
                     {
                         output::error("parser"s, "Inconsistent matrix dimensions."s);
-                        __internals::utils::programSafeExit(1);
+                        programSafeExit(1);
                     }
                 }
                 matVec.emplace_back(currentMatRow);
@@ -88,6 +88,7 @@ namespace steppable::parser
         }
         if (exprType == "string")
         {
+            using namespace __internals;
             // String
             std::string data;
             for (size_t i = 0; i < ts_node_child_count(*exprNode); i++)
@@ -102,8 +103,8 @@ namespace steppable::parser
                     auto hexDigitsNode = ts_node_named_child(childNode, 0);
                     const std::string hexCode = state->getChunk(&hexDigitsNode);
 
-                    int codePoint = std::stoul(hexCode, nullptr, 16);
-                    std::string text = __internals::stringUtils::unicodeToUtf8(codePoint);
+                    unsigned long codePoint = std::stoul(hexCode, nullptr, 16);
+                    std::string text = stringUtils::unicodeToUtf8(static_cast<int>(codePoint));
                     data += text;
                 }
                 else if (childNodeType == "octal_escape")
@@ -111,8 +112,8 @@ namespace steppable::parser
                     std::string octDigits = state->getChunk(&childNode);
                     octDigits.erase(octDigits.begin()); // Erase leading '\' character
 
-                    int codePoint = std::stoul(octDigits, nullptr, 8);
-                    std::string text = __internals::stringUtils::unicodeToUtf8(codePoint);
+                    unsigned long codePoint = std::stoul(octDigits, nullptr, 8);
+                    std::string text = stringUtils::unicodeToUtf8(static_cast<int>(codePoint));
                     data += text;
                 }
                 else if (childNodeType == "formatting_snippet")
@@ -181,7 +182,8 @@ namespace steppable::parser
                         if (posArgs.size() != function.posArgNames.size())
                         {
                             std::vector<std::string> missingArgsNames;
-                            std::copy(function.posArgNames.begin() + function.posArgNames.size() - posArgs.size(),
+                            std::copy(function.posArgNames.begin() + static_cast<ssize_t>(function.posArgNames.size()) -
+                                          static_cast<ssize_t>(posArgs.size()),
                                       function.posArgNames.end(),
                                       missingArgsNames.begin());
 

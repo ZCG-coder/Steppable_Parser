@@ -9,7 +9,6 @@
 #include <map>
 #include <memory>
 #include <ranges>
-#include <sstream>
 #include <string>
 #include <utility>
 #if defined(_WIN32)
@@ -62,7 +61,8 @@ namespace steppable::parser
 #else
         if (handle != nullptr)
         {
-            auto* ptr = reinterpret_cast<STP_ExportFuncPtr*>(dlsym(handle, name.c_str()));
+            auto* ptr = reinterpret_cast<STP_ExportFuncPtr*>( // NOLINT(*-pro-type-reinterpret-cast)
+                dlsym(handle, name.c_str()));
             return ptr;
         }
         return nullptr;

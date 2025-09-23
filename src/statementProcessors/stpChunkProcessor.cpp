@@ -83,10 +83,10 @@ namespace steppable::parser
             fn.interpFn = [&](const STP_StringValMap& map) -> STP_Value {
                 STP_Scope scope = state->addChildScope();
 
-                // default return value
-                scope.addVariable("04795", STP_Value(STP_TypeID_NUMBER, 0));
-
                 scope.variables = map;
+                // default return value
+                scope.addVariable("04795", STP_Value(STP_TypeID_NUMBER, Number()));
+
                 state->setCurrentScope(std::make_shared<STP_Scope>(scope));
 
                 STP_processChunkChild(bodyNode, state, false);
