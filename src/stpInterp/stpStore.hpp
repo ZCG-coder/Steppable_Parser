@@ -50,11 +50,13 @@ namespace steppable::parser
 
     struct STP_FunctionDefinition
     {
-        std::vector<std::string> argNames;
+        std::vector<std::string> posArgNames;
 
-        std::function<void(STP_StringValMap)> interpFn;
+        STP_StringValMap keywordArgs;
 
-        void operator()(const STP_StringValMap& args) const { interpFn(args); }
+        std::function<STP_Value(STP_StringValMap)> interpFn;
+
+        STP_Value operator()(const STP_StringValMap& args) const { return interpFn(args); }
     };
 
     struct STP_Scope
@@ -68,6 +70,10 @@ namespace steppable::parser
         void addVariable(const std::string& name, const STP_Value& data);
 
         STP_Value getVariable(const std::string& name);
+
+        void addFunction(const std::string& name, const STP_FunctionDefinition& fn);
+
+        STP_FunctionDefinition getFunction(const std::string& name);
     };
 
     class STP_InterpStoreLocal

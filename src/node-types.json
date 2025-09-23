@@ -894,17 +894,21 @@
             "named": true
           }
         ]
-      },
-      "parameter_list": {
-        "multiple": false,
-        "required": true,
-        "types": [
-          {
-            "type": "parameter_list",
-            "named": true
-          }
-        ]
       }
+    },
+    "children": {
+      "multiple": true,
+      "required": false,
+      "types": [
+        {
+          "type": "keyword_args_decl",
+          "named": true
+        },
+        {
+          "type": "pos_args_decl",
+          "named": true
+        }
+      ]
     }
   },
   {
@@ -1046,6 +1050,21 @@
       "types": [
         {
           "type": "identifier",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "keyword_args_decl",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": true,
+      "types": [
+        {
+          "type": "fn_keyword_arg",
           "named": true
         }
       ]
@@ -1275,21 +1294,6 @@
     }
   },
   {
-    "type": "parameter_list",
-    "named": true,
-    "fields": {},
-    "children": {
-      "multiple": true,
-      "required": true,
-      "types": [
-        {
-          "type": "param_name",
-          "named": true
-        }
-      ]
-    }
-  },
-  {
     "type": "percentage",
     "named": true,
     "fields": {},
@@ -1299,6 +1303,21 @@
       "types": [
         {
           "type": "number",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "pos_args_decl",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": true,
+      "types": [
+        {
+          "type": "param_name",
           "named": true
         }
       ]

@@ -42,32 +42,63 @@ namespace steppable::parser
             TSNode fnNameNode = ts_node_child_by_field_name(node, "fn_name"s);
             std::string fnName = state->getChunk(&fnNameNode);
 
-            const TSNode argsNode = ts_node_child_by_field_name(node, "parameter_list"s);
-            const size_t argsCount = ts_node_child_count(argsNode);
+            const TSNode posArgsNode = ts_node_next_named_sibling(fnNameNode);
+            TSNode keywordArgsNode{};
 
-            std::vector<std::string> argNames;
-            for (size_t i = 0; i < argsCount; i++)
+            std::vector<std::string> posArgNames;
+            STP_StringValMap keywordArgs;
+
+            if (not ts_node_is_null(posArgsNode))
             {
-                TSNode paramNode = ts_node_child(argsNode, i);
-                if (ts_node_type(paramNode) != "param_name"s)
-                    continue;
-                std::string paramName = state->getChunk(&paramNode);
-                argNames.emplace_back(paramName);
+                const size_t posArgsCount = ts_node_named_child_count(posArgsNode);
+
+                for (size_t i = 0; i < posArgsCount; i++)
+                {
+                    TSNode paramNode = ts_node_named_child(posArgsNode, i);
+                    std::string paramName = state->getChunk(&paramNode);
+                    posArgNames.emplace_back(paramName);
+                }
+
+                keywordArgsNode = ts_node_next_named_sibling(posArgsNode);
+            }
+            if (not ts_node_is_null(keywordArgsNode))
+            {
+                const size_t keywordArgsCount = ts_node_named_child_count(posArgsNode);
+
+                for (size_t i = 0; i < keywordArgsCount; i++)
+                {
+                    TSNode paramNode = ts_node_named_child(keywordArgsNode, i);
+                    TSNode paramNameNode = ts_node_named_child(paramNode, 0);
+                    TSNode paramValueNode = ts_node_named_child(paramNode, 1);
+
+                    STP_Value defaultVal = handleExpr(&paramValueNode, state);
+                    std::string paramName = state->getChunk(&paramNameNode);
+                    keywordArgs.insert_or_assign(paramName, defaultVal);
+                }
             }
 
             TSNode bodyNode = ts_node_child_by_field_name(node, "fn_body"s);
 
             STP_FunctionDefinition fn;
-            fn.interpFn = [&](const STP_StringValMap& map) {
+            fn.interpFn = [&](const STP_StringValMap& map) -> STP_Value {
                 STP_Scope scope = state->addChildScope();
+
+                // default return value
+                scope.addVariable("04795", STP_Value(STP_TypeID_NUMBER, 0));
+
                 scope.variables = map;
                 state->setCurrentScope(std::make_shared<STP_Scope>(scope));
 
                 STP_processChunkChild(bodyNode, state, false);
-
+                STP_Value ret = state->getCurrentScope()->getVariable("04795");
                 state->setCurrentScope(state->getCurrentScope()->parentScope);
+
+                return ret;
             };
-            fn.argNames = argNames;
+            fn.posArgNames = posArgNames;
+            fn.keywordArgs = keywordArgs;
+
+            state->getCurrentScope()->addFunction(fnName, fn);
 
             return false;
         }
@@ -127,10 +158,8 @@ namespace steppable::parser
 
         const size_t childCount = ts_node_child_count(parent);
         for (uint32_t i = 0; i < childCount; ++i)
-        {
             if (processChunk(ts_node_child(parent, i), stpState))
                 break;
-        }
 
         if (createNewScope)
             stpState->setCurrentScope(newScope->parentScope);

@@ -362,12 +362,37 @@
             "value": "("
           },
           {
-            "type": "FIELD",
-            "name": "parameter_list",
-            "content": {
-              "type": "SYMBOL",
-              "name": "parameter_list"
-            }
+            "type": "CHOICE",
+            "members": [
+              {
+                "type": "SYMBOL",
+                "name": "pos_args_decl"
+              },
+              {
+                "type": "BLANK"
+              }
+            ]
+          },
+          {
+            "type": "CHOICE",
+            "members": [
+              {
+                "type": "SEQ",
+                "members": [
+                  {
+                    "type": "STRING",
+                    "value": ","
+                  },
+                  {
+                    "type": "SYMBOL",
+                    "name": "keyword_args_decl"
+                  }
+                ]
+              },
+              {
+                "type": "BLANK"
+              }
+            ]
           },
           {
             "type": "STRING",
@@ -409,7 +434,7 @@
         ]
       }
     },
-    "parameter_list": {
+    "pos_args_decl": {
       "type": "SEQ",
       "members": [
         {
@@ -438,6 +463,31 @@
                 },
                 "named": true,
                 "value": "param_name"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "keyword_args_decl": {
+      "type": "SEQ",
+      "members": [
+        {
+          "type": "SYMBOL",
+          "name": "fn_keyword_arg"
+        },
+        {
+          "type": "REPEAT",
+          "content": {
+            "type": "SEQ",
+            "members": [
+              {
+                "type": "STRING",
+                "value": ","
+              },
+              {
+                "type": "SYMBOL",
+                "name": "fn_keyword_arg"
               }
             ]
           }
@@ -1182,6 +1232,9 @@
     ],
     [
       "fn_pos_arg_list"
+    ],
+    [
+      "pos_args_decl"
     ]
   ],
   "precedences": [],

@@ -168,6 +168,17 @@ namespace steppable::parser
         return variables.at(name);
     }
 
+    void STP_Scope::addFunction(const std::string& name, const STP_FunctionDefinition& fn) { functions[name] = fn; }
+
+    STP_FunctionDefinition STP_Scope::getFunction(const std::string& name)
+    {
+        if (functions.contains(name))
+            return functions[name];
+        output::error("runtime"s, "Cannot find function {0} in scope"s, { name });
+        programSafeExit(1);
+        return {};
+    }
+
     STP_InterpStoreLocal::STP_InterpStoreLocal()
     {
         STP_DynamicLibrary stpFnLib("steppable");

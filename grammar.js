@@ -12,7 +12,8 @@ module.exports = grammar({
     name: "stp",
     conflicts: $ => [
         [$._expression, $.function_call],
-        [$.fn_pos_arg_list]
+        [$.fn_pos_arg_list],
+        [$.pos_args_decl]
     ],
 
     extras: $ => [/\s/, $.comment],
@@ -93,13 +94,12 @@ module.exports = grammar({
             "fn",
             field(
                 "fn_name",
-                alias($.identifier, $.function_name
-                )
+                alias($.identifier, $.function_name)
             ),
             "(",
-            field(
-                "parameter_list",
-                $.parameter_list,
+            optional($.pos_args_decl),
+            optional(
+                seq(",", $.keyword_args_decl)
             ),
             ")",
             "{",
@@ -113,10 +113,17 @@ module.exports = grammar({
             "}"
         )),
 
-        parameter_list: $ => seq(
+        pos_args_decl: $ => seq(
             alias($.identifier, $.param_name),
             repeat(
                 seq(",", alias($.identifier, $.param_name))
+            )
+        ),
+
+        keyword_args_decl: $ => seq(
+            $.fn_keyword_arg,
+            repeat(
+                seq(",", $.fn_keyword_arg)
             )
         ),
 

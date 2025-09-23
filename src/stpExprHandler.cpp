@@ -10,6 +10,8 @@
 
 namespace steppable::parser
 {
+    std::vector<STP_Argument> extractArgVector(const TSNode* exprNode, const STP_InterpState& state);
+
     STP_Value handleExpr(const TSNode* exprNode,
                          const STP_InterpState& state,
                          const bool printResult = false,
@@ -138,61 +140,90 @@ namespace steppable::parser
         else if (exprType == "function_call")
         {
             TSNode nameNode = ts_node_child(ts_node_child(*exprNode, 0), 0);
-            std::string nameNodeType = ts_node_type(nameNode);
 
-            if (nameNodeType == "identifier")
+            if (ts_node_type(nameNode) == "identifier"s)
             {
-                std::string funcName = state->getChunk(&nameNode);
-                funcName = "STP_" + funcName;
+                std::string funcNameOrig = state->getChunk(&nameNode);
+                std::string funcName = "STP_" + funcNameOrig;
 
                 auto stpLib = state->getLoadedLib(0);
                 auto funcPtr = stpLib->getSymbol(funcName);
 
+                auto functionsVec = state->getCurrentScope()->functions;
+                bool executed = false;
+
                 if (funcPtr == nullptr)
                 {
-                    output::error("runtime"s, "Function {0} is not defined."s, { funcName });
-                    programSafeExit(1);
-                }
-
-                std::vector<STP_Argument> fnArgsVec;
-
-                TSNode posArgumentsNode = ts_node_named_child(*exprNode, 1);
-                if (not ts_node_is_null(posArgumentsNode))
-                {
-                    size_t posArgumentsCount = ts_node_named_child_count(posArgumentsNode);
-
-                    for (size_t i = 0; i < posArgumentsCount; i++)
+                    if (functionsVec.contains(funcNameOrig))
                     {
-                        TSNode argNode = ts_node_named_child(posArgumentsNode, i);
-                        STP_Value res = handleExpr(&argNode, state);
-                        STP_Argument argument("", res.data, res.typeID);
-                        fnArgsVec.emplace_back(argument);
-                    }
+                        // call from Steppable-defined functions
+                        auto function = functionsVec[funcNameOrig];
+                        std::vector<STP_Argument> fnArgsVec = extractArgVector(exprNode, state);
 
-                    TSNode kwArgumentsNode = ts_node_named_child(*exprNode, 2);
-                    if (not ts_node_is_null(kwArgumentsNode))
-                    {
-                        size_t keywordArgumentCount = ts_node_named_child_count(kwArgumentsNode);
-                        for (size_t i = 0; i < keywordArgumentCount; i++)
+                        std::vector<STP_Argument> posArgs;
+                        std::vector<STP_Argument> keywordArgs;
+
+                        STP_StringValMap declaredKeywordArgs = function.keywordArgs;
+                        STP_StringValMap givenKeywordArgs;
+
+                        std::ranges::copy_if(fnArgsVec, std::back_inserter(posArgs), [](const STP_Argument& arg) {
+                            return arg.name.empty();
+                        });
+                        std::ranges::copy_if(fnArgsVec, std::back_inserter(keywordArgs), [](const STP_Argument& arg) {
+                            return not arg.name.empty();
+                        });
+
+                        std::ranges::transform(
+                            keywordArgs, std::inserter(givenKeywordArgs, givenKeywordArgs.end()), [](const auto& pair) {
+                                return std::make_pair(pair.name, STP_Value(pair.typeID, pair.value));
+                            });
+
+                        if (posArgs.size() != function.posArgNames.size())
                         {
-                            TSNode argNode = ts_node_named_child(kwArgumentsNode, i);
-                            TSNode argNameNode = ts_node_child_by_field_name(argNode, "argument_name"s);
-                            TSNode argExprNode = ts_node_next_named_sibling(argNameNode);
+                            std::vector<std::string> missingArgsNames;
+                            std::copy(function.posArgNames.begin() + function.posArgNames.size() - posArgs.size(),
+                                      function.posArgNames.end(),
+                                      missingArgsNames.begin());
 
-                            std::string argName = state->getChunk(&argNameNode);
-
-                            STP_Value res = handleExpr(&argExprNode, state);
-                            STP_Argument argument(argName, res.data, res.typeID);
-                            fnArgsVec.emplace_back(argument);
+                            output::error("runtime"s,
+                                          "Missing positional arguments. Expect {0}"s,
+                                          {
+                                              __internals::stringUtils::join(missingArgsNames, ","s),
+                                          });
+                            programSafeExit(1);
                         }
+
+                        STP_StringValMap argMap;
+                        for (size_t i = 0; i < posArgs.size(); i++)
+                        {
+                            std::string posArgName = function.posArgNames[i];
+                            const STP_Argument& currentArg = posArgs[i];
+                            argMap.insert_or_assign(posArgName, STP_Value(currentArg.typeID, currentArg.value));
+                        }
+                        argMap.merge(declaredKeywordArgs);
+                        argMap.merge(givenKeywordArgs);
+
+                        retVal = function.interpFn(argMap);
+                        executed = true;
+                    }
+                    else
+                    {
+                        output::error("runtime"s, "Function {0} is not defined."s, { funcNameOrig });
+                        programSafeExit(1);
                     }
                 }
 
-                auto args = STP_ArgContainer(fnArgsVec, {});
-                auto* val = static_cast<STP_ValuePrimitive*>(funcPtr(&args));
-                std::cout << val->present("") << std::endl;
-                delete val;
+                if (not executed)
+                {
+                    std::vector<STP_Argument> fnArgsVec = extractArgVector(exprNode, state);
+
+                    auto args = STP_ArgContainer(fnArgsVec, {});
+                    auto* val = static_cast<STP_ValuePrimitive*>(funcPtr(&args));
+
+                    retVal = STP_Value(val->typeID, val->data);
+                }
             }
+            // Member access function
         }
         else
         {
@@ -233,4 +264,43 @@ namespace steppable::parser
 
         return retVal;
     }
+
+    std::vector<STP_Argument> extractArgVector(const TSNode* exprNode, const STP_InterpState& state)
+    {
+        std::vector<STP_Argument> fnArgsVec;
+        TSNode posArgumentsNode = ts_node_named_child(*exprNode, 1);
+        if (not ts_node_is_null(posArgumentsNode))
+        {
+            size_t posArgumentsCount = ts_node_named_child_count(posArgumentsNode);
+
+            for (size_t i = 0; i < posArgumentsCount; i++)
+            {
+                TSNode argNode = ts_node_named_child(posArgumentsNode, i);
+                STP_Value res = handleExpr(&argNode, state);
+                STP_Argument argument("", res.data, res.typeID);
+                fnArgsVec.emplace_back(argument);
+            }
+
+            TSNode kwArgumentsNode = ts_node_named_child(*exprNode, 2);
+            if (not ts_node_is_null(kwArgumentsNode))
+            {
+                size_t keywordArgumentCount = ts_node_named_child_count(kwArgumentsNode);
+                for (size_t i = 0; i < keywordArgumentCount; i++)
+                {
+                    TSNode argNode = ts_node_named_child(kwArgumentsNode, i);
+                    TSNode argNameNode = ts_node_child_by_field_name(argNode, "argument_name"s);
+                    TSNode argExprNode = ts_node_next_named_sibling(argNameNode);
+
+                    std::string argName = state->getChunk(&argNameNode);
+
+                    STP_Value res = handleExpr(&argExprNode, state);
+                    STP_Argument argument(argName, res.data, res.typeID);
+                    fnArgsVec.emplace_back(argument);
+                }
+            }
+        }
+
+        return fnArgsVec;
+    }
+
 } // namespace steppable::parser
