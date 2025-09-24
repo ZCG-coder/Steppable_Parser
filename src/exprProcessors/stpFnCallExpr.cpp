@@ -1,0 +1,89 @@
+#include "stpInterp/stpBetterTS.hpp"
+#include "stpInterp/stpExprHandler.hpp"
+#include "stpInterp/stpInit.hpp"
+#include "stpInterp/stpStore.hpp"
+
+#if defined(_MSC_VER)
+    #include <BaseTsd.h>
+typedef SSIZE_T ssize_t;
+#endif
+
+namespace steppable::parser
+{
+    STP_Value STP_processFnCall(const TSNode* exprNode, const STP_InterpState& state)
+    {
+        TSNode nameNode = ts_node_child_by_field_name(*exprNode, "fn_name"s);
+
+        std::string funcNameOrig = state->getChunk(&nameNode);
+        std::string funcName = "STP_" + funcNameOrig;
+
+        auto stpLib = state->getLoadedLib(0);
+        auto funcPtr = stpLib->getSymbol(funcName);
+
+        auto functionsVec = state->getCurrentScope()->functions;
+
+        if (funcPtr == nullptr)
+        {
+            if (functionsVec.contains(funcNameOrig))
+            {
+                // call from Steppable-defined functions
+                auto function = functionsVec[funcNameOrig];
+                std::vector<STP_Argument> fnArgsVec = STP_extractArgVector(exprNode, state);
+
+                std::vector<STP_Argument> posArgs;
+                std::vector<STP_Argument> keywordArgs;
+
+                STP_StringValMap declaredKeywordArgs = function.keywordArgs;
+                STP_StringValMap givenKeywordArgs;
+
+                std::ranges::copy_if(
+                    fnArgsVec, std::back_inserter(posArgs), [](const STP_Argument& arg) { return arg.name.empty(); });
+                std::ranges::copy_if(fnArgsVec, std::back_inserter(keywordArgs), [](const STP_Argument& arg) {
+                    return not arg.name.empty();
+                });
+
+                std::ranges::transform(
+                    keywordArgs, std::inserter(givenKeywordArgs, givenKeywordArgs.end()), [](const auto& pair) {
+                        return std::make_pair(pair.name, STP_Value(pair.typeID, pair.value));
+                    });
+
+                if (posArgs.size() != function.posArgNames.size())
+                {
+                    std::vector<std::string> missingArgsNames;
+                    std::copy(function.posArgNames.begin() + static_cast<ssize_t>(function.posArgNames.size()) -
+                                  static_cast<ssize_t>(posArgs.size()),
+                              function.posArgNames.end(),
+                              missingArgsNames.begin());
+
+                    output::error("runtime"s,
+                                  "Missing positional arguments. Expect {0}"s,
+                                  {
+                                      __internals::stringUtils::join(missingArgsNames, ","s),
+                                  });
+                    programSafeExit(1);
+                }
+
+                STP_StringValMap argMap;
+                for (size_t i = 0; i < posArgs.size(); i++)
+                {
+                    std::string posArgName = function.posArgNames[i];
+                    const STP_Argument& currentArg = posArgs[i];
+                    argMap.insert_or_assign(posArgName, STP_Value(currentArg.typeID, currentArg.value));
+                }
+                argMap.merge(declaredKeywordArgs);
+                argMap.merge(givenKeywordArgs);
+
+                return function.interpFn(argMap);
+            }
+            output::error("runtime"s, "Function {0} is not defined."s, { funcNameOrig });
+            programSafeExit(1);
+        }
+
+        std::vector<STP_Argument> fnArgsVec = STP_extractArgVector(exprNode, state);
+
+        auto args = STP_ArgContainer(fnArgsVec, {});
+        auto* val = static_cast<STP_ValuePrimitive*>(funcPtr(&args));
+
+        return STP_Value(val->typeID, val->data);
+    }
+} // namespace steppable::parser

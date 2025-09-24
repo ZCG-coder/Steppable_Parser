@@ -39,16 +39,20 @@ namespace steppable::parser
                 TSNode paramNameNode = ts_node_named_child(paramNode, 0);
                 TSNode paramValueNode = ts_node_named_child(paramNode, 1);
 
-                STP_Value defaultVal = handleExpr(&paramValueNode, state);
+                STP_Value defaultVal = STP_handleExpr(&paramValueNode, state);
                 std::string paramName = state->getChunk(&paramNameNode);
                 keywordArgs.insert_or_assign(paramName, defaultVal);
             }
         }
 
         TSNode bodyNode = ts_node_child_by_field_name(*node, "fn_body"s);
+        TSTree* bodyNodeTree = ts_tree_copy(bodyNode.tree);
 
         STP_FunctionDefinition fn;
-        fn.interpFn = [&](const STP_StringValMap& map) -> STP_Value {
+        fn.fnNode = bodyNode;
+        fn.fnTree = bodyNodeTree;
+
+        fn.interpFn = [=](const STP_StringValMap& map) -> STP_Value {
             STP_Scope scope = state->addChildScope();
 
             scope.variables = map;
@@ -57,7 +61,7 @@ namespace steppable::parser
 
             state->setCurrentScope(std::make_shared<STP_Scope>(scope));
 
-            STP_processChunkChild(bodyNode, state, false);
+            STP_processChunkChild(fn.fnNode, state, false);
             STP_Value ret = state->getCurrentScope()->getVariable("04795");
             state->setCurrentScope(state->getCurrentScope()->parentScope);
 

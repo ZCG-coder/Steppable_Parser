@@ -50,6 +50,9 @@ namespace steppable::parser
 
     struct STP_FunctionDefinition
     {
+        TSNode fnNode;
+        TSTree* fnTree;
+
         std::vector<std::string> posArgNames;
 
         STP_StringValMap keywordArgs;

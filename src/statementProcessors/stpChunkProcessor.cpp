@@ -13,8 +13,7 @@ namespace steppable::parser
 {
     bool processChunk(const TSNode& node, const STP_InterpState& state)
     {
-        if (ts_node_is_error(node) or ts_node_is_missing(node))
-            STP_throwSyntaxError(node, state);
+        STP_checkRecursiveNodeSanity(node, state);
 
         const std::string type = ts_node_type(node);
 
@@ -29,7 +28,7 @@ namespace steppable::parser
         {
             // Handle return statement
             TSNode exprNode = ts_node_child_by_field_name(node, "ret_expr"s);
-            STP_Value val = handleExpr(&exprNode, state);
+            STP_Value val = STP_handleExpr(&exprNode, state);
 
             // By writing to a illegally-named variable,
             state->getCurrentScope()->addVariable("04795", val);
@@ -66,7 +65,7 @@ namespace steppable::parser
         if (type == "expression_statement")
         {
             const TSNode exprNode = ts_node_child(node, 0);
-            handleExpr(&exprNode, state, true);
+            STP_handleExpr(&exprNode, state, true);
             return false;
         }
         if (type == "import_statement")

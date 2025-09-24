@@ -21,6 +21,7 @@ SET(PROJECT_SRC_COMMON
     # Expression processors
     src/exprProcessors/stpStringExpr.cpp
     src/exprProcessors/stpMatrixExpr.cpp
+    src/exprProcessors/stpFnCallExpr.cpp
 )
 SET(PROJECT_SRC src/main.cpp ${PROJECT_SRC_COMMON})
 SET(PROJECT_SRC_DBG src/mainTest.cpp)

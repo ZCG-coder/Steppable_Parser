@@ -13,16 +13,13 @@
 
 namespace steppable::parser
 {
-    std::vector<STP_Argument> extractArgVector(const TSNode* exprNode, const STP_InterpState& state);
-
-    STP_Value handleExpr(const TSNode* exprNode,
-                         const STP_InterpState& state,
-                         const bool printResult,
-                         const std::string& exprName)
+    STP_Value STP_handleExpr(const TSNode* exprNode,
+                             const STP_InterpState& state,
+                             const bool printResult,
+                             const std::string& exprName)
     {
         assert(exprNode != nullptr);
-        if (ts_node_type(*exprNode) == "ERROR"s or ts_node_is_missing(*exprNode))
-            STP_throwSyntaxError(*exprNode, state);
+        STP_checkRecursiveNodeSanity(*exprNode, state);
 
         std::string exprType = ts_node_type(*exprNode);
 
@@ -47,10 +44,8 @@ namespace steppable::parser
         if (exprType == "matrix")
             retVal = STP_handleMatrixExpr(exprNode, state);
         if (exprType == "string")
-        {
             retVal = STP_handleStringExpr(exprNode, state);
-        }
-        else if (exprType == "identifier_or_member_access")
+        if (exprType == "identifier_or_member_access")
         {
             TSNode childNode = ts_node_child(*exprNode, 0);
             std::string childNodeType = ts_node_type(childNode);
@@ -62,123 +57,36 @@ namespace steppable::parser
                 retVal = state->getCurrentScope()->getVariable(nameNode);
             }
         }
-        else if (exprType == "function_call")
+        if (exprType == "function_call")
+            retVal = STP_processFnCall(exprNode, state);
+        if (exprType == "binary_expression")
         {
-            TSNode nameNode = ts_node_child_by_field_name(*exprNode, "fn_name"s);
+            // binary_expression := lhs 'operator' rhs
+            TSNode binExprNode = ts_node_child(*exprNode, 0);
+            TSNode lhsNode = ts_node_child(binExprNode, 0);
+            TSNode operandNode = ts_node_child(ts_node_child(binExprNode, 1), 0);
+            TSNode rhsNode = ts_node_child(binExprNode, 2);
 
-            std::string funcNameOrig = state->getChunk(&nameNode);
-            std::string funcName = "STP_" + funcNameOrig;
+            std::string operandType = ts_node_type(operandNode);
 
-            auto stpLib = state->getLoadedLib(0);
-            auto funcPtr = stpLib->getSymbol(funcName);
+            STP_Value lhs = STP_handleExpr(&lhsNode, state);
+            STP_Value rhs = STP_handleExpr(&rhsNode, state);
 
-            auto functionsVec = state->getCurrentScope()->functions;
-            bool executed = false;
-
-            if (funcPtr == nullptr)
-            {
-                if (functionsVec.contains(funcNameOrig))
-                {
-                    // call from Steppable-defined functions
-                    auto function = functionsVec[funcNameOrig];
-                    std::vector<STP_Argument> fnArgsVec = extractArgVector(exprNode, state);
-
-                    std::vector<STP_Argument> posArgs;
-                    std::vector<STP_Argument> keywordArgs;
-
-                    STP_StringValMap declaredKeywordArgs = function.keywordArgs;
-                    STP_StringValMap givenKeywordArgs;
-
-                    std::ranges::copy_if(fnArgsVec, std::back_inserter(posArgs), [](const STP_Argument& arg) {
-                        return arg.name.empty();
-                    });
-                    std::ranges::copy_if(fnArgsVec, std::back_inserter(keywordArgs), [](const STP_Argument& arg) {
-                        return not arg.name.empty();
-                    });
-
-                    std::ranges::transform(
-                        keywordArgs, std::inserter(givenKeywordArgs, givenKeywordArgs.end()), [](const auto& pair) {
-                            return std::make_pair(pair.name, STP_Value(pair.typeID, pair.value));
-                        });
-
-                    if (posArgs.size() != function.posArgNames.size())
-                    {
-                        std::vector<std::string> missingArgsNames;
-                        std::copy(function.posArgNames.begin() + static_cast<ssize_t>(function.posArgNames.size()) -
-                                      static_cast<ssize_t>(posArgs.size()),
-                                  function.posArgNames.end(),
-                                  missingArgsNames.begin());
-
-                        output::error("runtime"s,
-                                      "Missing positional arguments. Expect {0}"s,
-                                      {
-                                          __internals::stringUtils::join(missingArgsNames, ","s),
-                                      });
-                        programSafeExit(1);
-                    }
-
-                    STP_StringValMap argMap;
-                    for (size_t i = 0; i < posArgs.size(); i++)
-                    {
-                        std::string posArgName = function.posArgNames[i];
-                        const STP_Argument& currentArg = posArgs[i];
-                        argMap.insert_or_assign(posArgName, STP_Value(currentArg.typeID, currentArg.value));
-                    }
-                    argMap.merge(declaredKeywordArgs);
-                    argMap.merge(givenKeywordArgs);
-
-                    retVal = function.interpFn(argMap);
-                    executed = true;
-                }
-                else
-                {
-                    output::error("runtime"s, "Function {0} is not defined."s, { funcNameOrig });
-                    programSafeExit(1);
-                }
-            }
-
-            if (not executed)
-            {
-                std::vector<STP_Argument> fnArgsVec = extractArgVector(exprNode, state);
-
-                auto args = STP_ArgContainer(fnArgsVec, {});
-                auto* val = static_cast<STP_ValuePrimitive*>(funcPtr(&args));
-
-                retVal = STP_Value(val->typeID, val->data);
-            }
+            retVal = lhs.applyBinaryOperator(operandType, rhs);
         }
-        else
+        if (exprType == "unary_expression")
         {
-            // Type is not specified by notation, need to infer.
-            if (exprType == "binary_expression")
-            {
-                // binary_expression := lhs 'operator' rhs
-                TSNode binExprNode = ts_node_child(*exprNode, 0);
-                TSNode lhsNode = ts_node_child(binExprNode, 0);
-                TSNode operandNode = ts_node_child(ts_node_child(binExprNode, 1), 0);
-                TSNode rhsNode = ts_node_child(binExprNode, 2);
+            TSNode operandNode = ts_node_child(*exprNode, 0);
+            TSNode child = ts_node_child(*exprNode, 1);
+            std::string operandType = ts_node_type(operandNode);
 
-                std::string operandType = ts_node_type(operandNode);
-
-                STP_Value lhs = handleExpr(&lhsNode, state);
-                STP_Value rhs = handleExpr(&rhsNode, state);
-
-                retVal = lhs.applyBinaryOperator(operandType, rhs);
-            }
-            if (exprType == "unary_expression")
-            {
-                TSNode operandNode = ts_node_child(*exprNode, 0);
-                TSNode child = ts_node_child(*exprNode, 1);
-                std::string operandType = ts_node_type(operandNode);
-
-                STP_Value childVal = handleExpr(&child, state);
-                retVal = childVal.applyUnaryOperator(operandType);
-            }
-            if (exprType == "bracketed_expr")
-            {
-                TSNode innerExpr = ts_node_child(*exprNode, 1);
-                retVal = handleExpr(&innerExpr, state);
-            }
+            STP_Value childVal = STP_handleExpr(&child, state);
+            retVal = childVal.applyUnaryOperator(operandType);
+        }
+        if (exprType == "bracketed_expr")
+        {
+            TSNode innerExpr = ts_node_child(*exprNode, 1);
+            retVal = STP_handleExpr(&innerExpr, state);
         }
 
         if (printResult)
@@ -187,7 +95,7 @@ namespace steppable::parser
         return retVal;
     }
 
-    std::vector<STP_Argument> extractArgVector(const TSNode* exprNode, const STP_InterpState& state)
+    std::vector<STP_Argument> STP_extractArgVector(const TSNode* exprNode, const STP_InterpState& state)
     {
         std::vector<STP_Argument> fnArgsVec;
         TSNode posArgumentsNode = ts_node_named_child(*exprNode, 1);
@@ -198,7 +106,7 @@ namespace steppable::parser
             for (uint32_t i = 0; i < posArgumentsCount; i++)
             {
                 TSNode argNode = ts_node_named_child(posArgumentsNode, i);
-                STP_Value res = handleExpr(&argNode, state);
+                STP_Value res = STP_handleExpr(&argNode, state);
                 STP_Argument argument("", res.data, res.typeID);
                 fnArgsVec.emplace_back(argument);
             }
@@ -215,7 +123,7 @@ namespace steppable::parser
 
                     std::string argName = state->getChunk(&argNameNode);
 
-                    STP_Value res = handleExpr(&argExprNode, state);
+                    STP_Value res = STP_handleExpr(&argExprNode, state);
                     STP_Argument argument(argName, res.data, res.typeID);
                     fnArgsVec.emplace_back(argument);
                 }

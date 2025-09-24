@@ -32,7 +32,7 @@ namespace steppable::parser
                 TSNode cell = ts_node_child(node, i);
                 if (ts_node_type(cell) == ";"s)
                     continue;
-                STP_Value val = handleExpr(&cell, state);
+                STP_Value val = STP_handleExpr(&cell, state);
                 if (val.typeID != STP_TypeID_NUMBER)
                 {
                     output::error("parser"s, "Matrix should contain numbers only."s);

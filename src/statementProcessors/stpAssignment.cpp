@@ -23,7 +23,7 @@ namespace steppable::parser
         else if (ts_node_type(semicolonSibling) != ";"s)
             printValue = true;
 
-        const STP_Value val = handleExpr(&exprNode, state, printValue, name);
+        const STP_Value val = STP_handleExpr(&exprNode, state, printValue, name);
         // Write to scope / global variables
         state->getCurrentScope()->addVariable(name, val);
     }

@@ -10,6 +10,21 @@ namespace steppable::parser
 {
     using namespace steppable::__internals;
 
+    void STP_checkRecursiveNodeSanity(const TSNode& node, const STP_InterpState& state)
+    {
+        if (ts_node_is_null(node))
+            return;
+
+        if (ts_node_is_error(node) or ts_node_is_missing(node))
+            STP_throwSyntaxError(node, state);
+
+        for (uint32_t i = 0; i < ts_node_child_count(node); i++)
+        {
+            TSNode child = ts_node_child(node, i);
+            STP_checkRecursiveNodeSanity(child, state);
+        }
+    }
+
     void STP_throwSyntaxError(const TSNode& node, const STP_InterpState& state)
     {
         output::error("parser"s, "Syntax error"s);
@@ -23,8 +38,10 @@ namespace steppable::parser
                           std::to_string(startRow + 1),
                           std::to_string(startCol),
                       });
-        std::string errorChunk = state->getChunk(&node);
+        std::string errorChunk = state->getChunk();
         auto lines = stringUtils::split(errorChunk, '\n');
+        lines.erase(lines.begin(), lines.begin() + startRow);
+        lines.erase(lines.begin() + (endRow - startRow + 1), lines.end());
 
         const auto& endLineLen = static_cast<size_t>(log10(endRow + 1) + 1);
         const auto& startLineLen = static_cast<size_t>(log10(startRow + 1) + 1);
@@ -34,12 +51,14 @@ namespace steppable::parser
         {
             const auto& line = lines.at(i);
             std::string lineNo = stringUtils::lPad(std::to_string(startRow + i + 1), padding);
+            std::string indicators = std::string(startCol, ' ') + std::string(endCol - startCol, '~');
             output::info("parser"s,
                          "{0}  | {1}"s,
                          {
                              lineNo,
                              line,
                          });
+            output::info("parser"s, "{0}  | {1}"s, { std::string(lineNo.length(), ' '), indicators });
         }
 
         utils::programSafeExit(1);

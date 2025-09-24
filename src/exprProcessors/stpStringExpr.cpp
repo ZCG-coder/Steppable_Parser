@@ -36,7 +36,7 @@ namespace steppable::parser
             else if (childNodeType == "formatting_snippet")
             {
                 auto formatExprNode = ts_node_child_by_field_name(childNode, "formatting_expr"s);
-                STP_Value value = handleExpr(&formatExprNode, state, false, "");
+                STP_Value value = STP_handleExpr(&formatExprNode, state, false, "");
 
                 data += value.present("", false);
             }
