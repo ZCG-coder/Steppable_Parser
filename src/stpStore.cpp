@@ -151,6 +151,17 @@ namespace steppable::parser
 
     void STP_Scope::addVariable(const std::string& name, const STP_Value& data)
     {
+        auto currentScope = std::shared_ptr<STP_Scope>(this, [](STP_Scope*) {});
+        while (currentScope != nullptr)
+        {
+            if (currentScope->variables.contains(name))
+            {
+                currentScope->variables.insert_or_assign(name, data);
+                return;
+            }
+            currentScope = currentScope->parentScope;
+        }
+
         variables.insert_or_assign(name, data);
     }
 

@@ -779,7 +779,7 @@
           "named": true
         },
         {
-          "type": "loop_statements",
+          "type": "loop_statement",
           "named": true
         },
         {
@@ -1071,7 +1071,7 @@
     }
   },
   {
-    "type": "loop_statements",
+    "type": "loop_statement",
     "named": true,
     "fields": {},
     "children": {
@@ -1112,6 +1112,21 @@
         },
         {
           "type": "while_stmt",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "loop_statements",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": true,
+      "types": [
+        {
+          "type": "loop_statement",
           "named": true
         }
       ]
@@ -1591,53 +1606,60 @@
   {
     "type": "while_stmt",
     "named": true,
-    "fields": {},
+    "fields": {
+      "loop_expr": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "binary_expression",
+            "named": true
+          },
+          {
+            "type": "bracketed_expr",
+            "named": true
+          },
+          {
+            "type": "function_call",
+            "named": true
+          },
+          {
+            "type": "identifier_or_member_access",
+            "named": true
+          },
+          {
+            "type": "matrix",
+            "named": true
+          },
+          {
+            "type": "number",
+            "named": true
+          },
+          {
+            "type": "percentage",
+            "named": true
+          },
+          {
+            "type": "string",
+            "named": true
+          },
+          {
+            "type": "suffix_expression",
+            "named": true
+          },
+          {
+            "type": "unary_expression",
+            "named": true
+          }
+        ]
+      }
+    },
     "children": {
-      "multiple": true,
-      "required": true,
+      "multiple": false,
+      "required": false,
       "types": [
         {
-          "type": "binary_expression",
-          "named": true
-        },
-        {
-          "type": "bracketed_expr",
-          "named": true
-        },
-        {
-          "type": "function_call",
-          "named": true
-        },
-        {
-          "type": "identifier_or_member_access",
-          "named": true
-        },
-        {
           "type": "loop_statements",
-          "named": true
-        },
-        {
-          "type": "matrix",
-          "named": true
-        },
-        {
-          "type": "number",
-          "named": true
-        },
-        {
-          "type": "percentage",
-          "named": true
-        },
-        {
-          "type": "string",
-          "named": true
-        },
-        {
-          "type": "suffix_expression",
-          "named": true
-        },
-        {
-          "type": "unary_expression",
           "named": true
         }
       ]

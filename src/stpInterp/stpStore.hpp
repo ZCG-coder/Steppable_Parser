@@ -1,5 +1,5 @@
 #pragma once
-#include "../../../include/steppable/stpTypeName.hpp"
+#include "steppable/stpTypeName.hpp"
 #include "fn/calc.hpp"
 #include "steppable/stpArgSpace.hpp"
 

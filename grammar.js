@@ -38,7 +38,7 @@ module.exports = grammar({
             field("sym_name", $.identifier)
         ),
 
-        loop_statements: $ => choice(
+        loop_statement: $ => choice(
             $._statement,
             "break",
             "cont"
@@ -71,12 +71,16 @@ module.exports = grammar({
         ),
 
         while_stmt: $ => seq(
-            "while", $._expression, "{", repeat($.loop_statements), "}"
+            "while",
+            field("loop_expr", $._expression),
+            "{",
+            alias(repeat($.loop_statement), $.loop_statements),
+            "}"
         ),
 
         foreach_in_stmt: $ => seq(
             "foreach", alias($.identifier, $.loop_var), "in", $.identifier_or_member_access, "{",
-            repeat($.loop_statements),
+            repeat($.loop_statement),
             "}"
         ),
 

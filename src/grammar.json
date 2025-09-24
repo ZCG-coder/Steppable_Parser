@@ -67,7 +67,7 @@
         }
       ]
     },
-    "loop_statements": {
+    "loop_statement": {
       "type": "CHOICE",
       "members": [
         {
@@ -223,19 +223,28 @@
           "value": "while"
         },
         {
-          "type": "SYMBOL",
-          "name": "_expression"
+          "type": "FIELD",
+          "name": "loop_expr",
+          "content": {
+            "type": "SYMBOL",
+            "name": "_expression"
+          }
         },
         {
           "type": "STRING",
           "value": "{"
         },
         {
-          "type": "REPEAT",
+          "type": "ALIAS",
           "content": {
-            "type": "SYMBOL",
-            "name": "loop_statements"
-          }
+            "type": "REPEAT",
+            "content": {
+              "type": "SYMBOL",
+              "name": "loop_statement"
+            }
+          },
+          "named": true,
+          "value": "loop_statements"
         },
         {
           "type": "STRING",
@@ -275,7 +284,7 @@
           "type": "REPEAT",
           "content": {
             "type": "SYMBOL",
-            "name": "loop_statements"
+            "name": "loop_statement"
           }
         },
         {

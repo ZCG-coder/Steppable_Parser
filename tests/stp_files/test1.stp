@@ -21,6 +21,11 @@ fn fn1(m, n: 3) {
 }
 
 fn1(3)
+i = 0;
+while i < 3 {
+    i = i+1;
+    "The value of i is \{i\}"
+}
 
 var1 = (5 mod (3+1) + 1);
 if var1 == 1 {

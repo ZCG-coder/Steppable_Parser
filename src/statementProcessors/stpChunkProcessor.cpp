@@ -1,3 +1,5 @@
+#include "output.hpp"
+#include "platform.hpp"
 #include "stpInterp/stpBetterTS.hpp"
 #include "stpInterp/stpErrors.hpp"
 #include "stpInterp/stpExprHandler.hpp"
@@ -13,9 +15,10 @@ namespace steppable::parser
 {
     bool processChunk(const TSNode& node, const STP_InterpState& state)
     {
-        STP_checkRecursiveNodeSanity(node, state);
-
         const std::string type = ts_node_type(node);
+
+        if (type == "source_file")
+            STP_checkRecursiveNodeSanity(node, state);
 
         if (type == "\n" // Newline
             or type == "comment" // Comment
@@ -48,8 +51,31 @@ namespace steppable::parser
         }
         if (type == "while_stmt")
         {
-            const TSNode exprNode = ts_node_next_named_sibling(node);
-            std::cout << ts_node_type(exprNode) << "\n";
+            const TSNode exprNode = ts_node_child_by_field_name(node, "loop_expr"s);
+            const TSNode bodyNode = ts_node_next_named_sibling(exprNode);
+
+            if (ts_node_is_null(bodyNode))
+            {
+                output::error("runtime"s, "No statements in while loop"s);
+                programSafeExit(1);
+            }
+
+            // Create one scope for the entire loop body
+            auto loopScope = std::make_shared<STP_Scope>(state->addChildScope());
+            state->setCurrentScope(loopScope);
+
+            STP_Value loopVal = STP_handleExpr(&exprNode, state);
+            while (true)
+            {
+                loopVal = STP_handleExpr(&exprNode, state);
+                if (not loopVal.asBool())
+                    break;
+
+                STP_processChunkChild(bodyNode, state);
+            }
+
+            // Restore the parent scope after the entire loop
+            state->setCurrentScope(loopScope->parentScope);
             return false;
         }
         if (type == "foreach_in_stmt")
@@ -76,6 +102,12 @@ namespace steppable::parser
         if (type == "symbol_decl_statement")
         {
             handleSymbolDeclStmt(&node, state);
+            return false;
+        }
+        if (type == "loop_statement")
+        {
+            const TSNode stmtNode = ts_node_child(node, 0);
+            processChunk(stmtNode, state);
             return false;
         }
 
