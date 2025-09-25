@@ -13,7 +13,7 @@ using namespace std::literals;
 
 namespace steppable::parser
 {
-    bool processChunk(const TSNode& node, const STP_InterpState& state)
+    void processChunk(const TSNode& node, const STP_InterpState& state)
     {
         const std::string type = ts_node_type(node);
 
@@ -24,7 +24,7 @@ namespace steppable::parser
             or type == "comment" // Comment
         )
         {
-            return false;
+            return;
         }
 
         if (type == "return_stmt")
@@ -35,19 +35,32 @@ namespace steppable::parser
 
             // By writing to a illegally-named variable,
             state->getCurrentScope()->addVariable("04795", val);
-            return true;
+            state->setExecState(STP_ExecState::RETURNED);
+            return;
+        }
+
+        if (type == "cont")
+        {
+            state->setExecState(STP_ExecState::CONT);
+            return;
+        }
+
+        if (type == "break")
+        {
+            state->setExecState(STP_ExecState::BREAK);
+            return;
         }
 
         // Handle scoped statements before assignment statements
         if (type == "function_definition")
         {
             STP_processFuncDefinition(&node, state);
-            return false;
+            return;
         }
         if (type == "if_else_stmt")
         {
             STP_processIfElseStmt(&node, state);
-            return false;
+            return;
         }
         if (type == "while_stmt")
         {
@@ -71,48 +84,53 @@ namespace steppable::parser
                 if (not loopVal.asBool())
                     break;
 
-                STP_processChunkChild(bodyNode, state);
+                processChunk(bodyNode, state);
+
+                // Loop flow control
+                if (state->getExecState() == STP_ExecState::CONT)
+                {
+                    state->setExecState(STP_ExecState::NORMAL);
+                    continue;
+                }
+                if (state->getExecState() == STP_ExecState::BREAK)
+                {
+                    state->setExecState(STP_ExecState::NORMAL);
+                    break;
+                }
             }
 
             // Restore the parent scope after the entire loop
             state->setCurrentScope(loopScope->parentScope);
-            return false;
+            return;
         }
         if (type == "foreach_in_stmt")
         {
             //
-            return false;
+            return;
         }
         if (type == "assignment")
         {
             handleAssignment(&node, state);
-            return false;
+            return;
         }
         if (type == "expression_statement")
         {
             const TSNode exprNode = ts_node_child(node, 0);
             STP_handleExpr(&exprNode, state, true);
-            return false;
+            return;
         }
         if (type == "import_statement")
         {
             //
-            return false;
+            return;
         }
         if (type == "symbol_decl_statement")
         {
             handleSymbolDeclStmt(&node, state);
-            return false;
-        }
-        if (type == "loop_statement")
-        {
-            const TSNode stmtNode = ts_node_child(node, 0);
-            processChunk(stmtNode, state);
-            return false;
+            return;
         }
 
         STP_processChunkChild(node, state);
-        return false;
     }
 
     void STP_processChunkChild(const TSNode& parent, const STP_InterpState& stpState, const bool createNewScope)
@@ -129,8 +147,14 @@ namespace steppable::parser
 
         const size_t childCount = ts_node_child_count(parent);
         for (uint32_t i = 0; i < childCount; ++i)
-            if (processChunk(ts_node_child(parent, i), stpState))
+        {
+            processChunk(ts_node_child(parent, i), stpState);
+            if (stpState->getExecState() == STP_ExecState::RETURNED)
+            {
+                stpState->setExecState(STP_ExecState::NORMAL);
                 break;
+            }
+        }
 
         if (createNewScope)
             stpState->setCurrentScope(newScope->parentScope);

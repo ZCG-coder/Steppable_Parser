@@ -83,7 +83,7 @@ namespace steppable::parser
         std::any value = this->data;
         std::any rhsValue = rhs.data;
 
-        STP_Value returnVal(STP_TypeID_NULL);
+        STP_Value returnVal(STP_TypeID::NONE);
         returnVal.typeID = retType;
         returnVal.typeName = STP_typeNames.at(retType);
 
@@ -114,31 +114,31 @@ namespace steppable::parser
     {
         switch (typeID)
         {
-        case STP_TypeID_NULL:
+        case STP_TypeID::NONE:
             return false;
-        case STP_TypeID_NUMBER:
+        case STP_TypeID::NUMBER:
         {
             const auto val = std::any_cast<Number>(data);
             return val != 0;
         }
-        case STP_TypeID_MATRIX_2D:
+        case STP_TypeID::MATRIX_2D:
         {
             const auto val = std::any_cast<Matrix>(data);
             return std::ranges::all_of(val.getData(), [](const std::vector<Number>& vec) {
                 return std::ranges::all_of(vec, [](const Number& n) { return n != 0; });
             });
         }
-        case STP_TypeID_STRING:
+        case STP_TypeID::STRING:
         {
             const auto val = std::any_cast<std::string>(data);
             return not val.empty();
         }
-        case STP_TypeID_FUNC:
+        case STP_TypeID::FUNC:
         {
             output::error("parser"s, "Cannot convert Func to a logical type"s);
             programSafeExit(1);
         }
-        case STP_TypeID_SYMBOL:
+        case STP_TypeID::SYMBOL:
         {
             output::error("parser"s, "Cannot convert Symbol to a logical type"s);
             programSafeExit(1);
@@ -188,6 +188,19 @@ namespace steppable::parser
         output::error("runtime"s, "Cannot find function {0} in scope"s, { name });
         programSafeExit(1);
         return {};
+    }
+
+    std::string STP_Scope::present() const
+    {
+        std::stringstream ss;
+
+        if (variables.empty())
+            ss << "(No variables are present.)" << "\n";
+
+        for (const auto& [name, val] : variables)
+            ss << val.present(name) << "\n";
+
+        return ss.str();
     }
 
     STP_InterpStoreLocal::STP_InterpStoreLocal()

@@ -47,89 +47,89 @@ namespace steppable::parser
         // [fn call]    any            any          any                 Depends on implementation
 
         bool operationPerformable = false;
-        STP_TypeID retType = STP_TypeID_NULL;
+        STP_TypeID retType = STP_TypeID::NONE;
 
         // region Magic
-        if ((lhsType == STP_TypeID_SYMBOL and rhsType != STP_TypeID_STRING) or
-            (lhsType != STP_TypeID_STRING and rhsType == STP_TypeID_SYMBOL))
+        if ((lhsType == STP_TypeID::SYMBOL and rhsType != STP_TypeID::STRING) or
+            (lhsType != STP_TypeID::STRING and rhsType == STP_TypeID::SYMBOL))
         {
             // Symbols operations are always possible
             operationPerformable = true;
-            retType = STP_TypeID_SYMBOL;
+            retType = STP_TypeID::SYMBOL;
         }
         else if (operatorStr == "+" or operatorStr == "-")
         {
-            operationPerformable = (lhsType == STP_TypeID_NUMBER and rhsType == STP_TypeID_NUMBER) or
-                                   (lhsType == STP_TypeID_MATRIX_2D and rhsType == STP_TypeID_MATRIX_2D) or
-                                   (lhsType == STP_TypeID_MATRIX_2D and rhsType == STP_TypeID_NUMBER) or
-                                   (lhsType == STP_TypeID_NUMBER and rhsType == STP_TypeID_MATRIX_2D) or
-                                   (lhsType == STP_TypeID_STRING and rhsType == STP_TypeID_STRING);
+            operationPerformable = (lhsType == STP_TypeID::NUMBER and rhsType == STP_TypeID::NUMBER) or
+                                   (lhsType == STP_TypeID::MATRIX_2D and rhsType == STP_TypeID::MATRIX_2D) or
+                                   (lhsType == STP_TypeID::MATRIX_2D and rhsType == STP_TypeID::NUMBER) or
+                                   (lhsType == STP_TypeID::NUMBER and rhsType == STP_TypeID::MATRIX_2D) or
+                                   (lhsType == STP_TypeID::STRING and rhsType == STP_TypeID::STRING);
 
-            if (lhsType == STP_TypeID_NUMBER and rhsType == STP_TypeID_NUMBER)
-                retType = STP_TypeID_NUMBER;
-            else if ((lhsType == STP_TypeID_MATRIX_2D and rhsType == STP_TypeID_NUMBER) or
-                     (rhsType == STP_TypeID_MATRIX_2D and lhsType == STP_TypeID_NUMBER) or
-                     (lhsType == STP_TypeID_MATRIX_2D and rhsType == STP_TypeID_MATRIX_2D))
-                retType = STP_TypeID_MATRIX_2D;
-            else if (lhsType == STP_TypeID_STRING or rhsType == STP_TypeID_STRING)
-                retType = STP_TypeID_STRING;
+            if (lhsType == STP_TypeID::NUMBER and rhsType == STP_TypeID::NUMBER)
+                retType = STP_TypeID::NUMBER;
+            else if ((lhsType == STP_TypeID::MATRIX_2D and rhsType == STP_TypeID::NUMBER) or
+                     (rhsType == STP_TypeID::MATRIX_2D and lhsType == STP_TypeID::NUMBER) or
+                     (lhsType == STP_TypeID::MATRIX_2D and rhsType == STP_TypeID::MATRIX_2D))
+                retType = STP_TypeID::MATRIX_2D;
+            else if (lhsType == STP_TypeID::STRING or rhsType == STP_TypeID::STRING)
+                retType = STP_TypeID::STRING;
         }
-        else if (operatorStr == "*" and ((lhsType == STP_TypeID_STRING and rhsType == STP_TypeID_NUMBER) or
-                                         (lhsType == STP_TypeID_NUMBER and rhsType == STP_TypeID_STRING)))
+        else if (operatorStr == "*" and ((lhsType == STP_TypeID::STRING and rhsType == STP_TypeID::NUMBER) or
+                                         (lhsType == STP_TypeID::NUMBER and rhsType == STP_TypeID::STRING)))
         {
             operationPerformable = true;
-            retType = STP_TypeID_STRING;
+            retType = STP_TypeID::STRING;
         }
         else if (operatorStr == "*" or operatorStr == "/")
         {
-            operationPerformable = (lhsType == STP_TypeID_NUMBER and rhsType == STP_TypeID_NUMBER) or
-                                   (lhsType == STP_TypeID_MATRIX_2D and rhsType == STP_TypeID_MATRIX_2D) or
-                                   (lhsType == STP_TypeID_NUMBER and rhsType == STP_TypeID_MATRIX_2D) or
-                                   (lhsType == STP_TypeID_MATRIX_2D and rhsType == STP_TypeID_NUMBER);
+            operationPerformable = (lhsType == STP_TypeID::NUMBER and rhsType == STP_TypeID::NUMBER) or
+                                   (lhsType == STP_TypeID::MATRIX_2D and rhsType == STP_TypeID::MATRIX_2D) or
+                                   (lhsType == STP_TypeID::NUMBER and rhsType == STP_TypeID::MATRIX_2D) or
+                                   (lhsType == STP_TypeID::MATRIX_2D and rhsType == STP_TypeID::NUMBER);
 
-            if (lhsType == STP_TypeID_NUMBER and rhsType == STP_TypeID_NUMBER)
-                retType = STP_TypeID_NUMBER;
-            else if (lhsType == STP_TypeID_MATRIX_2D or rhsType == STP_TypeID_MATRIX_2D)
-                retType = STP_TypeID_MATRIX_2D;
+            if (lhsType == STP_TypeID::NUMBER and rhsType == STP_TypeID::NUMBER)
+                retType = STP_TypeID::NUMBER;
+            else if (lhsType == STP_TypeID::MATRIX_2D or rhsType == STP_TypeID::MATRIX_2D)
+                retType = STP_TypeID::MATRIX_2D;
         }
         else if (operatorStr == ".*" or operatorStr == "./" or operatorStr == ".^" or operatorStr == "&")
         {
-            operationPerformable = (lhsType == STP_TypeID_MATRIX_2D and rhsType == STP_TypeID_MATRIX_2D);
-            retType = STP_TypeID_MATRIX_2D;
+            operationPerformable = (lhsType == STP_TypeID::MATRIX_2D and rhsType == STP_TypeID::MATRIX_2D);
+            retType = STP_TypeID::MATRIX_2D;
         }
         else if (operatorStr == "@")
         {
-            operationPerformable = (lhsType == STP_TypeID_MATRIX_2D and rhsType == STP_TypeID_MATRIX_2D);
-            retType = STP_TypeID_NUMBER;
+            operationPerformable = (lhsType == STP_TypeID::MATRIX_2D and rhsType == STP_TypeID::MATRIX_2D);
+            retType = STP_TypeID::NUMBER;
         }
         else if (operatorStr == "^")
         {
-            operationPerformable = (lhsType == STP_TypeID_MATRIX_2D and rhsType == STP_TypeID_MATRIX_2D) or
-                                   (lhsType == STP_TypeID_NUMBER and rhsType == STP_TypeID_NUMBER) or
-                                   (lhsType == STP_TypeID_MATRIX_2D and rhsType == STP_TypeID_NUMBER);
-            if (lhsType == STP_TypeID_MATRIX_2D)
-                retType = STP_TypeID_MATRIX_2D;
+            operationPerformable = (lhsType == STP_TypeID::MATRIX_2D and rhsType == STP_TypeID::MATRIX_2D) or
+                                   (lhsType == STP_TypeID::NUMBER and rhsType == STP_TypeID::NUMBER) or
+                                   (lhsType == STP_TypeID::MATRIX_2D and rhsType == STP_TypeID::NUMBER);
+            if (lhsType == STP_TypeID::MATRIX_2D)
+                retType = STP_TypeID::MATRIX_2D;
             else
-                retType = STP_TypeID_NUMBER;
+                retType = STP_TypeID::NUMBER;
         }
         else if (operatorStr == "==" or operatorStr == "!=" or operatorStr == ">" or operatorStr == "<" or
                  operatorStr == ">=" or operatorStr == "<=")
         {
             operationPerformable = lhsType == rhsType;
-            if (lhsType == STP_TypeID_MATRIX_2D or rhsType == STP_TypeID_MATRIX_2D)
-                retType = STP_TypeID_MATRIX_2D;
+            if (lhsType == STP_TypeID::MATRIX_2D or rhsType == STP_TypeID::MATRIX_2D)
+                retType = STP_TypeID::MATRIX_2D;
             else
-                retType = STP_TypeID_NUMBER;
+                retType = STP_TypeID::NUMBER;
         }
         else if (operatorStr == "mod")
         {
-            operationPerformable = (lhsType == STP_TypeID_MATRIX_2D and rhsType == STP_TypeID_MATRIX_2D) or
-                                   (lhsType == STP_TypeID_NUMBER and rhsType == STP_TypeID_NUMBER) or
-                                   (lhsType == STP_TypeID_MATRIX_2D and rhsType == STP_TypeID_NUMBER);
-            if (lhsType == STP_TypeID_MATRIX_2D)
-                retType = STP_TypeID_MATRIX_2D;
+            operationPerformable = (lhsType == STP_TypeID::MATRIX_2D and rhsType == STP_TypeID::MATRIX_2D) or
+                                   (lhsType == STP_TypeID::NUMBER and rhsType == STP_TypeID::NUMBER) or
+                                   (lhsType == STP_TypeID::MATRIX_2D and rhsType == STP_TypeID::NUMBER);
+            if (lhsType == STP_TypeID::MATRIX_2D)
+                retType = STP_TypeID::MATRIX_2D;
             else
-                retType = STP_TypeID_NUMBER;
+                retType = STP_TypeID::NUMBER;
         }
         // endregion
 
@@ -147,7 +147,7 @@ namespace steppable::parser
     std::unique_ptr<STP_TypeID> determineUnaryOperationFeasibility(const std::string& operatorString,
                                                                    const STP_TypeID type)
     {
-        bool operationPerformable = type == STP_TypeID_NUMBER or type == STP_TypeID_MATRIX_2D;
+        bool operationPerformable = type == STP_TypeID::NUMBER or type == STP_TypeID::MATRIX_2D;
         STP_TypeID retType = type;
 
         if (operationPerformable)
@@ -168,26 +168,26 @@ namespace steppable::parser
         std::any returnValueAny;
         if (operatorStr == "+")
         {
-            if (lhsType == STP_TypeID_NUMBER and rhsType == STP_TypeID_NUMBER)
+            if (lhsType == STP_TypeID::NUMBER and rhsType == STP_TypeID::NUMBER)
                 returnValueAny = std::any_cast<Number>(value) + std::any_cast<Number>(rhsValue);
-            else if (lhsType == STP_TypeID_MATRIX_2D and rhsType == STP_TypeID_MATRIX_2D)
+            else if (lhsType == STP_TypeID::MATRIX_2D and rhsType == STP_TypeID::MATRIX_2D)
                 returnValueAny = Matrix(std::any_cast<Matrix>(value) + std::any_cast<Matrix>(rhsValue));
-            else if (lhsType == STP_TypeID_MATRIX_2D and rhsType == STP_TypeID_NUMBER)
+            else if (lhsType == STP_TypeID::MATRIX_2D and rhsType == STP_TypeID::NUMBER)
                 returnValueAny = Matrix(std::any_cast<Matrix>(value) + std::any_cast<Number>(rhsValue));
-            else if (lhsType == STP_TypeID_NUMBER and rhsType == STP_TypeID_MATRIX_2D)
+            else if (lhsType == STP_TypeID::NUMBER and rhsType == STP_TypeID::MATRIX_2D)
                 returnValueAny = Matrix(std::any_cast<Matrix>(rhsValue) + std::any_cast<Number>(value));
-            else if (lhsType == STP_TypeID_STRING and rhsType == STP_TypeID_STRING)
+            else if (lhsType == STP_TypeID::STRING and rhsType == STP_TypeID::STRING)
                 returnValueAny = std::any_cast<std::string>(value) + std::any_cast<std::string>(rhsValue);
         }
         else if (operatorStr == "-")
         {
-            if (lhsType == STP_TypeID_NUMBER and rhsType == STP_TypeID_NUMBER)
+            if (lhsType == STP_TypeID::NUMBER and rhsType == STP_TypeID::NUMBER)
                 returnValueAny = std::any_cast<Number>(value) - std::any_cast<Number>(rhsValue);
-            else if (lhsType == STP_TypeID_MATRIX_2D and rhsType == STP_TypeID_MATRIX_2D)
+            else if (lhsType == STP_TypeID::MATRIX_2D and rhsType == STP_TypeID::MATRIX_2D)
                 returnValueAny = Matrix(std::any_cast<Matrix>(value) - std::any_cast<Matrix>(rhsValue));
-            else if (lhsType == STP_TypeID_MATRIX_2D and rhsType == STP_TypeID_NUMBER)
+            else if (lhsType == STP_TypeID::MATRIX_2D and rhsType == STP_TypeID::NUMBER)
                 returnValueAny = Matrix(std::any_cast<Matrix>(value) - std::any_cast<Number>(rhsValue));
-            else if (lhsType == STP_TypeID_NUMBER and rhsType == STP_TypeID_MATRIX_2D)
+            else if (lhsType == STP_TypeID::NUMBER and rhsType == STP_TypeID::MATRIX_2D)
             {
                 const auto rhsObj = std::any_cast<Matrix>(rhsValue);
                 const auto lhsObjNumber = std::any_cast<Number>(value);
@@ -197,15 +197,15 @@ namespace steppable::parser
         }
         else if (operatorStr == "*")
         {
-            if (lhsType == STP_TypeID_NUMBER and rhsType == STP_TypeID_NUMBER)
+            if (lhsType == STP_TypeID::NUMBER and rhsType == STP_TypeID::NUMBER)
                 returnValueAny = std::any_cast<Number>(value) * std::any_cast<Number>(rhsValue);
-            else if (lhsType == STP_TypeID_MATRIX_2D and rhsType == STP_TypeID_MATRIX_2D)
+            else if (lhsType == STP_TypeID::MATRIX_2D and rhsType == STP_TypeID::MATRIX_2D)
                 returnValueAny = Matrix(std::any_cast<Matrix>(value) * std::any_cast<Matrix>(rhsValue));
-            else if (lhsType == STP_TypeID_MATRIX_2D and rhsType == STP_TypeID_NUMBER)
+            else if (lhsType == STP_TypeID::MATRIX_2D and rhsType == STP_TypeID::NUMBER)
                 returnValueAny = Matrix(std::any_cast<Matrix>(value) * std::any_cast<Number>(rhsValue));
-            else if (lhsType == STP_TypeID_NUMBER and rhsType == STP_TypeID_MATRIX_2D)
+            else if (lhsType == STP_TypeID::NUMBER and rhsType == STP_TypeID::MATRIX_2D)
                 returnValueAny = Matrix(std::any_cast<Matrix>(rhsValue) * std::any_cast<Number>(value));
-            else if (lhsType == STP_TypeID_STRING and rhsType == STP_TypeID_NUMBER)
+            else if (lhsType == STP_TypeID::STRING and rhsType == STP_TypeID::NUMBER)
             {
                 auto str = std::any_cast<std::string>(value);
                 auto times = std::any_cast<Number>(rhsValue);
@@ -217,102 +217,102 @@ namespace steppable::parser
         }
         else if (operatorStr == "/")
         {
-            if (lhsType == STP_TypeID_NUMBER and rhsType == STP_TypeID_NUMBER)
+            if (lhsType == STP_TypeID::NUMBER and rhsType == STP_TypeID::NUMBER)
                 returnValueAny = std::any_cast<Number>(value) / std::any_cast<Number>(rhsValue);
-            else if (lhsType == STP_TypeID_MATRIX_2D and rhsType == STP_TypeID_MATRIX_2D)
+            else if (lhsType == STP_TypeID::MATRIX_2D and rhsType == STP_TypeID::MATRIX_2D)
                 returnValueAny = Matrix(std::any_cast<Matrix>(value) / std::any_cast<Matrix>(rhsValue));
-            else if (lhsType == STP_TypeID_MATRIX_2D and rhsType == STP_TypeID_NUMBER)
+            else if (lhsType == STP_TypeID::MATRIX_2D and rhsType == STP_TypeID::NUMBER)
                 returnValueAny = Matrix(std::any_cast<Matrix>(value) / std::any_cast<Number>(rhsValue));
-            // else if (lhsType == STP_TypeID_NUMBER and rhsType == STP_TypeID_MATRIX_2D)
+            // else if (lhsType == STP_TypeID::NUMBER and rhsType == STP_TypeID::MATRIX_2D)
             //     returnValueAny = std::any_cast<Number>(value) / std::any_cast<Matrix>(rhsValue);
         }
         else if (operatorStr == "mod")
         {
-            if (lhsType == STP_TypeID_NUMBER and rhsType == STP_TypeID_NUMBER)
+            if (lhsType == STP_TypeID::NUMBER and rhsType == STP_TypeID::NUMBER)
                 returnValueAny = std::any_cast<Number>(value).mod(std::any_cast<Number>(rhsValue));
         }
         else if (operatorStr == "^")
         {
-            if (lhsType == STP_TypeID_NUMBER and rhsType == STP_TypeID_NUMBER)
+            if (lhsType == STP_TypeID::NUMBER and rhsType == STP_TypeID::NUMBER)
                 returnValueAny = std::any_cast<Number>(value) ^ std::any_cast<Number>(rhsValue);
-            else if (lhsType == STP_TypeID_MATRIX_2D and rhsType == STP_TypeID_NUMBER)
+            else if (lhsType == STP_TypeID::MATRIX_2D and rhsType == STP_TypeID::NUMBER)
                 returnValueAny = Matrix(std::any_cast<Matrix>(value) ^ std::any_cast<Number>(rhsValue));
-            // else if (lhsType == STP_TypeID_NUMBER and rhsType == STP_TypeID_MATRIX_2D)
+            // else if (lhsType == STP_TypeID::NUMBER and rhsType == STP_TypeID::MATRIX_2D)
             //     /* Implementation pending */;
         }
         else if (operatorStr == "@")
         {
-            if (lhsType == STP_TypeID_MATRIX_2D and rhsType == STP_TypeID_MATRIX_2D)
+            if (lhsType == STP_TypeID::MATRIX_2D and rhsType == STP_TypeID::MATRIX_2D)
                 returnValueAny = Matrix(std::any_cast<Matrix>(value).dot(std::any_cast<Matrix>(rhsValue)));
         }
         // else if (operatorStr == "&")
         // {
-        //     if (lhsType == STP_TypeID_MATRIX_2D and rhsType == STP_TypeID_MATRIX_2D)
+        //     if (lhsType == STP_TypeID::MATRIX_2D and rhsType == STP_TypeID::MATRIX_2D)
         //         returnValueAny = cross(std::any_cast<Matrix>(value), std::any_cast<Matrix>(rhsValue));
         // }
         else if (operatorStr == "==")
         {
-            if (lhsType == STP_TypeID_NUMBER and rhsType == STP_TypeID_NUMBER)
+            if (lhsType == STP_TypeID::NUMBER and rhsType == STP_TypeID::NUMBER)
                 returnValueAny = Number(std::any_cast<Number>(value) == std::any_cast<Number>(rhsValue));
-            else if (lhsType == STP_TypeID_STRING and rhsType == STP_TypeID_STRING)
+            else if (lhsType == STP_TypeID::STRING and rhsType == STP_TypeID::STRING)
                 returnValueAny = Number(std::any_cast<std::string>(value) == std::any_cast<std::string>(rhsValue));
-            else if (lhsType == STP_TypeID_MATRIX_2D and rhsType == STP_TypeID_MATRIX_2D)
+            else if (lhsType == STP_TypeID::MATRIX_2D and rhsType == STP_TypeID::MATRIX_2D)
                 returnValueAny =
                     Number(static_cast<bool>(std::any_cast<Matrix>(value) == std::any_cast<Matrix>(rhsValue)));
-            // else if (lhsType == STP_TypeID_MATRIX_2D and rhsType == STP_TypeID_NUMBER)
+            // else if (lhsType == STP_TypeID::MATRIX_2D and rhsType == STP_TypeID::NUMBER)
             //     returnValueAny = Number(std::any_cast<Matrix>(value) == std::any_cast<Number>(rhsValue));
         }
         else if (operatorStr == "!=")
         {
-            if (lhsType == STP_TypeID_NUMBER and rhsType == STP_TypeID_NUMBER)
+            if (lhsType == STP_TypeID::NUMBER and rhsType == STP_TypeID::NUMBER)
                 returnValueAny = Number(std::any_cast<Number>(value) != std::any_cast<Number>(rhsValue));
-            else if (lhsType == STP_TypeID_STRING and rhsType == STP_TypeID_STRING)
+            else if (lhsType == STP_TypeID::STRING and rhsType == STP_TypeID::STRING)
                 returnValueAny = Number(std::any_cast<std::string>(value) != std::any_cast<std::string>(rhsValue));
-            else if (lhsType == STP_TypeID_MATRIX_2D and rhsType == STP_TypeID_MATRIX_2D)
+            else if (lhsType == STP_TypeID::MATRIX_2D and rhsType == STP_TypeID::MATRIX_2D)
                 returnValueAny =
                     Number(static_cast<bool>(std::any_cast<Matrix>(value) != std::any_cast<Matrix>(rhsValue)));
-            // else if (lhsType == STP_TypeID_MATRIX_2D and rhsType == STP_TypeID_NUMBER)
+            // else if (lhsType == STP_TypeID::MATRIX_2D and rhsType == STP_TypeID::NUMBER)
             //     returnValueAny = Number(std::any_cast<Matrix>(value) != std::any_cast<Number>(rhsValue));
         }
         else if (operatorStr == ">")
         {
-            if (lhsType == STP_TypeID_NUMBER and rhsType == STP_TypeID_NUMBER)
+            if (lhsType == STP_TypeID::NUMBER and rhsType == STP_TypeID::NUMBER)
                 returnValueAny = Number(std::any_cast<Number>(value) > std::any_cast<Number>(rhsValue));
-            else if (lhsType == STP_TypeID_MATRIX_2D and rhsType == STP_TypeID_MATRIX_2D)
+            else if (lhsType == STP_TypeID::MATRIX_2D and rhsType == STP_TypeID::MATRIX_2D)
                 returnValueAny = Matrix(std::any_cast<Matrix>(value) > std::any_cast<Matrix>(rhsValue));
-            // else if (lhsType == STP_TypeID_MATRIX_2D and rhsType == STP_TypeID_NUMBER)
+            // else if (lhsType == STP_TypeID::MATRIX_2D and rhsType == STP_TypeID::NUMBER)
             //     returnValueAny = Number(std::any_cast<Matrix>(value) > std::any_cast<Number>(rhsValue));
         }
         else if (operatorStr == "<")
         {
-            if (lhsType == STP_TypeID_NUMBER and rhsType == STP_TypeID_NUMBER)
+            if (lhsType == STP_TypeID::NUMBER and rhsType == STP_TypeID::NUMBER)
                 returnValueAny = Number(std::any_cast<Number>(value) < std::any_cast<Number>(rhsValue));
-            else if (lhsType == STP_TypeID_MATRIX_2D and rhsType == STP_TypeID_MATRIX_2D)
+            else if (lhsType == STP_TypeID::MATRIX_2D and rhsType == STP_TypeID::MATRIX_2D)
                 returnValueAny = Matrix(std::any_cast<Matrix>(value) < std::any_cast<Matrix>(rhsValue));
-            // else if (lhsType == STP_TypeID_MATRIX_2D and rhsType == STP_TypeID_NUMBER)
+            // else if (lhsType == STP_TypeID::MATRIX_2D and rhsType == STP_TypeID::NUMBER)
             //     returnValueAny = Number(std::any_cast<Matrix>(value) < std::any_cast<Number>(rhsValue));
         }
         else if (operatorStr == ">=")
         {
-            if (lhsType == STP_TypeID_NUMBER and rhsType == STP_TypeID_NUMBER)
+            if (lhsType == STP_TypeID::NUMBER and rhsType == STP_TypeID::NUMBER)
                 returnValueAny = Number(std::any_cast<Number>(value) >= std::any_cast<Number>(rhsValue));
-            else if (lhsType == STP_TypeID_MATRIX_2D and rhsType == STP_TypeID_MATRIX_2D)
+            else if (lhsType == STP_TypeID::MATRIX_2D and rhsType == STP_TypeID::MATRIX_2D)
                 returnValueAny = Matrix(std::any_cast<Matrix>(value) >= std::any_cast<Matrix>(rhsValue));
-            // else if (lhsType == STP_TypeID_MATRIX_2D and rhsType == STP_TypeID_NUMBER)
+            // else if (lhsType == STP_TypeID::MATRIX_2D and rhsType == STP_TypeID::NUMBER)
             //     returnValueAny = Number(std::any_cast<Matrix>(value) >= std::any_cast<Number>(rhsValue));
         }
         else if (operatorStr == "<=")
         {
-            if (lhsType == STP_TypeID_NUMBER and rhsType == STP_TypeID_NUMBER)
+            if (lhsType == STP_TypeID::NUMBER and rhsType == STP_TypeID::NUMBER)
                 returnValueAny = Number(std::any_cast<Number>(value) <= std::any_cast<Number>(rhsValue));
-            else if (lhsType == STP_TypeID_MATRIX_2D and rhsType == STP_TypeID_MATRIX_2D)
+            else if (lhsType == STP_TypeID::MATRIX_2D and rhsType == STP_TypeID::MATRIX_2D)
                 returnValueAny = Matrix(std::any_cast<Matrix>(value) <= std::any_cast<Matrix>(rhsValue));
-            // else if (lhsType == STP_TypeID_MATRIX_2D and rhsType == STP_TypeID_NUMBER)
+            // else if (lhsType == STP_TypeID::MATRIX_2D and rhsType == STP_TypeID::NUMBER)
             //     returnValueAny = Number(std::any_cast<Matrix>(value) <= std::any_cast<Number>(rhsValue));
         }
         else if (operatorStr == ".*")
         {
-            if (lhsType == STP_TypeID_MATRIX_2D and rhsType == STP_TypeID_MATRIX_2D)
+            if (lhsType == STP_TypeID::MATRIX_2D and rhsType == STP_TypeID::MATRIX_2D)
             {
                 auto lhs = std::any_cast<Matrix>(value);
                 auto rhs = std::any_cast<Matrix>(rhsValue);
@@ -322,12 +322,12 @@ namespace steppable::parser
         }
         else if (operatorStr == "./")
         {
-            if (lhsType == STP_TypeID_MATRIX_2D and rhsType == STP_TypeID_MATRIX_2D)
+            if (lhsType == STP_TypeID::MATRIX_2D and rhsType == STP_TypeID::MATRIX_2D)
                 returnValueAny = Matrix(std::any_cast<Matrix>(value).elemWiseDivision(std::any_cast<Matrix>(rhsValue)));
         }
         else if (operatorStr == ".^")
         {
-            if (lhsType == STP_TypeID_MATRIX_2D and rhsType == STP_TypeID_MATRIX_2D)
+            if (lhsType == STP_TypeID::MATRIX_2D and rhsType == STP_TypeID::MATRIX_2D)
                 returnValueAny = Matrix(std::any_cast<Matrix>(value).elemWisePower(std::any_cast<Matrix>(rhsValue)));
         }
 
@@ -340,17 +340,17 @@ namespace steppable::parser
 
         if (operatorString == "!")
         {
-            if (type == STP_TypeID_MATRIX_2D)
+            if (type == STP_TypeID::MATRIX_2D)
             {
                 const auto result = std::any_cast<Matrix>(value);
                 return not result;
             }
-            if (type == STP_TypeID_NUMBER)
+            if (type == STP_TypeID::NUMBER)
             {
                 const auto result = std::any_cast<Number>(value);
                 return not result;
             }
-            if (type == STP_TypeID_STRING)
+            if (type == STP_TypeID::STRING)
             {
                 const auto result = std::any_cast<std::string>(value);
                 return not result.empty();
@@ -358,12 +358,12 @@ namespace steppable::parser
         }
         else if (operatorString == "+")
         {
-            if (type == STP_TypeID_MATRIX_2D)
+            if (type == STP_TypeID::MATRIX_2D)
             {
                 const auto result = std::any_cast<Matrix>(value);
                 return +result;
             }
-            if (type == STP_TypeID_NUMBER)
+            if (type == STP_TypeID::NUMBER)
             {
                 const auto result = std::any_cast<Number>(value);
                 return +result;
@@ -371,12 +371,12 @@ namespace steppable::parser
         }
         else if (operatorString == "-")
         {
-            if (type == STP_TypeID_MATRIX_2D)
+            if (type == STP_TypeID::MATRIX_2D)
             {
                 const auto result = std::any_cast<Matrix>(value);
                 return -result;
             }
-            if (type == STP_TypeID_NUMBER)
+            if (type == STP_TypeID::NUMBER)
             {
                 const auto result = std::any_cast<Number>(value);
                 return -result;

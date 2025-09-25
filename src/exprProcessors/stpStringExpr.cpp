@@ -42,6 +42,6 @@ namespace steppable::parser
             }
         }
 
-        return STP_Value(STP_TypeID_STRING, data);
+        return STP_Value(STP_TypeID::STRING, data);
     }
 }

@@ -33,7 +33,7 @@ namespace steppable::parser
                 if (ts_node_type(cell) == ";"s)
                     continue;
                 STP_Value val = STP_handleExpr(&cell, state);
-                if (val.typeID != STP_TypeID_NUMBER)
+                if (val.typeID != STP_TypeID::NUMBER)
                 {
                     output::error("parser"s, "Matrix should contain numbers only."s);
                     programSafeExit(1);
@@ -56,6 +56,6 @@ namespace steppable::parser
         }
 
         Matrix data(matVec);
-        return STP_Value(STP_TypeID_MATRIX_2D, data);
+        return STP_Value(STP_TypeID::MATRIX_2D, data);
     }
 }

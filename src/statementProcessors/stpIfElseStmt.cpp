@@ -56,7 +56,9 @@ namespace steppable::parser
             return;
         }
 
-        TSNode elseClauseNode = ts_node_next_named_sibling(lastNode);
+        const TSNode elseClauseNode = ts_node_next_named_sibling(lastNode);
+        if (ts_node_is_null(elseClauseNode))
+            return;
         TSNode elseClauseStmtNode = ts_node_named_child(elseClauseNode, 0);
         STP_processChunkChild(elseClauseStmtNode, state, true);
     }

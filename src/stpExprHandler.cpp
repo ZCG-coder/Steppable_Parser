@@ -23,13 +23,13 @@ namespace steppable::parser
 
         std::string exprType = ts_node_type(*exprNode);
 
-        STP_Value retVal(STP_TypeID_NULL);
+        STP_Value retVal(STP_TypeID::NONE);
 
         if (exprType == "number")
         {
             // Number
             std::string data = state->getChunk(exprNode);
-            retVal = STP_Value(STP_TypeID_NUMBER, Number(data));
+            retVal = STP_Value(STP_TypeID::NUMBER, Number(data));
         }
         if (exprType == "percentage")
         {
@@ -39,7 +39,7 @@ namespace steppable::parser
             Number value(number);
             value /= 100; // NOLINT(*-avoid-magic-numbers)
 
-            retVal = STP_Value(STP_TypeID_NUMBER, value);
+            retVal = STP_Value(STP_TypeID::NUMBER, value);
         }
         if (exprType == "matrix")
             retVal = STP_handleMatrixExpr(exprNode, state);

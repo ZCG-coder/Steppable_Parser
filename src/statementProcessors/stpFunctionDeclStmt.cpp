@@ -57,7 +57,7 @@ namespace steppable::parser
 
             scope.variables = map;
             // default return value
-            scope.addVariable("04795", STP_Value(STP_TypeID_NUMBER, Number()));
+            scope.addVariable("04795", STP_Value(STP_TypeID::NUMBER, Number()));
 
             state->setCurrentScope(std::make_shared<STP_Scope>(scope));
 

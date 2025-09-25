@@ -47,6 +47,14 @@
         {
           "type": "SYMBOL",
           "name": "comment"
+        },
+        {
+          "type": "STRING",
+          "value": "break"
+        },
+        {
+          "type": "STRING",
+          "value": "cont"
         }
       ]
     },
@@ -64,23 +72,6 @@
             "type": "SYMBOL",
             "name": "identifier"
           }
-        }
-      ]
-    },
-    "loop_statement": {
-      "type": "CHOICE",
-      "members": [
-        {
-          "type": "SYMBOL",
-          "name": "_statement"
-        },
-        {
-          "type": "STRING",
-          "value": "break"
-        },
-        {
-          "type": "STRING",
-          "value": "cont"
         }
       ]
     },
@@ -240,7 +231,7 @@
             "type": "REPEAT",
             "content": {
               "type": "SYMBOL",
-              "name": "loop_statement"
+              "name": "_statement"
             }
           },
           "named": true,
@@ -284,7 +275,7 @@
           "type": "REPEAT",
           "content": {
             "type": "SYMBOL",
-            "name": "loop_statement"
+            "name": "_statement"
           }
         },
         {

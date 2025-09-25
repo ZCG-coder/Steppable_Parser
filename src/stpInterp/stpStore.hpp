@@ -1,7 +1,7 @@
 #pragma once
-#include "steppable/stpTypeName.hpp"
 #include "fn/calc.hpp"
 #include "steppable/stpArgSpace.hpp"
+#include "steppable/stpTypeName.hpp"
 
 extern "C" {
 #include <tree_sitter/api.h>
@@ -77,6 +77,8 @@ namespace steppable::parser
         void addFunction(const std::string& name, const STP_FunctionDefinition& fn);
 
         STP_FunctionDefinition getFunction(const std::string& name);
+
+        std::string present() const;
     };
 
     class STP_InterpStoreLocal
@@ -88,6 +90,8 @@ namespace steppable::parser
         std::string chunk;
         size_t chunkStart = 0;
         size_t chunkEnd = 0;
+
+        STP_ExecState execState = STP_ExecState::NORMAL;
 
         std::string file = "/dev/null";
 
@@ -108,6 +112,10 @@ namespace steppable::parser
         auto getGlobalScope() { return std::make_shared<STP_Scope>(globalScope); };
 
         void setFile(const std::string& newFile);
+
+        [[nodiscard]] auto getExecState() const { return execState; }
+
+        void setExecState(const STP_ExecState& state) { execState = state; }
 
         [[nodiscard]] std::string getFile() const;
 
