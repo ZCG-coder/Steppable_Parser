@@ -30,7 +30,7 @@
         },
         {
           "type": "SYMBOL",
-          "name": "foreach_in_stmt"
+          "name": "for_in_stmt"
         },
         {
           "type": "SYMBOL",
@@ -243,29 +243,32 @@
         }
       ]
     },
-    "foreach_in_stmt": {
+    "for_in_stmt": {
       "type": "SEQ",
       "members": [
         {
           "type": "STRING",
-          "value": "foreach"
+          "value": "for"
         },
         {
-          "type": "ALIAS",
+          "type": "FIELD",
+          "name": "loop_var",
           "content": {
             "type": "SYMBOL",
             "name": "identifier"
-          },
-          "named": true,
-          "value": "loop_var"
+          }
         },
         {
           "type": "STRING",
           "value": "in"
         },
         {
-          "type": "SYMBOL",
-          "name": "identifier_or_member_access"
+          "type": "FIELD",
+          "name": "loop_expr",
+          "content": {
+            "type": "SYMBOL",
+            "name": "_expression"
+          }
         },
         {
           "type": "STRING",
@@ -549,6 +552,10 @@
         },
         {
           "type": "SYMBOL",
+          "name": "range_expr"
+        },
+        {
+          "type": "SYMBOL",
           "name": "binary_expression"
         },
         {
@@ -582,6 +589,56 @@
         {
           "type": "SYMBOL",
           "name": "bracketed_expr"
+        }
+      ]
+    },
+    "range_expr": {
+      "type": "SEQ",
+      "members": [
+        {
+          "type": "FIELD",
+          "name": "start",
+          "content": {
+            "type": "SYMBOL",
+            "name": "number"
+          }
+        },
+        {
+          "type": "STRING",
+          "value": "..."
+        },
+        {
+          "type": "CHOICE",
+          "members": [
+            {
+              "type": "SEQ",
+              "members": [
+                {
+                  "type": "FIELD",
+                  "name": "step",
+                  "content": {
+                    "type": "SYMBOL",
+                    "name": "number"
+                  }
+                },
+                {
+                  "type": "STRING",
+                  "value": "..."
+                }
+              ]
+            },
+            {
+              "type": "BLANK"
+            }
+          ]
+        },
+        {
+          "type": "FIELD",
+          "name": "end",
+          "content": {
+            "type": "SYMBOL",
+            "name": "number"
+          }
         }
       ]
     },
@@ -805,6 +862,22 @@
         {
           "type": "STRING",
           "value": "<="
+        },
+        {
+          "type": "STRING",
+          "value": "in"
+        },
+        {
+          "type": "STRING",
+          "value": "and"
+        },
+        {
+          "type": "STRING",
+          "value": "not"
+        },
+        {
+          "type": "STRING",
+          "value": "or"
         }
       ]
     },

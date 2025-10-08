@@ -26,7 +26,7 @@ module.exports = grammar({
             $.symbol_decl_statement,
             $.if_else_stmt,
             $.while_stmt,
-            $.foreach_in_stmt,
+            $.for_in_stmt,
             $.function_definition,
             $.expression_statement,
             $.import_statement,
@@ -74,8 +74,11 @@ module.exports = grammar({
             "}"
         ),
 
-        foreach_in_stmt: $ => seq(
-            "foreach", alias($.identifier, $.loop_var), "in", $.identifier_or_member_access, "{",
+        for_in_stmt: $ => seq(
+            "for", field("loop_var", $.identifier),
+            "in",
+            field("loop_expr", $._expression),
+            "{",
             repeat($._statement),
             "}"
         ),
@@ -133,6 +136,7 @@ module.exports = grammar({
 
         _expression: $ => choice(
             $.matrix,
+            $.range_expr,
             $.binary_expression,
             $.unary_expression,
             $.suffix_expression,
@@ -142,6 +146,16 @@ module.exports = grammar({
             $.percentage,
             $.string,
             $.bracketed_expr,
+        ),
+
+        range_expr: $ => seq(
+            field("start", $.number),
+            "...",
+            optional(seq(
+                field("step", $.number),
+                "...",
+            )),
+            field("end", $.number)
         ),
 
         bracketed_expr: $ => seq("(", $._expression, ")"),
@@ -195,7 +209,7 @@ module.exports = grammar({
         )),
 
         binary_operator_left0: $ => choice(
-            "==", "!=", ">", "<", ">=", "<=",
+            "==", "!=", ">", "<", ">=", "<=", "in", "and", "not", "or"
         ),
 
         binary_operator_left1: $ => choice(

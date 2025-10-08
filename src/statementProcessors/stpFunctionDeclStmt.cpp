@@ -1,4 +1,5 @@
 #include "stpInterp/stpBetterTS.hpp"
+#include "stpInterp/stpErrors.hpp"
 #include "stpInterp/stpExprHandler.hpp"
 #include "stpInterp/stpInit.hpp"
 #include "stpInterp/stpProcessor.hpp"
@@ -46,6 +47,8 @@ namespace steppable::parser
         }
 
         TSNode bodyNode = ts_node_child_by_field_name(*node, "fn_body"s);
+        STP_checkRecursiveNodeSanity(bodyNode, state);
+
         TSTree* bodyNodeTree = ts_tree_copy(bodyNode.tree);
 
         STP_FunctionDefinition fn;

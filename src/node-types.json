@@ -40,6 +40,10 @@
           "named": true
         },
         {
+          "type": "range_expr",
+          "named": true
+        },
+        {
           "type": "string",
           "named": true
         },
@@ -122,6 +126,10 @@
           "named": true
         },
         {
+          "type": "range_expr",
+          "named": true
+        },
+        {
           "type": "string",
           "named": true
         },
@@ -174,6 +182,10 @@
         },
         {
           "type": "percentage",
+          "named": true
+        },
+        {
+          "type": "range_expr",
           "named": true
         },
         {
@@ -232,6 +244,10 @@
           "named": true
         },
         {
+          "type": "range_expr",
+          "named": true
+        },
+        {
           "type": "string",
           "named": true
         },
@@ -284,6 +300,10 @@
         },
         {
           "type": "percentage",
+          "named": true
+        },
+        {
+          "type": "range_expr",
           "named": true
         },
         {
@@ -358,6 +378,10 @@
           "named": true
         },
         {
+          "type": "range_expr",
+          "named": true
+        },
+        {
           "type": "string",
           "named": true
         },
@@ -408,7 +432,7 @@
           "named": true
         },
         {
-          "type": "foreach_in_stmt",
+          "type": "for_in_stmt",
           "named": true
         },
         {
@@ -475,6 +499,10 @@
           "named": true
         },
         {
+          "type": "range_expr",
+          "named": true
+        },
+        {
           "type": "string",
           "named": true
         },
@@ -510,7 +538,7 @@
           "named": true
         },
         {
-          "type": "foreach_in_stmt",
+          "type": "for_in_stmt",
           "named": true
         },
         {
@@ -573,6 +601,10 @@
           "named": true
         },
         {
+          "type": "range_expr",
+          "named": true
+        },
+        {
           "type": "string",
           "named": true
         },
@@ -608,7 +640,7 @@
           "named": true
         },
         {
-          "type": "foreach_in_stmt",
+          "type": "for_in_stmt",
           "named": true
         },
         {
@@ -686,6 +718,10 @@
           "named": true
         },
         {
+          "type": "range_expr",
+          "named": true
+        },
+        {
           "type": "string",
           "named": true
         },
@@ -752,6 +788,10 @@
           "named": true
         },
         {
+          "type": "range_expr",
+          "named": true
+        },
+        {
           "type": "string",
           "named": true
         },
@@ -767,12 +807,73 @@
     }
   },
   {
-    "type": "foreach_in_stmt",
+    "type": "for_in_stmt",
     "named": true,
-    "fields": {},
+    "fields": {
+      "loop_expr": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "binary_expression",
+            "named": true
+          },
+          {
+            "type": "bracketed_expr",
+            "named": true
+          },
+          {
+            "type": "function_call",
+            "named": true
+          },
+          {
+            "type": "identifier_or_member_access",
+            "named": true
+          },
+          {
+            "type": "matrix",
+            "named": true
+          },
+          {
+            "type": "number",
+            "named": true
+          },
+          {
+            "type": "percentage",
+            "named": true
+          },
+          {
+            "type": "range_expr",
+            "named": true
+          },
+          {
+            "type": "string",
+            "named": true
+          },
+          {
+            "type": "suffix_expression",
+            "named": true
+          },
+          {
+            "type": "unary_expression",
+            "named": true
+          }
+        ]
+      },
+      "loop_var": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "identifier",
+            "named": true
+          }
+        ]
+      }
+    },
     "children": {
       "multiple": true,
-      "required": true,
+      "required": false,
       "types": [
         {
           "type": "assignment",
@@ -787,15 +888,11 @@
           "named": true
         },
         {
-          "type": "foreach_in_stmt",
+          "type": "for_in_stmt",
           "named": true
         },
         {
           "type": "function_definition",
-          "named": true
-        },
-        {
-          "type": "identifier_or_member_access",
           "named": true
         },
         {
@@ -804,10 +901,6 @@
         },
         {
           "type": "import_statement",
-          "named": true
-        },
-        {
-          "type": "loop_var",
           "named": true
         },
         {
@@ -855,6 +948,10 @@
           },
           {
             "type": "percentage",
+            "named": true
+          },
+          {
+            "type": "range_expr",
             "named": true
           },
           {
@@ -983,7 +1080,7 @@
           "named": true
         },
         {
-          "type": "foreach_in_stmt",
+          "type": "for_in_stmt",
           "named": true
         },
         {
@@ -1058,6 +1155,10 @@
           "named": true
         },
         {
+          "type": "range_expr",
+          "named": true
+        },
+        {
           "type": "string",
           "named": true
         },
@@ -1123,7 +1224,7 @@
           "named": true
         },
         {
-          "type": "foreach_in_stmt",
+          "type": "for_in_stmt",
           "named": true
         },
         {
@@ -1205,6 +1306,10 @@
           "named": true
         },
         {
+          "type": "range_expr",
+          "named": true
+        },
+        {
           "type": "string",
           "named": true
         },
@@ -1253,6 +1358,10 @@
         },
         {
           "type": "percentage",
+          "named": true
+        },
+        {
+          "type": "range_expr",
           "named": true
         },
         {
@@ -1311,6 +1420,10 @@
           "named": true
         },
         {
+          "type": "range_expr",
+          "named": true
+        },
+        {
           "type": "string",
           "named": true
         },
@@ -1356,6 +1469,42 @@
     }
   },
   {
+    "type": "range_expr",
+    "named": true,
+    "fields": {
+      "end": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "number",
+            "named": true
+          }
+        ]
+      },
+      "start": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "number",
+            "named": true
+          }
+        ]
+      },
+      "step": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "number",
+            "named": true
+          }
+        ]
+      }
+    }
+  },
+  {
     "type": "return_stmt",
     "named": true,
     "fields": {
@@ -1389,6 +1538,10 @@
           },
           {
             "type": "percentage",
+            "named": true
+          },
+          {
+            "type": "range_expr",
             "named": true
           },
           {
@@ -1429,7 +1582,7 @@
           "named": true
         },
         {
-          "type": "foreach_in_stmt",
+          "type": "for_in_stmt",
           "named": true
         },
         {
@@ -1524,6 +1677,10 @@
           "named": true
         },
         {
+          "type": "range_expr",
+          "named": true
+        },
+        {
           "type": "string",
           "named": true
         },
@@ -1591,6 +1748,10 @@
           "named": true
         },
         {
+          "type": "range_expr",
+          "named": true
+        },
+        {
           "type": "string",
           "named": true
         },
@@ -1654,6 +1815,10 @@
           },
           {
             "type": "percentage",
+            "named": true
+          },
+          {
+            "type": "range_expr",
             "named": true
           },
           {
@@ -1739,6 +1904,10 @@
     "named": false
   },
   {
+    "type": "...",
+    "named": false
+  },
+  {
     "type": "./",
     "named": false
   },
@@ -1811,6 +1980,10 @@
     "named": false
   },
   {
+    "type": "and",
+    "named": false
+  },
+  {
     "type": "break",
     "named": false
   },
@@ -1840,7 +2013,7 @@
     "named": false
   },
   {
-    "type": "foreach",
+    "type": "for",
     "named": false
   },
   {
@@ -1868,8 +2041,8 @@
     "named": false
   },
   {
-    "type": "loop_var",
-    "named": true
+    "type": "not",
+    "named": false
   },
   {
     "type": "number",
@@ -1878,6 +2051,10 @@
   {
     "type": "octal_escape",
     "named": true
+  },
+  {
+    "type": "or",
+    "named": false
   },
   {
     "type": "param_name",

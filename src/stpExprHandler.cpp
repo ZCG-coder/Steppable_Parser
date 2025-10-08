@@ -88,6 +88,8 @@ namespace steppable::parser
             TSNode innerExpr = ts_node_child(*exprNode, 1);
             retVal = STP_handleExpr(&innerExpr, state);
         }
+        if (exprType == "range_expr")
+            retVal = STP_handleRangeExpr(exprNode, state);
 
         if (printResult)
             std::cout << retVal.present(exprName) << '\n';

@@ -28,6 +28,10 @@ namespace steppable::parser
     void STP_throwSyntaxError(const TSNode& node, const STP_InterpState& state)
     {
         output::error("parser"s, "Syntax error"s);
+
+        if (ts_node_is_missing(node))
+            output::error("parser"s, "Missing node type {0}"s, { ts_node_type(node) });
+
         auto [startRow, startCol] = ts_node_start_point(node);
         auto [endRow, endCol] = ts_node_end_point(node);
 
@@ -61,6 +65,6 @@ namespace steppable::parser
             output::info("parser"s, "{0}  | {1}"s, { std::string(lineNo.length(), ' '), indicators });
         }
 
-        utils::programSafeExit(1);
+        programSafeExit(1);
     }
 } // namespace steppable::parser

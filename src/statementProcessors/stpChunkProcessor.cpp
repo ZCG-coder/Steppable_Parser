@@ -106,6 +106,25 @@ namespace steppable::parser
         if (type == "foreach_in_stmt")
         {
             //
+            TSNode nameNode = ts_node_child_by_field_name(node, "loop_var"s);
+            std::string name = state->getChunk(&nameNode);
+            name = __internals::stringUtils::bothEndsReplace(name, ' ');
+
+            TSNode exprNode = ts_node_child_by_field_name(node, "loop_expr"s);
+            STP_Value exprValue = STP_handleExpr(&exprNode, state);
+
+            switch (exprValue.typeID)
+            {
+            case STP_TypeID::MATRIX_2D:
+                break;
+            case STP_TypeID::STRING:
+                break;
+            default:
+            {
+                output::error("runtime"s, "Object of type {0} is not itertable"s, { exprValue.typeName });
+                break;
+            }
+            }
             return;
         }
         if (type == "assignment")
