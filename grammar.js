@@ -1,4 +1,5 @@
 Prec = {
+    SUFFIX_EXPR: 9,
     BINARY_EXPR3: 8,
     BINARY_EXPR2: 7,
     BINARY_EXPR1: 6,
@@ -31,8 +32,10 @@ module.exports = grammar({
             $.expression_statement,
             $.import_statement,
             $.comment,
+            // $.lambda,
             "break",
-            "cont"
+            "cont",
+            "exit",
         ),
 
         symbol_decl_statement: $ => seq(
@@ -115,6 +118,15 @@ module.exports = grammar({
             ), $.fn_body),
             "}"
         )),
+
+        lambda: $ => seq(
+            $.identifier,
+            "(",
+            optional($.pos_args_decl),
+            ")",
+            ":",
+            $._statement
+        ),
 
         pos_args_decl: $ => seq(
             alias($.identifier, $.param_name),
@@ -226,13 +238,16 @@ module.exports = grammar({
         ),
 
         unary_expression: $ => prec.right(Prec.UNARY_EXPR, seq(
-            choice("!", "+", "-"),
+            choice("~", "+", "-"),
             $._expression
         )),
 
-        suffix_expression: $ => prec.left(Prec.UNARY_EXPR, seq(
+        suffix_expression: $ => prec.left(Prec.SUFFIX_EXPR, seq(
             $._expression,
-            token.immediate(choice("'"))
+            field(
+                "operator",
+                choice("'", "!")
+            ),
         )),
 
         fn_keyword_arg: $ => seq(
@@ -240,7 +255,7 @@ module.exports = grammar({
                 "argument_name",
                 alias($.identifier, $.param_name)
             ),
-            ":",
+            "=",
             $._expression
         ),
 
@@ -268,7 +283,9 @@ module.exports = grammar({
 
         identifier: _ => token(/[a-zA-Z_][a-zA-Z0-9_]*/),
         identifier_or_member_access: $ => choice($.identifier, $.member_access),
+
         number: _ => token(/\d+(\.\d+)?/),
+        integer: _ => token(/\d+?/),
 
         escape_sequence: _ => /\\[rntbf"\\]/,
         unicode_escape: $ => seq(

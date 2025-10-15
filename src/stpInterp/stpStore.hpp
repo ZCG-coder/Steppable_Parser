@@ -37,11 +37,13 @@ namespace steppable::parser
 
     struct STP_Value : STP_ValuePrimitive
     {
-        [[nodiscard]] STP_Value applyBinaryOperator(const std::string& operatorStr, const STP_Value& rhs) const;
+        [[nodiscard]] STP_Value applyBinaryOperator(const TSNode* node,
+                                                    const std::string& _operatorStr,
+                                                    const STP_Value& rhs) const;
 
-        [[nodiscard]] STP_Value applyUnaryOperator(const std::string& operatorStr) const;
+        [[nodiscard]] STP_Value applyUnaryOperator(const TSNode* node, const std::string& _operatorStr) const;
 
-        [[nodiscard]] bool asBool() const;
+        [[nodiscard]] bool asBool(const TSNode* node) const;
 
         explicit STP_Value(const STP_TypeID& type, const std::any& data = {}) : STP_ValuePrimitive(type, data) {}
     };
@@ -72,7 +74,7 @@ namespace steppable::parser
 
         void addVariable(const std::string& name, const STP_Value& data);
 
-        STP_Value getVariable(const std::string& name);
+        STP_Value getVariable(const TSNode* node, const std::string& name);
 
         void addFunction(const std::string& name, const STP_FunctionDefinition& fn);
 
@@ -91,6 +93,8 @@ namespace steppable::parser
         size_t chunkStart = 0;
         size_t chunkEnd = 0;
 
+        bool interactive = false;
+
         STP_ExecState execState = STP_ExecState::NORMAL;
 
         std::string file = "/dev/null";
@@ -99,6 +103,10 @@ namespace steppable::parser
 
     public:
         STP_InterpStoreLocal();
+
+        [[nodiscard]] bool isInteractive() const { return interactive; }
+
+        void setInteractive() { interactive = true; }
 
         void setChunk(const std::string& newChunk, const size_t& chunkStart, const size_t& chunkEnd);
         std::string getChunk(const TSNode* node = nullptr);

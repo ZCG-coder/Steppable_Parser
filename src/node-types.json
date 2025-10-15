@@ -1643,7 +1643,22 @@
   {
     "type": "suffix_expression",
     "named": true,
-    "fields": {},
+    "fields": {
+      "operator": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "!",
+            "named": false
+          },
+          {
+            "type": "'",
+            "named": false
+          }
+        ]
+      }
+    },
     "children": {
       "multiple": false,
       "required": true,
@@ -1872,6 +1887,10 @@
     "named": false
   },
   {
+    "type": "'",
+    "named": false
+  },
+  {
     "type": "(",
     "named": false
   },
@@ -1917,10 +1936,6 @@
   },
   {
     "type": "/",
-    "named": false
-  },
-  {
-    "type": ":",
     "named": false
   },
   {
@@ -2009,6 +2024,10 @@
     "named": true
   },
   {
+    "type": "exit",
+    "named": false
+  },
+  {
     "type": "fn",
     "named": false
   },
@@ -2082,6 +2101,10 @@
   },
   {
     "type": "}",
+    "named": false
+  },
+  {
+    "type": "~",
     "named": false
   }
 ]

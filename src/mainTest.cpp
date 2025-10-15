@@ -76,7 +76,7 @@ void print_node_in_chunk(TSNode node,
         print_node_in_chunk(ts_node_child(node, i), chunk, chunk_start, chunk_end, indent + 1);
 }
 
-int main(int argc, char** argv)
+int main(int argc, const char** argv)
 {
     if (argc < 2)
     {

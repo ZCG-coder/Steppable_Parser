@@ -12,6 +12,7 @@ SET(PROJECT_SRC_COMMON
     src/stpApplyOperator.cpp
     src/stpErrors.cpp
     src/stpExprHandler.cpp
+    src/stpInteractive.cpp
     # Statement processors
     src/statementProcessors/stpAssignment.cpp
     src/statementProcessors/stpChunkProcessor.cpp
@@ -23,6 +24,7 @@ SET(PROJECT_SRC_COMMON
     src/exprProcessors/stpMatrixExpr.cpp
     src/exprProcessors/stpFnCallExpr.cpp
     src/exprProcessors/stpRangeExpr.cpp
+    src/exprProcessors/stpSuffixExpr.cpp
 )
 SET(PROJECT_SRC src/main.cpp ${PROJECT_SRC_COMMON})
 SET(PROJECT_SRC_DBG src/mainTest.cpp)

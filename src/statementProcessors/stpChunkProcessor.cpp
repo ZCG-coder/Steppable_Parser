@@ -1,5 +1,6 @@
 #include "output.hpp"
 #include "platform.hpp"
+#include "steppable/mat2dBase.hpp"
 #include "stpInterp/stpBetterTS.hpp"
 #include "stpInterp/stpErrors.hpp"
 #include "stpInterp/stpExprHandler.hpp"
@@ -51,6 +52,12 @@ namespace steppable::parser
             return;
         }
 
+        if (type == "exit")
+        {
+            programSafeExit(0);
+            return;
+        }
+
         // Handle scoped statements before assignment statements
         if (type == "function_definition")
         {
@@ -81,7 +88,7 @@ namespace steppable::parser
             while (true)
             {
                 loopVal = STP_handleExpr(&exprNode, state);
-                if (not loopVal.asBool())
+                if (not loopVal.asBool(&exprNode))
                     break;
 
                 processChunk(bodyNode, state);
@@ -116,9 +123,16 @@ namespace steppable::parser
             switch (exprValue.typeID)
             {
             case STP_TypeID::MATRIX_2D:
+            {
+                std::vector<STP_Value> source;
+                STP_Value loopVar(STP_TypeID::MATRIX_2D, 0);
                 break;
+            }
             case STP_TypeID::STRING:
+            {
+                STP_Value loopVar(STP_TypeID::STRING, ""s);
                 break;
+            }
             default:
             {
                 output::error("runtime"s, "Object of type {0} is not itertable"s, { exprValue.typeName });

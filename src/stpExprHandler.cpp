@@ -47,14 +47,14 @@ namespace steppable::parser
             retVal = STP_handleStringExpr(exprNode, state);
         if (exprType == "identifier_or_member_access")
         {
-            TSNode childNode = ts_node_child(*exprNode, 0);
-            std::string childNodeType = ts_node_type(childNode);
+            TSNode nameNode = ts_node_child(*exprNode, 0);
+            std::string childNodeType = ts_node_type(nameNode);
 
             // Get the variable
             if (childNodeType == "identifier")
             {
-                std::string nameNode = state->getChunk(&childNode);
-                retVal = state->getCurrentScope()->getVariable(nameNode);
+                std::string identifierName = state->getChunk(&nameNode);
+                retVal = state->getCurrentScope()->getVariable(&nameNode, identifierName);
             }
         }
         if (exprType == "function_call")
@@ -64,15 +64,27 @@ namespace steppable::parser
             // binary_expression := lhs 'operator' rhs
             TSNode binExprNode = ts_node_child(*exprNode, 0);
             TSNode lhsNode = ts_node_child(binExprNode, 0);
-            TSNode operandNode = ts_node_child(ts_node_child(binExprNode, 1), 0);
+            TSNode operatorNode = ts_node_child(ts_node_child(binExprNode, 1), 0);
             TSNode rhsNode = ts_node_child(binExprNode, 2);
 
-            std::string operandType = ts_node_type(operandNode);
-
+            std::string operatorType = ts_node_type(operatorNode);
             STP_Value lhs = STP_handleExpr(&lhsNode, state);
+
+            if (lhs.typeID == STP_TypeID::NONE)
+            {
+                retVal = STP_Value(STP_TypeID::NONE, nullptr);
+                goto end;
+            }
+
             STP_Value rhs = STP_handleExpr(&rhsNode, state);
 
-            retVal = lhs.applyBinaryOperator(operandType, rhs);
+            if (rhs.typeID == STP_TypeID::NONE)
+            {
+                retVal = STP_Value(STP_TypeID::NONE, nullptr);
+                goto end;
+            }
+
+            retVal = lhs.applyBinaryOperator(exprNode, operatorType, rhs);
         }
         if (exprType == "unary_expression")
         {
@@ -81,7 +93,7 @@ namespace steppable::parser
             std::string operandType = ts_node_type(operandNode);
 
             STP_Value childVal = STP_handleExpr(&child, state);
-            retVal = childVal.applyUnaryOperator(operandType);
+            retVal = childVal.applyUnaryOperator(exprNode, operandType);
         }
         if (exprType == "bracketed_expr")
         {
@@ -90,7 +102,10 @@ namespace steppable::parser
         }
         if (exprType == "range_expr")
             retVal = STP_handleRangeExpr(exprNode, state);
+        if (exprType == "suffix_expression")
+            retVal = STP_handleSuffixExpr(exprNode, state);
 
+    end:
         if (printResult)
             std::cout << retVal.present(exprName) << '\n';
 

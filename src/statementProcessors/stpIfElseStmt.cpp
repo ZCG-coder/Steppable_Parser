@@ -17,7 +17,7 @@ namespace steppable::parser
         TSNode ifClauseStmtNode = ts_node_next_named_sibling(exprNode);
         TSNode lastNode = ifClauseStmtNode;
 
-        if (res.asBool())
+        if (res.asBool(&exprNode))
         {
             STP_processChunkChild(ifClauseStmtNode, state, true);
             return;
@@ -42,7 +42,7 @@ namespace steppable::parser
             TSNode elseifClauseStmtNode = ts_node_named_child(elseifClauseNode, 1);
             res = STP_handleExpr(&elseifExprNode, state);
 
-            if (res.asBool())
+            if (res.asBool(&exprNode))
             {
                 STP_processChunkChild(elseifClauseStmtNode, state, true);
                 return;

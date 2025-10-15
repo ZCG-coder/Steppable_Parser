@@ -3,6 +3,7 @@
 #include "steppable/mat2d.hpp"
 #include "steppable/number.hpp"
 #include "stpInterp/stpApplyOperator.hpp"
+#include "stpInterp/stpErrors.hpp"
 #include "util.hpp"
 
 #include <any>
@@ -71,14 +72,16 @@ namespace steppable::parser
 
     bool STP_DynamicLibrary::isLoaded() const { return handle != nullptr; }
 
-    STP_Value STP_Value::applyBinaryOperator(const std::string& _operatorStr, const STP_Value& rhs) const
+    STP_Value STP_Value::applyBinaryOperator(const TSNode* node,
+                                             const std::string& _operatorStr,
+                                             const STP_Value& rhs) const
     {
         std::string operatorStr = _operatorStr;
         operatorStr = __internals::stringUtils::bothEndsReplace(operatorStr, ' ');
 
         STP_TypeID lhsType = this->typeID;
         STP_TypeID rhsType = rhs.typeID;
-        STP_TypeID retType = *determineBinaryOperationFeasibility(lhsType, operatorStr, rhsType);
+        STP_TypeID retType = *determineBinaryOperationFeasibility(node, lhsType, operatorStr, rhsType);
 
         std::any value = this->data;
         std::any rhsValue = rhs.data;
@@ -87,11 +90,11 @@ namespace steppable::parser
         returnVal.typeID = retType;
         returnVal.typeName = STP_typeNames.at(retType);
 
-        std::any returnValueAny = performBinaryOperation(lhsType, value, operatorStr, rhsType, rhsValue);
+        std::any returnValueAny = performBinaryOperation(node, lhsType, value, operatorStr, rhsType, rhsValue);
 
         if (not returnValueAny.has_value())
         {
-            output::error("parser"s, "This operation is not supported at present"s);
+            STP_throwError(*node, STP_getState(), "This operation is not supported at present"s);
             programSafeExit(1);
         }
         returnVal.data = returnValueAny;
@@ -99,18 +102,18 @@ namespace steppable::parser
         return returnVal;
     }
 
-    STP_Value STP_Value::applyUnaryOperator(const std::string& _operatorStr) const
+    STP_Value STP_Value::applyUnaryOperator(const TSNode* node, const std::string& _operatorStr) const
     {
         std::string operatorStr = _operatorStr;
         operatorStr = __internals::stringUtils::bothEndsReplace(operatorStr, ' ');
 
-        std::any returnValAny = performUnaryOperation(typeID, operatorStr, data);
+        std::any returnValAny = performUnaryOperation(node, typeID, operatorStr, data);
 
         STP_Value returnValue(typeID, returnValAny);
         return returnValue;
     }
 
-    bool STP_Value::asBool() const
+    bool STP_Value::asBool(const TSNode* node) const
     {
         switch (typeID)
         {
@@ -135,12 +138,12 @@ namespace steppable::parser
         }
         case STP_TypeID::FUNC:
         {
-            output::error("parser"s, "Cannot convert Func to a logical type"s);
+            STP_throwError(*node, STP_getState(), "Cannot convert Func to a logical type"s);
             programSafeExit(1);
         }
         case STP_TypeID::SYMBOL:
         {
-            output::error("parser"s, "Cannot convert Symbol to a logical type"s);
+            STP_throwError(*node, STP_getState(), "Cannot convert Symbol to a logical type"s);
             programSafeExit(1);
         }
         }
@@ -165,16 +168,17 @@ namespace steppable::parser
         variables.insert_or_assign(name, data);
     }
 
-    STP_Value STP_Scope::getVariable(const std::string& name)
+    STP_Value STP_Scope::getVariable(const TSNode* node, const std::string& name)
     {
         if (not variables.contains(name))
         {
             if (parentScope == nullptr)
             {
-                output::error("parser"s, "Variable {0} is not defined"s, { name });
-                programSafeExit(1);
+                STP_throwError(
+                    *node, STP_getState(), __internals::format::format("Variable {0} is not defined"s, { name }));
+                return STP_Value(STP_TypeID::NONE, nullptr);
             }
-            return parentScope->getVariable(name);
+            return parentScope->getVariable(node, name);
         }
         return variables.at(name);
     }

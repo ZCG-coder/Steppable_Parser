@@ -65,7 +65,7 @@ namespace steppable::parser
             state->setCurrentScope(std::make_shared<STP_Scope>(scope));
 
             STP_processChunkChild(fn.fnNode, state, false);
-            STP_Value ret = state->getCurrentScope()->getVariable("04795");
+            STP_Value ret = state->getCurrentScope()->getVariable(node, "04795");
             state->setCurrentScope(state->getCurrentScope()->parentScope);
 
             return ret;

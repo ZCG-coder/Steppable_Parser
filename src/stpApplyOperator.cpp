@@ -1,10 +1,12 @@
 #include "stpInterp/stpApplyOperator.hpp"
 
 #include "steppable/mat2d.hpp"
+#include "stpInterp/stpErrors.hpp"
 
 namespace steppable::parser
 {
-    std::unique_ptr<STP_TypeID> determineBinaryOperationFeasibility(const STP_TypeID lhsType,
+    std::unique_ptr<STP_TypeID> determineBinaryOperationFeasibility(const TSNode* node,
+                                                                    const STP_TypeID lhsType,
                                                                     const std::string& operatorStr,
                                                                     const STP_TypeID rhsType)
     {
@@ -135,16 +137,21 @@ namespace steppable::parser
 
         if (not operationPerformable)
         {
-            output::error("parser"s,
-                          "Operation ({0}) {1} ({2}) cannot be performed."s,
-                          { STP_typeNames.at(lhsType), operatorStr, STP_typeNames.at(rhsType) });
-            __internals::utils::programSafeExit(1);
+            STP_throwError(*node,
+                           STP_getState(),
+                           __internals::format::format("Operation ({0}) {1} ({2}) cannot be performed."s,
+                                                       {
+                                                           STP_typeNames.at(lhsType),
+                                                           operatorStr,
+                                                           STP_typeNames.at(rhsType),
+                                                       }));
         }
 
         return std::make_unique<STP_TypeID>(retType);
     }
 
-    std::unique_ptr<STP_TypeID> determineUnaryOperationFeasibility(const std::string& operatorString,
+    std::unique_ptr<STP_TypeID> determineUnaryOperationFeasibility(const TSNode* node,
+                                                                   const std::string& operatorString,
                                                                    const STP_TypeID type)
     {
         bool operationPerformable = type == STP_TypeID::NUMBER or type == STP_TypeID::MATRIX_2D;
@@ -155,11 +162,12 @@ namespace steppable::parser
 
         output::error(
             "parser"s, "Operation {0}({1}) cannot be performed."s, { operatorString, STP_typeNames.at(type) });
-        __internals::utils::programSafeExit(1);
+        programSafeExit(1);
         return nullptr; // not reachable
     }
 
-    std::any performBinaryOperation(STP_TypeID lhsType,
+    std::any performBinaryOperation(const TSNode* node,
+                                    STP_TypeID lhsType,
                                     std::any value,
                                     std::string operatorStr,
                                     STP_TypeID rhsType,
@@ -334,11 +342,14 @@ namespace steppable::parser
         return returnValueAny;
     }
 
-    std::any performUnaryOperation(STP_TypeID type, const std::string& operatorString, const std::any& value)
+    std::any performUnaryOperation(const TSNode* node,
+                                   STP_TypeID type,
+                                   const std::string& operatorString,
+                                   const std::any& value)
     {
-        determineUnaryOperationFeasibility(operatorString, type);
+        determineUnaryOperationFeasibility(node, operatorString, type);
 
-        if (operatorString == "!")
+        if (operatorString == "~")
         {
             if (type == STP_TypeID::MATRIX_2D)
             {

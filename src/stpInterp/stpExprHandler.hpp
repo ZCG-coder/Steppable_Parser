@@ -10,6 +10,8 @@ namespace steppable::parser
 
     STP_Value STP_handleRangeExpr(const TSNode* exprNode, const STP_InterpState& state);
 
+    STP_Value STP_handleSuffixExpr(const TSNode* exprNode, const STP_InterpState& state);
+
     std::vector<STP_Argument> STP_extractArgVector(const TSNode* exprNode, const STP_InterpState& state);
 
     STP_Value STP_processFnCall(const TSNode* exprNode, const STP_InterpState& state);

@@ -55,6 +55,10 @@
         {
           "type": "STRING",
           "value": "cont"
+        },
+        {
+          "type": "STRING",
+          "value": "exit"
         }
       ]
     },
@@ -436,6 +440,43 @@
           }
         ]
       }
+    },
+    "lambda": {
+      "type": "SEQ",
+      "members": [
+        {
+          "type": "SYMBOL",
+          "name": "identifier"
+        },
+        {
+          "type": "STRING",
+          "value": "("
+        },
+        {
+          "type": "CHOICE",
+          "members": [
+            {
+              "type": "SYMBOL",
+              "name": "pos_args_decl"
+            },
+            {
+              "type": "BLANK"
+            }
+          ]
+        },
+        {
+          "type": "STRING",
+          "value": ")"
+        },
+        {
+          "type": "STRING",
+          "value": ":"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "_statement"
+        }
+      ]
     },
     "pos_args_decl": {
       "type": "SEQ",
@@ -951,7 +992,7 @@
             "members": [
               {
                 "type": "STRING",
-                "value": "!"
+                "value": "~"
               },
               {
                 "type": "STRING",
@@ -972,7 +1013,7 @@
     },
     "suffix_expression": {
       "type": "PREC_LEFT",
-      "value": 4,
+      "value": 9,
       "content": {
         "type": "SEQ",
         "members": [
@@ -981,13 +1022,18 @@
             "name": "_expression"
           },
           {
-            "type": "IMMEDIATE_TOKEN",
+            "type": "FIELD",
+            "name": "operator",
             "content": {
               "type": "CHOICE",
               "members": [
                 {
                   "type": "STRING",
                   "value": "'"
+                },
+                {
+                  "type": "STRING",
+                  "value": "!"
                 }
               ]
             }
@@ -1013,7 +1059,7 @@
         },
         {
           "type": "STRING",
-          "value": ":"
+          "value": "="
         },
         {
           "type": "SYMBOL",
@@ -1179,6 +1225,13 @@
       "content": {
         "type": "PATTERN",
         "value": "\\d+(\\.\\d+)?"
+      }
+    },
+    "integer": {
+      "type": "TOKEN",
+      "content": {
+        "type": "PATTERN",
+        "value": "\\d+?"
       }
     },
     "escape_sequence": {
