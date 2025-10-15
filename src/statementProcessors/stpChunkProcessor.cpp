@@ -5,10 +5,10 @@
 #include "stpInterp/stpErrors.hpp"
 #include "stpInterp/stpExprHandler.hpp"
 #include "stpInterp/stpProcessor.hpp"
-#include "tree_sitter/api.h"
 
 #include <iostream>
 #include <string>
+#include <tree_sitter/api.h>
 
 using namespace std::literals;
 
@@ -76,7 +76,7 @@ namespace steppable::parser
 
             if (ts_node_is_null(bodyNode))
             {
-                output::error("runtime"s, "No statements in while loop"s);
+                STP_throwError(node, state, "No statements in while loop"s);
                 programSafeExit(1);
             }
 
@@ -135,7 +135,10 @@ namespace steppable::parser
             }
             default:
             {
-                output::error("runtime"s, "Object of type {0} is not itertable"s, { exprValue.typeName });
+                STP_throwError(
+                    node,
+                    state,
+                    __internals::format::format("Object of type {0} is not itertable"s, { exprValue.typeName }));
                 break;
             }
             }

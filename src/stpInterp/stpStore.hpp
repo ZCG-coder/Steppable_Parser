@@ -78,7 +78,7 @@ namespace steppable::parser
 
         void addFunction(const std::string& name, const STP_FunctionDefinition& fn);
 
-        STP_FunctionDefinition getFunction(const std::string& name);
+        STP_FunctionDefinition getFunction(const TSNode* node, const std::string& name);
 
         std::string present() const;
     };

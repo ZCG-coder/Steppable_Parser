@@ -1,5 +1,6 @@
 #include "steppable/mat2d.hpp"
 #include "stpInterp/stpBetterTS.hpp"
+#include "stpInterp/stpErrors.hpp"
 #include "stpInterp/stpExprHandler.hpp"
 #include "stpInterp/stpInit.hpp"
 #include "stpInterp/stpStore.hpp"
@@ -23,7 +24,7 @@ namespace steppable::parser
             // Matrix transpose
             if (value.typeID != STP_TypeID::MATRIX_2D)
             {
-                output::error("runtime"s, "Cannot perform transpose on a non-matrix object"s);
+                STP_throwError(*exprNode, state, "Cannot perform transpose on a non-matrix object"s);
                 programSafeExit(1);
             }
 
@@ -51,7 +52,7 @@ namespace steppable::parser
             }
             else
             {
-                output::error("runtime"s, "Factorial can only be applied to matrices and numbers"s);
+                STP_throwError(*exprNode, state, "Factorial can only be applied to matrices and numbers"s);
                 programSafeExit(1);
             }
             break;

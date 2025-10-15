@@ -185,11 +185,12 @@ namespace steppable::parser
 
     void STP_Scope::addFunction(const std::string& name, const STP_FunctionDefinition& fn) { functions[name] = fn; }
 
-    STP_FunctionDefinition STP_Scope::getFunction(const std::string& name)
+    STP_FunctionDefinition STP_Scope::getFunction(const TSNode* node, const std::string& name)
     {
         if (functions.contains(name))
             return functions[name];
-        output::error("runtime"s, "Cannot find function {0} in scope"s, { name });
+        STP_throwError(
+            *node, STP_getState(), __internals::format::format("Cannot find function {0} in scope"s, { name }));
         programSafeExit(1);
         return {};
     }

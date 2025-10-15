@@ -6,7 +6,9 @@ namespace steppable::parser
     int STP_startInteractiveMode(const STP_InterpState& state, TSParser* parser)
     {
         std::cout << "Steppable " STEPPABLE_VERSION "\n";
-        std::cout << "Type an expression to evaluate. `exit` to quit.\n";
+        std::cout << "Written by Andy Zhang, licensed under MIT license (C) 2023-2025.\n";
+        std::cout << "* For more information, type `license()`.\n";
+        std::cout << "* Type an expression to evaluate. `exit` to quit.\n";
 
         std::string source;
         TSTree* tree = nullptr;

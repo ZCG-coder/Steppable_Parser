@@ -1,4 +1,5 @@
 #include "stpInterp/stpBetterTS.hpp"
+#include "stpInterp/stpErrors.hpp"
 #include "stpInterp/stpExprHandler.hpp"
 #include "stpInterp/stpInit.hpp"
 #include "stpInterp/stpStore.hpp"
@@ -55,11 +56,13 @@ namespace steppable::parser
                               function.posArgNames.end(),
                               missingArgsNames.begin());
 
-                    output::error("runtime"s,
-                                  "Missing positional arguments. Expect {0}"s,
-                                  {
-                                      __internals::stringUtils::join(missingArgsNames, ","s),
-                                  });
+                    STP_throwError(
+                        *exprNode,
+                        state,
+                        __internals::format::format("Missing positional arguments. Expect {0}"s,
+                                                    {
+                                                        __internals::stringUtils::join(missingArgsNames, ","s),
+                                                    }));
                     programSafeExit(1);
                 }
 
@@ -75,14 +78,17 @@ namespace steppable::parser
 
                 return function.interpFn(argMap);
             }
-            output::error("runtime"s, "Function {0} is not defined."s, { funcNameOrig });
-            programSafeExit(1);
+            STP_throwError(
+                *exprNode, state, __internals::format::format("Function {0} is not defined."s, { funcNameOrig }));
         }
 
         std::vector<STP_Argument> fnArgsVec = STP_extractArgVector(exprNode, state);
 
         auto args = STP_ArgContainer(fnArgsVec, {});
         auto* val = static_cast<STP_ValuePrimitive*>(funcPtr(&args));
+
+        if (not val->error.empty())
+            STP_throwError(*exprNode, state, val->error);
 
         return STP_Value(val->typeID, val->data);
     }
