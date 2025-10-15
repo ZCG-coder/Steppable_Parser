@@ -32,19 +32,25 @@ namespace steppable::parser
 {
     using namespace steppable::__internals;
 
-    void STP_checkRecursiveNodeSanity(const TSNode& node, const STP_InterpState& state)
+    bool STP_checkRecursiveNodeSanity(const TSNode& node, const STP_InterpState& state)
     {
         if (ts_node_is_null(node))
-            return;
+            return false;
 
         if (ts_node_is_error(node) or ts_node_is_missing(node))
+        {
             STP_throwSyntaxError(node, state);
+            return true;
+        }
 
         for (uint32_t i = 0; i < ts_node_child_count(node); i++)
         {
             TSNode child = ts_node_child(node, i);
-            STP_checkRecursiveNodeSanity(child, state);
+            if (STP_checkRecursiveNodeSanity(child, state))
+                return true;
         }
+
+        return false;
     }
 
     void STP_throwError(const TSNode& node, const STP_InterpState& state, const std::string& reason)

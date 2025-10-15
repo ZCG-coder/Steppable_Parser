@@ -41,11 +41,12 @@ namespace steppable::parser
                              const std::string& exprName)
     {
         assert(exprNode != nullptr);
-        STP_checkRecursiveNodeSanity(*exprNode, state);
-
         std::string exprType = ts_node_type(*exprNode);
 
         STP_Value retVal(STP_TypeID::NONE);
+
+        if (STP_checkRecursiveNodeSanity(*exprNode, state))
+            goto end;
 
         if (exprType == "number")
         {

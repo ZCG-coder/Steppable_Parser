@@ -85,7 +85,7 @@ namespace steppable::parser
                                                     {
                                                         __internals::stringUtils::join(missingArgsNames, ","s),
                                                     }));
-                    programSafeExit(1);
+                    return STP_Value(STP_TypeID::NONE);
                 }
 
                 STP_StringValMap argMap;
@@ -102,6 +102,7 @@ namespace steppable::parser
             }
             STP_throwError(
                 *exprNode, state, __internals::format::format("Function {0} is not defined."s, { funcNameOrig }));
+            return STP_Value(STP_TypeID::NONE);
         }
 
         std::vector<STP_Argument> fnArgsVec = STP_extractArgVector(exprNode, state);
