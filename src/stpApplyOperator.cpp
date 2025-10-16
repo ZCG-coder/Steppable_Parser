@@ -167,6 +167,7 @@ namespace steppable::parser
                                                            operatorStr,
                                                            STP_typeNames.at(rhsType),
                                                        }));
+            return nullptr;
         }
 
         return std::make_unique<STP_TypeID>(retType);
@@ -184,8 +185,7 @@ namespace steppable::parser
 
         output::error(
             "parser"s, "Operation {0}({1}) cannot be performed."s, { operatorString, STP_typeNames.at(type) });
-        programSafeExit(1);
-        return nullptr; // not reachable
+        return nullptr;
     }
 
     std::any performBinaryOperation(const TSNode* node,
@@ -369,7 +369,9 @@ namespace steppable::parser
                                    const std::string& operatorString,
                                    const std::any& value)
     {
-        determineUnaryOperationFeasibility(node, operatorString, type);
+        std::unique_ptr<STP_TypeID> retTypePtr = determineUnaryOperationFeasibility(node, operatorString, type);
+        if (retTypePtr == nullptr)
+            goto fail;
 
         if (operatorString == "~")
         {
@@ -416,6 +418,7 @@ namespace steppable::parser
             }
         }
 
-        return std::make_any<std::nullptr_t>(nullptr);
+    fail:
+        return {};
     }
 } // namespace steppable::parser

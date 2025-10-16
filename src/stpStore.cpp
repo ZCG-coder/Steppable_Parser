@@ -103,12 +103,18 @@ namespace steppable::parser
 
         STP_TypeID lhsType = this->typeID;
         STP_TypeID rhsType = rhs.typeID;
-        STP_TypeID retType = *determineBinaryOperationFeasibility(node, lhsType, operatorStr, rhsType);
+        STP_Value returnVal(STP_TypeID::NONE);
+
+        const std::unique_ptr<STP_TypeID> typeIdPtr =
+            determineBinaryOperationFeasibility(node, lhsType, operatorStr, rhsType);
+        if (typeIdPtr == nullptr)
+            return returnVal;
+
+        STP_TypeID retType = *typeIdPtr;
 
         std::any value = this->data;
         std::any rhsValue = rhs.data;
 
-        STP_Value returnVal(STP_TypeID::NONE);
         returnVal.typeID = retType;
         returnVal.typeName = STP_typeNames.at(retType);
 
@@ -129,7 +135,9 @@ namespace steppable::parser
         std::string operatorStr = _operatorStr;
         operatorStr = __internals::stringUtils::bothEndsReplace(operatorStr, ' ');
 
-        std::any returnValAny = performUnaryOperation(node, typeID, operatorStr, data);
+        const std::any returnValAny = performUnaryOperation(node, typeID, operatorStr, data);
+        if (not returnValAny.has_value())
+            return STP_Value(STP_TypeID::NONE);
 
         STP_Value returnValue(typeID, returnValAny);
         return returnValue;
@@ -158,20 +166,17 @@ namespace steppable::parser
             const auto val = std::any_cast<std::string>(data);
             return not val.empty();
         }
-        case STP_TypeID::FUNC:
+        default:
         {
-            STP_throwError(*node, STP_getState(), "Cannot convert Func to a logical type"s);
-            programSafeExit(1);
+            STP_throwError(*node,
+                           STP_getState(),
+                           __internals::format::format("Cannot convert {0} to a logical type"s,
+                                                       {
+                                                           STP_typeNames.at(typeID),
+                                                       }));
+            return false;
         }
-        case STP_TypeID::SYMBOL:
-        {
-            STP_throwError(*node, STP_getState(), "Cannot convert Symbol to a logical type"s);
-            programSafeExit(1);
         }
-        }
-
-        // Should not reach this
-        return false;
     }
 
     void STP_Scope::addVariable(const std::string& name, const STP_Value& data)
