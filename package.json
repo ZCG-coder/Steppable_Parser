@@ -12,7 +12,7 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "type": "commonjs",
+  "type": "module",
   "devDependencies": {
     "js-beautify": "^1.15.4",
     "tree-sitter-cli": "^0.25.8"

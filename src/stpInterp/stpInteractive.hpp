@@ -22,8 +22,21 @@
 
 #pragma once
 
+#include "stpInterp/stpInit.hpp"
+
+#include <tree_sitter/api.h>
 
 namespace steppable::parser
 {
+    /**
+     * @brief Start an interactive session.
+     *
+     * @note To make sure exceptions will not make the parser exit, call `state->setInteractive()` to set interactive
+     * mode on before starting the interactive session.
+     *
+     * @param state The current state of the interpreter.
+     * @param parser The parser object for Steppable.
+     * @return int The exit code of the interactive session.
+     */
     int STP_startInteractiveMode(const STP_InterpState& state, TSParser* parser);
-}
+} // namespace steppable::parser

@@ -31,7 +31,20 @@ namespace steppable::parser
     using STP_InterpState = std::shared_ptr<STP_InterpStoreLocal>;
     const extern STP_InterpState _storage;
 
+    /**
+     * @brief Gets the current state of the interpreter.
+     * @details If the state is not initialized yet, it will initialize it automatically.
+     *
+     * @return STP_InterpState The current state of the interpreter.
+     */
     STP_InterpState STP_getState();
 
+    /**
+     * @brief Free the state pointer immediately. Call upon exit.
+     *
+     * @throw std::runtime_error If trying to free the pointer when it is unintialized.
+     *
+     * @return int Status of the free operation, now always 0.
+     */
     int STP_destroy();
 } // namespace steppable::parser

@@ -9,6 +9,10 @@ let Prec = {
     STRING_CHAR: 2
 };
 
+let Expressions = {
+    suffixes: ["'", "!"]
+};
+
 function statement_group($) {
     return seq(
         repeat(seq($._statement, "\n")),
@@ -16,7 +20,7 @@ function statement_group($) {
     );
 }
 
-module.exports = grammar({
+export default grammar({
     name: "stp",
     conflicts: $ => [
         [$.function_call, $.identifier_or_member_access],
@@ -24,7 +28,7 @@ module.exports = grammar({
         [$.pos_args_decl]
     ],
 
-    extras: $ => [/\s/, $.comment],
+    extras: $ => [/[\s\r]*/, $.comment],
 
     rules: {
         source_file: $ => statement_group($),
@@ -39,6 +43,7 @@ module.exports = grammar({
             $.expression_statement,
             $.import_statement,
             $.comment,
+            $.return_stmt,
             // $.lambda,
             "break",
             "cont",
@@ -53,6 +58,17 @@ module.exports = grammar({
         return_stmt: $ => seq(
             "ret",
             field("ret_expr", $._expression)
+        ),
+
+        // if-statement
+        if_else_stmt: $ => seq(
+            "if", $._expression, "{",
+            alias(
+                statement_group($), $.if_clause_stmt
+            ),
+            "}",
+            repeat($.elseif_clause),
+            optional($.else_clause)
         ),
 
         elseif_clause: $ => seq(
@@ -70,16 +86,7 @@ module.exports = grammar({
             "}"
         ),
 
-        if_else_stmt: $ => seq(
-            "if", $._expression, "{",
-            alias(
-                statement_group($), $.if_clause_stmt
-            ),
-            "}",
-            repeat($.elseif_clause),
-            optional($.else_clause)
-        ),
-
+        // loops
         while_stmt: $ => seq(
             "while",
             field("loop_expr", $._expression),
@@ -87,7 +94,6 @@ module.exports = grammar({
             alias(statement_group($), $.loop_statements),
             "}"
         ),
-
         for_in_stmt: $ => seq(
             "for", field("loop_var", $.identifier),
             "in",
@@ -107,6 +113,40 @@ module.exports = grammar({
             $.identifier
         )),
 
+        // DECLARATION of arguments: name only or with optional default value
+        pos_args_decl: $ => seq(
+            alias($.identifier, $.param_name),
+            repeat(
+                seq(",", alias($.identifier, $.param_name))
+            )
+        ),
+        keyword_args_decl: $ => seq(
+            $.fn_keyword_arg,
+            repeat(
+                seq(",", $.fn_keyword_arg)
+            )
+        ),
+
+        fn_keyword_arg: $ => seq(
+            field(
+                "argument_name",
+                alias($.identifier, $.param_name)
+            ),
+            "=",
+            $._expression
+        ),
+
+        // arguments when CALLING the function: expression and name if is keyword argument
+        fn_pos_arg_list: $ => seq(
+            $._expression,
+            repeat(seq(",", $._expression))
+        ),
+
+        fn_keyword_arg_list: $ => seq(
+            $.fn_keyword_arg,
+            repeat(seq(",", $.fn_keyword_arg))
+        ),
+
         function_definition: $ => prec(Prec.FN_DEF, seq(
             "fn",
             field(
@@ -120,13 +160,7 @@ module.exports = grammar({
             ),
             ")",
             "{",
-            alias(field(
-                "fn_body",
-                repeat(choice(
-                    $._statement,
-                    $.return_stmt,
-                ))
-            ), $.fn_body),
+            alias(field("fn_body", statement_group($)), $.fn_body),
             "}"
         )),
 
@@ -137,20 +171,6 @@ module.exports = grammar({
             ")",
             ":",
             $._statement
-        ),
-
-        pos_args_decl: $ => seq(
-            alias($.identifier, $.param_name),
-            repeat(
-                seq(",", alias($.identifier, $.param_name))
-            )
-        ),
-
-        keyword_args_decl: $ => seq(
-            $.fn_keyword_arg,
-            repeat(
-                seq(",", $.fn_keyword_arg)
-            )
         ),
 
         import_statement: $ => seq("import", $.identifier, optional(";")),
@@ -183,6 +203,7 @@ module.exports = grammar({
 
         bracketed_expr: $ => seq("(", $._expression, ")"),
 
+        // matrices
         matrix_row: $ => prec.left(seq(
             repeat1($._expression),
             ";"
@@ -200,6 +221,7 @@ module.exports = grammar({
             "]"
         ),
 
+        // binary expressions with different associativity and priority
         binary_expression: $ => choice(
             $.binary_expression_left0,
             $.binary_expression_left1,
@@ -231,20 +253,20 @@ module.exports = grammar({
             $._expression
         )),
 
-        binary_operator_left0: $ => choice(
+        binary_operator_left0: () => choice(
             "==", "!=", ">", "<", ">=", "<=", "in", "and", "not", "or"
         ),
 
-        binary_operator_left1: $ => choice(
+        binary_operator_left1: () => choice(
             "-", "+",
         ),
 
-        binary_operator_left2: $ => choice(
+        binary_operator_left2: () => choice(
             "*", "/",
             ".*", "./", " mod ", "@", "&"
         ),
 
-        binary_operator_right: $ => choice(
+        binary_operator_right: () => choice(
             "^", ".^"
         ),
 
@@ -257,28 +279,9 @@ module.exports = grammar({
             $._expression,
             field(
                 "operator",
-                choice("'", "!")
+                choice(...Expressions.suffixes)
             ),
         )),
-
-        fn_keyword_arg: $ => seq(
-            field(
-                "argument_name",
-                alias($.identifier, $.param_name)
-            ),
-            "=",
-            $._expression
-        ),
-
-        fn_pos_arg_list: $ => seq(
-            $._expression,
-            repeat(seq(",", $._expression))
-        ),
-
-        fn_keyword_arg_list: $ => seq(
-            $.fn_keyword_arg,
-            repeat(seq(",", $.fn_keyword_arg))
-        ),
 
         function_call: $ => seq(
             field("fn_name", $.identifier),
@@ -288,28 +291,29 @@ module.exports = grammar({
             ")"
         ),
 
-        percentage: $ => seq($.number, "%"),
+        percentage: $ => prec.left(Prec.SUFFIX_EXPR, seq($.number, "%")),
 
-        comment: _ => token(seq("#", /.*/)),
+        comment: () => token(seq("#", /.*/)),
 
-        identifier: _ => token(/[a-zA-Z_][a-zA-Z0-9_]*/),
+        identifier: () => token(/[a-zA-Z_][a-zA-Z0-9_]*/),
         identifier_or_member_access: $ => choice($.identifier, $.member_access),
 
-        number: _ => token(/\d+(\.\d+)?/),
-        integer: _ => token(/\d+?/),
+        number: () => token(/\d+(\.\d+)?/),
+        integer: () => token(/\d+?/),
 
-        escape_sequence: _ => /\\[rntbf"\\]/,
+        // strings
+        escape_sequence: () => /\\[rntbf"\\]/,
         unicode_escape: $ => seq(
             "\\x",
             alias(token.immediate(/[0-9A-Fa-f]{2}|[0-9A-Fa-f]{4}|[0-9A-Fa-f]{8}/), $.hex_digits)
         ),
-        octal_escape: $ => /\\[0-7]{3}/,
+        octal_escape: () => /\\[0-7]{3}/,
         formatting_snippet: $ => seq(
             "\\{",
             field("formatting_expr", $._expression),
             "\\}"
         ),
-        string_char: $ => token(prec(Prec.STRING_CHAR, /[^"\\]+/)),
+        string_char: () => token(prec(Prec.STRING_CHAR, /[^"\\]+/)),
         string: $ => seq(
             "\"",
             field("string_chars",

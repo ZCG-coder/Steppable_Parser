@@ -22,19 +22,42 @@
 
 #pragma once
 
-#include "../../../include/steppable/stpTypeName.hpp"
-#include "steppable/number.hpp"
+#include "steppable/stpTypeName.hpp"
 #include "tree_sitter/api.h"
 
 #include <any>
 
 namespace steppable::parser
 {
+    /**
+     * @brief Determine if a binary operation can be done.
+     *
+     * @param node The entire binary expression node.
+     * @param lhsType The `STP_TypeID` value for the LHS node.
+     * @param operatorStr The operator between LHS and RHS.
+     * @param rhsType The `STP_TypeID` value for the RHS node.
+     * @return std::unique_ptr<STP_TypeID> If the operation can be done, returns a `unique_ptr` to the `STP_TypeID` of
+     * the returning value. Otherwise, a `nullptr` is returned.
+     */
     std::unique_ptr<STP_TypeID> determineBinaryOperationFeasibility(const TSNode* node,
                                                                     STP_TypeID lhsType,
                                                                     const std::string& operatorStr,
                                                                     STP_TypeID rhsType);
 
+    /**
+     * @brief Performs a binary operation.
+     *
+     * @note This function does not check for the operation feasibility. Check with
+     * `determineBinaryOperationFeasibility()` first.
+     *
+     * @param node The entire binary expression node.
+     * @param lhsType The `STP_TypeID` value for the LHS node.
+     * @param value The `std::any` value for the LHS node.
+     * @param operatorStr The operator between LHS and RHS.
+     * @param rhsType The `STP_TypeID` value for the RHS node.
+     * @param rhsValue The `std::any` value for the RHS node.
+     * @return std::any The value of LHS after the operation is done.
+     */
     std::any performBinaryOperation(const TSNode* node,
                                     STP_TypeID lhsType,
                                     std::any value,
@@ -42,6 +65,15 @@ namespace steppable::parser
                                     STP_TypeID rhsType,
                                     std::any rhsValue);
 
+    /**
+     * @brief Performs a unary operation.
+     *
+     * @param node The entire unary expression node.
+     * @param type The `STP_TypeID` value for the expression node.
+     * @param operatorString The unary operator to apply.
+     * @param value The value of the expression node.
+     * @return std::any The result of the operation done.
+     */
     std::any performUnaryOperation(const TSNode* node,
                                    STP_TypeID type,
                                    const std::string& operatorString,

@@ -26,9 +26,35 @@
 
 namespace steppable::parser
 {
+    /**
+     * @brief Check for node "sanity", i.e., check for grammar compilance and syntax errors.
+     *
+     * @note When there is a syntax error, end the execution immediately. An error would have been printed to the
+     * console already about this error.
+     *
+     * @param node The root node to start searching at.
+     * @param state The current state of the interpreter.
+     * @return true When there is a syntax error.
+     * @return false When there are no errors.
+     */
     bool STP_checkRecursiveNodeSanity(const TSNode& node, const STP_InterpState& state);
 
+    /**
+     * @brief Throws a syntax error.
+     * @warning Syntax errors would not immediately stop the execution flow. Find errors with
+     * `STP_checkRecursiveNodeSanity()` and then handle them.
+     *
+     * @param node The node containing the error.
+     * @param state The current state of the interpreter.
+     */
     void STP_throwSyntaxError(const TSNode& node, const STP_InterpState& state);
 
+    /**
+     * @brief Throw other kinds of errors.
+     *
+     * @param node The node containing the error.
+     * @param state The current state of the interpreter.
+     * @param reason The reason for the error.
+     */
     void STP_throwError(const TSNode& node, const STP_InterpState& state, const std::string& reason);
 } // namespace steppable::parser

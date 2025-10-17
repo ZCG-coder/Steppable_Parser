@@ -448,6 +448,10 @@
           "named": true
         },
         {
+          "type": "return_stmt",
+          "named": true
+        },
+        {
           "type": "symbol_decl_statement",
           "named": true
         },
@@ -551,6 +555,10 @@
         },
         {
           "type": "import_statement",
+          "named": true
+        },
+        {
+          "type": "return_stmt",
           "named": true
         },
         {
@@ -904,6 +912,10 @@
           "named": true
         },
         {
+          "type": "return_stmt",
+          "named": true
+        },
+        {
           "type": "symbol_decl_statement",
           "named": true
         },
@@ -1005,7 +1017,7 @@
     "named": true,
     "fields": {
       "fn_body": {
-        "multiple": false,
+        "multiple": true,
         "required": false,
         "types": [
           {
@@ -1093,6 +1105,10 @@
         },
         {
           "type": "import_statement",
+          "named": true
+        },
+        {
+          "type": "return_stmt",
           "named": true
         },
         {
@@ -1237,6 +1253,10 @@
         },
         {
           "type": "import_statement",
+          "named": true
+        },
+        {
+          "type": "return_stmt",
           "named": true
         },
         {
@@ -1595,6 +1615,10 @@
         },
         {
           "type": "import_statement",
+          "named": true
+        },
+        {
+          "type": "return_stmt",
           "named": true
         },
         {

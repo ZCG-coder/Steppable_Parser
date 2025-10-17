@@ -216,10 +216,14 @@ namespace steppable::parser
     {
         if (functions.contains(name))
             return functions[name];
-        STP_throwError(
-            *node, STP_getState(), __internals::format::format("Cannot find function {0} in scope"s, { name }));
-        programSafeExit(1);
-        return {};
+
+        if (parentScope == nullptr)
+        {
+            STP_throwError(
+                *node, STP_getState(), __internals::format::format("Cannot find function {0} in scope"s, { name }));
+            return {};
+        }
+        return parentScope->getFunction(node, name);
     }
 
     std::string STP_Scope::present() const

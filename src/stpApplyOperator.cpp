@@ -27,6 +27,7 @@
 
 namespace steppable::parser
 {
+    // NOLINTNEXTLINE(readability-function-cognitive-complexity)
     std::unique_ptr<STP_TypeID> determineBinaryOperationFeasibility(const TSNode* node,
                                                                     const STP_TypeID lhsType,
                                                                     const std::string& operatorStr,

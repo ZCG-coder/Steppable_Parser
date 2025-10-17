@@ -26,14 +26,46 @@
 
 namespace steppable::parser
 {
+    /**
+     * @brief Recursively process all children nodes inside a root node.
+     *
+     * @param parent The parent node containing all children nodes.
+     * @param stpState The current state of the interpreter.
+     * @param createNewScope Whether to create a new scope to run all statements within.
+     */
     void STP_processChunkChild(const TSNode& parent, const STP_InterpState& stpState, bool createNewScope = false);
 
     // Statement processors
+
+    /**
+     * @brief Handle an assignment statement.
+     *
+     * @param node The assignment statement node.
+     * @param state The current state of the interpreter.
+     */
     void handleAssignment(const TSNode* node, const STP_InterpState& state = nullptr);
 
+    /**
+     * @brief Handle an if-else statement.
+     *
+     * @param node The assignment statement node.
+     * @param state The current state of the interpreter.
+     */
     void STP_processIfElseStmt(const TSNode* node, const STP_InterpState& state);
 
+    /**
+     * @brief Handle an symbol declaration statement.
+     *
+     * @param node The symbol declaration node.
+     * @param state The current state of the interpreter.
+     */
     void handleSymbolDeclStmt(const TSNode* node, const STP_InterpState& state);
 
+    /**
+     * @brief Process a function declaration statement.
+     *
+     * @param node The function declaration node.
+     * @param state The current state of the interpreter.
+     */
     void STP_processFuncDefinition(const TSNode* node, const STP_InterpState& state);
 } // namespace steppable::parser

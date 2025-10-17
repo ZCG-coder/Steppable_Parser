@@ -24,7 +24,6 @@
 
 #include "stpInterp/stpStore.hpp"
 
-#include <iostream>
 #include <memory>
 #include <stdexcept>
 
