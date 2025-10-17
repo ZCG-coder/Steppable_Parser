@@ -40,9 +40,6 @@ namespace steppable::parser
     {
         const std::string type = ts_node_type(node);
 
-        if (type == "source_file")
-            STP_checkRecursiveNodeSanity(node, state);
-
         if (type == "\n" // Newline
             or type == "comment" // Comment
         )

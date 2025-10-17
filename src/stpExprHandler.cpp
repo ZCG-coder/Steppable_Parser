@@ -45,9 +45,6 @@ namespace steppable::parser
 
         STP_Value retVal(STP_TypeID::NONE);
 
-        if (STP_checkRecursiveNodeSanity(*exprNode, state))
-            goto end;
-
         if (exprType == "number")
         {
             // Number

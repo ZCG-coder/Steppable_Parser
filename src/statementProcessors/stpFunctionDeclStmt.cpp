@@ -69,7 +69,8 @@ namespace steppable::parser
         }
 
         TSNode bodyNode = ts_node_child_by_field_name(*node, "fn_body"s);
-        STP_checkRecursiveNodeSanity(bodyNode, state);
+        if (STP_checkRecursiveNodeSanity(bodyNode, state))
+            return;
 
         TSTree* bodyNodeTree = ts_tree_copy(bodyNode.tree);
 
@@ -97,4 +98,4 @@ namespace steppable::parser
 
         state->getCurrentScope()->addFunction(fnName, fn);
     }
-}
+} // namespace steppable::parser

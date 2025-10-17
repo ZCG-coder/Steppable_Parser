@@ -20,6 +20,7 @@
  * SOFTWARE.                                                                                      *
  **************************************************************************************************/
 
+#include "stpInterp/stpErrors.hpp"
 #include "stpInterp/stpInit.hpp"
 #include "stpInterp/stpProcessor.hpp"
 
@@ -35,7 +36,7 @@ namespace steppable::parser
         std::string source;
         TSTree* tree = nullptr;
 
-        while (1)
+        while (true)
         {
             std::cout << ": ";
             source.clear();
@@ -44,6 +45,9 @@ namespace steppable::parser
             tree = ts_parser_parse_string(parser, nullptr, source.c_str(), static_cast<uint32_t>(source.size()));
             TSNode rootNode = ts_tree_root_node(tree);
             state->setChunk(source, 0, static_cast<long>(source.size()));
+            if (STP_checkRecursiveNodeSanity(rootNode, state))
+                continue;
+
             STP_processChunkChild(rootNode, state);
         }
         return 0;

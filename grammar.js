@@ -1,4 +1,4 @@
-Prec = {
+let Prec = {
     SUFFIX_EXPR: 9,
     BINARY_EXPR3: 8,
     BINARY_EXPR2: 7,
@@ -7,6 +7,13 @@ Prec = {
     UNARY_EXPR: 4,
     FN_DEF: 3,
     STRING_CHAR: 2
+};
+
+function statement_group($) {
+    return seq(
+        repeat(seq($._statement, "\n")),
+        optional($._statement),
+    );
 }
 
 module.exports = grammar({
@@ -20,7 +27,7 @@ module.exports = grammar({
     extras: $ => [/\s/, $.comment],
 
     rules: {
-        source_file: $ => repeat($._statement),
+        source_file: $ => statement_group($),
 
         _statement: $ => choice(
             $.assignment,
@@ -52,19 +59,23 @@ module.exports = grammar({
             "elseif",
             $._expression,
             "{",
-            alias(repeat($._statement), $.elseif_clause_stmt),
+            alias(statement_group($), $.elseif_clause_stmt),
             "}"
         ),
 
         else_clause: $ => seq(
             "else",
             "{",
-            alias(repeat($._statement), $.else_clause_stmt),
+            alias(statement_group($), $.else_clause_stmt),
             "}"
         ),
 
         if_else_stmt: $ => seq(
-            "if", $._expression, "{", alias(repeat($._statement), $.if_clause_stmt), "}",
+            "if", $._expression, "{",
+            alias(
+                statement_group($), $.if_clause_stmt
+            ),
+            "}",
             repeat($.elseif_clause),
             optional($.else_clause)
         ),
@@ -73,7 +84,7 @@ module.exports = grammar({
             "while",
             field("loop_expr", $._expression),
             "{",
-            alias(repeat($._statement), $.loop_statements),
+            alias(statement_group($), $.loop_statements),
             "}"
         ),
 
@@ -82,7 +93,7 @@ module.exports = grammar({
             "in",
             field("loop_expr", $._expression),
             "{",
-            repeat($._statement),
+            statement_group($),
             "}"
         ),
 

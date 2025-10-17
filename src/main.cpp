@@ -24,6 +24,7 @@
 #include "output.hpp"
 #include "steppable/number.hpp"
 #include "stpInterp/stpBetterTS.hpp"
+#include "stpInterp/stpErrors.hpp"
 #include "stpInterp/stpInit.hpp"
 #include "stpInterp/stpInteractive.hpp"
 #include "stpInterp/stpProcessor.hpp"
@@ -101,6 +102,9 @@ int main(int argc, const char** argv) // NOLINT(*-exception-escape)
     tree = ts_parser_parse_string(parser, nullptr, source.c_str(), static_cast<uint32_t>(source.size()));
     rootNode = ts_tree_root_node(tree);
     state->setChunk(source, 0, static_cast<long>(source.size()));
+    if (STP_checkRecursiveNodeSanity(rootNode, state))
+        return 1;
+
     STP_processChunkChild(rootNode, state);
 
 end:
