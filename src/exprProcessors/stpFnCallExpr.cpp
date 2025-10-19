@@ -26,6 +26,8 @@
 #include "stpInterp/stpInit.hpp"
 #include "stpInterp/stpStore.hpp"
 
+#include <iterator>
+
 #if defined(_MSC_VER)
     #include <BaseTsd.h>
 typedef SSIZE_T ssize_t;
