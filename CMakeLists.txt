@@ -20,12 +20,6 @@
 #  SOFTWARE.                                                                                        #
 #####################################################################################################
 
-SET(CMAKE_C_STANDARD 11)
-SET(CMAKE_C_STANDARD_REQUIRED YES)
-SET(CMAKE_C_EXTENSIONS YES)
-
-SET(CMAKE_CXX_STANDARD 20)
-
 OPTION(BUILD_SHARED_LIBS "Build using shared libraries" ON)
 OPTION(TREE_SITTER_REUSE_ALLOCATOR "Reuse the library allocator" OFF)
 

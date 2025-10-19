@@ -26,6 +26,7 @@
 #include "tree_sitter/api.h"
 
 #include <any>
+#include <memory>
 
 namespace steppable::parser
 {
