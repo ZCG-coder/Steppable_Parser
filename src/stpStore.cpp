@@ -101,7 +101,7 @@ namespace steppable::parser
                                              const STP_Value& rhs) const
     {
         std::string operatorStr = _operatorStr;
-        operatorStr = __internals::stringUtils::bothEndsReplace(operatorStr, ' ');
+        operatorStr = stringUtils::bothEndsReplace(operatorStr, ' ');
 
         STP_TypeID lhsType = this->typeID;
         STP_TypeID rhsType = rhs.typeID;
@@ -132,7 +132,7 @@ namespace steppable::parser
     STP_Value STP_Value::applyUnaryOperator(const TSNode* node, const std::string& _operatorStr) const
     {
         std::string operatorStr = _operatorStr;
-        operatorStr = __internals::stringUtils::bothEndsReplace(operatorStr, ' ');
+        operatorStr = stringUtils::bothEndsReplace(operatorStr, ' ');
 
         const std::any returnValAny = performUnaryOperation(node, typeID, operatorStr, data);
         if (not returnValAny.has_value())
@@ -169,7 +169,7 @@ namespace steppable::parser
         {
             STP_throwError(*node,
                            STP_getState(),
-                           __internals::format::format("Cannot convert {0} to a logical type"s,
+                           format::format("Cannot convert {0} to a logical type"s,
                                                        {
                                                            STP_typeNames.at(typeID),
                                                        }));
@@ -201,7 +201,7 @@ namespace steppable::parser
             if (parentScope == nullptr)
             {
                 STP_throwError(
-                    *node, STP_getState(), __internals::format::format("Variable {0} is not defined"s, { name }));
+                    *node, STP_getState(), format::format("Variable {0} is not defined"s, { name }));
                 return STP_Value(STP_TypeID::NONE, nullptr);
             }
             return parentScope->getVariable(node, name);
@@ -219,7 +219,7 @@ namespace steppable::parser
         if (parentScope == nullptr)
         {
             STP_throwError(
-                *node, STP_getState(), __internals::format::format("Cannot find function {0} in scope"s, { name }));
+                *node, STP_getState(), format::format("Cannot find function {0} in scope"s, { name }));
             return {};
         }
         return parentScope->getFunction(node, name);

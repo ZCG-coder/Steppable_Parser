@@ -32,7 +32,7 @@ using namespace std::literals;
 
 namespace steppable::parser
 {
-    using namespace steppable::__internals;
+    using namespace steppable;
 
     bool STP_checkRecursiveNodeSanity(const TSNode& node, const STP_InterpState& state)
     {

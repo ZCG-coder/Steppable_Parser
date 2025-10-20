@@ -26,7 +26,7 @@
 #include "stpInterp/stpStore.hpp"
 #include "tree_sitter/api.h"
 
-using namespace steppable::__internals::stringUtils;
+using namespace steppable::stringUtils;
 using namespace std::literals;
 
 namespace steppable::parser

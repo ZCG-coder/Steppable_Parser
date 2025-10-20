@@ -29,7 +29,6 @@ namespace steppable::parser
 {
     STP_Value STP_handleStringExpr(const TSNode* exprNode, const STP_InterpState& state)
     {
-        using namespace __internals;
         // String
         std::string data;
         for (uint32_t i = 0; i < ts_node_child_count(*exprNode); i++)

@@ -33,7 +33,7 @@
 #include <tree_sitter/api.h>
 
 using namespace std::literals;
-using namespace steppable::__internals::utils;
+using namespace steppable::utils;
 
 namespace steppable::parser
 {
@@ -135,7 +135,7 @@ namespace steppable::parser
             //
             TSNode nameNode = ts_node_child_by_field_name(node, "loop_var"s);
             std::string name = state->getChunk(&nameNode);
-            name = __internals::stringUtils::bothEndsReplace(name, ' ');
+            name = stringUtils::bothEndsReplace(name, ' ');
 
             TSNode exprNode = ts_node_child_by_field_name(node, "loop_expr"s);
             STP_Value exprValue = STP_handleExpr(&exprNode, state);
@@ -158,7 +158,7 @@ namespace steppable::parser
                 STP_throwError(
                     node,
                     state,
-                    __internals::format::format("Object of type {0} is not itertable"s, { exprValue.typeName }));
+                    format::format("Object of type {0} is not itertable"s, { exprValue.typeName }));
                 break;
             }
             }

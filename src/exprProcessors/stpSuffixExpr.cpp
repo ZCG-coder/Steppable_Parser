@@ -28,7 +28,7 @@
 #include "stpInterp/stpStore.hpp"
 
 using namespace std::literals;
-using namespace steppable::__internals::utils;
+using namespace steppable::utils;
 
 namespace steppable::parser
 {
@@ -64,14 +64,14 @@ namespace steppable::parser
             if (value.typeID == STP_TypeID::NUMBER)
             {
                 auto num = std::any_cast<Number>(value.data);
-                num = __internals::calc::factorial(num.present(), 0);
+                num = calc::factorial(num.present(), 0);
                 retValue = STP_Value(STP_TypeID::NUMBER, num);
             }
             else if (value.typeID == STP_TypeID::MATRIX_2D)
             {
                 auto mat = std::any_cast<Matrix>(value.data);
                 mat = mat.apply([&](const Number& item, const YXPoint& /*unused*/) -> Number {
-                    return __internals::calc::factorial(item.present(), 0);
+                    return calc::factorial(item.present(), 0);
                 });
                 retValue = STP_Value(STP_TypeID::MATRIX_2D, mat);
             }

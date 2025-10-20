@@ -164,7 +164,7 @@ namespace steppable::parser
         {
             STP_throwError(*node,
                            STP_getState(),
-                           __internals::format::format("Operation ({0}) {1} ({2}) cannot be performed."s,
+                           format::format("Operation ({0}) {1} ({2}) cannot be performed."s,
                                                        {
                                                            STP_typeNames.at(lhsType),
                                                            operatorStr,

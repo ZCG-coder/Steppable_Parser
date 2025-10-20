@@ -85,9 +85,9 @@ namespace steppable::parser
                     STP_throwError(
                         *exprNode,
                         state,
-                        __internals::format::format("Missing positional arguments. Expect {0}"s,
+                        format::format("Missing positional arguments. Expect {0}"s,
                                                     {
-                                                        __internals::stringUtils::join(missingArgsNames, ","s),
+                                                        stringUtils::join(missingArgsNames, ","s),
                                                     }));
                     return STP_Value(STP_TypeID::NONE);
                 }
@@ -105,7 +105,7 @@ namespace steppable::parser
                 return function.interpFn(argMap);
             }
             STP_throwError(
-                *exprNode, state, __internals::format::format("Function {0} is not defined."s, { funcNameOrig }));
+                *exprNode, state, format::format("Function {0} is not defined."s, { funcNameOrig }));
             return STP_Value(STP_TypeID::NONE);
         }
 

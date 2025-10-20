@@ -37,7 +37,7 @@ namespace steppable::parser
         const TSNode exprNode = ts_node_child(*node, 2);
 
         std::string name = state->getChunk(&nameNode);
-        name = __internals::stringUtils::bothEndsReplace(name, ' ');
+        name = stringUtils::bothEndsReplace(name, ' ');
         bool printValue = false;
 
         const TSNode semicolonSibling = ts_node_next_sibling(exprNode);
