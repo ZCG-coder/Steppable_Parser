@@ -32,6 +32,8 @@
 #include <cassert>
 #include <cstdint>
 
+using namespace std::literals;
+
 namespace steppable::parser
 {
     STP_Value STP_handleMatrixExpr(const TSNode* exprNode, const STP_InterpState& state)

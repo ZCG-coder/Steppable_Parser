@@ -33,6 +33,8 @@
 typedef SSIZE_T ssize_t;
 #endif
 
+using namespace std::literals;
+
 namespace steppable::parser
 {
     STP_Value STP_processFnCall(const TSNode* exprNode, const STP_InterpState& state)

@@ -27,6 +27,9 @@
 #include "stpInterp/stpInit.hpp"
 #include "stpInterp/stpStore.hpp"
 
+using namespace std::literals;
+using namespace steppable::__internals::utils;
+
 namespace steppable::parser
 {
     STP_Value STP_handleSuffixExpr(const TSNode* exprNode, const STP_InterpState& state)

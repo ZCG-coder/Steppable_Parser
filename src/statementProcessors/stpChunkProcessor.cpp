@@ -33,6 +33,7 @@
 #include <tree_sitter/api.h>
 
 using namespace std::literals;
+using namespace steppable::__internals::utils;
 
 namespace steppable::parser
 {

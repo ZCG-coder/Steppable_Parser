@@ -26,6 +26,8 @@
 #include "stpInterp/stpInit.hpp"
 #include "stpInterp/stpProcessor.hpp"
 
+using namespace std::literals;
+
 namespace steppable::parser
 {
     void STP_processFuncDefinition(const TSNode* node, const STP_InterpState& state)

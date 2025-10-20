@@ -27,6 +27,7 @@
 #include "tree_sitter/api.h"
 
 using namespace steppable::__internals::stringUtils;
+using namespace std::literals;
 
 namespace steppable::parser
 {

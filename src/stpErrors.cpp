@@ -28,6 +28,8 @@
 
 #include <cmath>
 
+using namespace std::literals;
+
 namespace steppable::parser
 {
     using namespace steppable::__internals;
@@ -91,7 +93,7 @@ namespace steppable::parser
         }
 
         if (not state->isInteractive())
-            programSafeExit(1);
+            utils::programSafeExit(1);
     }
 
     void STP_throwSyntaxError(const TSNode& node, const STP_InterpState& state)

@@ -56,6 +56,8 @@ bool STP_isPureType(const std::string_view& str)
 
 int main(int argc, const char** argv) // NOLINT(*-exception-escape)
 {
+    using namespace steppable::__internals::utils;
+
     int ret = 0;
 
     TSParser* parser = ts_parser_new();

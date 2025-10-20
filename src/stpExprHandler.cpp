@@ -33,6 +33,8 @@
 #include <cassert>
 #include <cstdint>
 
+using namespace std::literals;
+
 namespace steppable::parser
 {
     STP_Value STP_handleExpr(const TSNode* exprNode,

@@ -27,6 +27,8 @@
 #include <memory>
 #include <stdexcept>
 
+using namespace std::literals;
+
 namespace steppable::parser
 {
     const STP_InterpState _storage = std::make_shared<STP_InterpStoreLocal>(); // NOLINT(*-err58-cpp)

@@ -20,8 +20,10 @@
  * SOFTWARE.                                                                                      *
  **************************************************************************************************/
 
-#include "stpInterp/stpExprHandler.hpp"
 #include "stpInterp/stpBetterTS.hpp"
+#include "stpInterp/stpExprHandler.hpp"
+
+using namespace std::literals;
 
 namespace steppable::parser
 {
@@ -66,4 +68,4 @@ namespace steppable::parser
 
         return STP_Value(STP_TypeID::STRING, data);
     }
-}
+} // namespace steppable::parser

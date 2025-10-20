@@ -25,6 +25,8 @@
 #include "steppable/mat2d.hpp"
 #include "stpInterp/stpErrors.hpp"
 
+using namespace std::literals;
+
 namespace steppable::parser
 {
     // NOLINTNEXTLINE(readability-function-cognitive-complexity)

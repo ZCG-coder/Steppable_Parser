@@ -40,6 +40,8 @@
     #include <dlfcn.h>
 #endif
 
+using namespace std::literals;
+
 /**
  * @namespace steppable::parser
  * @brief The parser for Steppable code.
@@ -121,10 +123,7 @@ namespace steppable::parser
         std::any returnValueAny = performBinaryOperation(node, lhsType, value, operatorStr, rhsType, rhsValue);
 
         if (not returnValueAny.has_value())
-        {
             STP_throwError(*node, STP_getState(), "This operation is not supported at present"s);
-            programSafeExit(1);
-        }
         returnVal.data = returnValueAny;
 
         return returnVal;

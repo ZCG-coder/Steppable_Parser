@@ -24,6 +24,8 @@
 #include "stpInterp/stpInit.hpp"
 #include "stpInterp/stpProcessor.hpp"
 
+using namespace std::literals;
+
 namespace steppable::parser
 {
     int STP_startInteractiveMode(const STP_InterpState& state, TSParser* parser)
