@@ -2,9 +2,20 @@
   {
     "type": "assignment",
     "named": true,
-    "fields": {},
+    "fields": {
+      "name": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "identifier",
+            "named": true
+          }
+        ]
+      }
+    },
     "children": {
-      "multiple": true,
+      "multiple": false,
       "required": true,
       "types": [
         {
@@ -17,10 +28,6 @@
         },
         {
           "type": "function_call",
-          "named": true
-        },
-        {
-          "type": "identifier",
           "named": true
         },
         {
@@ -760,6 +767,22 @@
     }
   },
   {
+    "type": "fn_pos_arg",
+    "named": true,
+    "fields": {
+      "argument_name": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "param_name",
+            "named": true
+          }
+        ]
+      }
+    }
+  },
+  {
     "type": "fn_pos_arg_list",
     "named": true,
     "fields": {},
@@ -1482,7 +1505,7 @@
       "required": true,
       "types": [
         {
-          "type": "param_name",
+          "type": "fn_pos_arg",
           "named": true
         }
       ]
@@ -1753,7 +1776,26 @@
   {
     "type": "unary_expression",
     "named": true,
-    "fields": {},
+    "fields": {
+      "unary_op": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "+",
+            "named": false
+          },
+          {
+            "type": "-",
+            "named": false
+          },
+          {
+            "type": "~",
+            "named": false
+          }
+        ]
+      }
+    },
     "children": {
       "multiple": false,
       "required": true,

@@ -455,8 +455,12 @@
       "type": "SEQ",
       "members": [
         {
-          "type": "SYMBOL",
-          "name": "identifier"
+          "type": "FIELD",
+          "name": "name",
+          "content": {
+            "type": "SYMBOL",
+            "name": "identifier"
+          }
         },
         {
           "type": "STRING",
@@ -505,13 +509,8 @@
       "type": "SEQ",
       "members": [
         {
-          "type": "ALIAS",
-          "content": {
-            "type": "SYMBOL",
-            "name": "identifier"
-          },
-          "named": true,
-          "value": "param_name"
+          "type": "SYMBOL",
+          "name": "fn_pos_arg"
         },
         {
           "type": "REPEAT",
@@ -523,13 +522,8 @@
                 "value": ","
               },
               {
-                "type": "ALIAS",
-                "content": {
-                  "type": "SYMBOL",
-                  "name": "identifier"
-                },
-                "named": true,
-                "value": "param_name"
+                "type": "SYMBOL",
+                "name": "fn_pos_arg"
               }
             ]
           }
@@ -560,6 +554,19 @@
           }
         }
       ]
+    },
+    "fn_pos_arg": {
+      "type": "FIELD",
+      "name": "argument_name",
+      "content": {
+        "type": "ALIAS",
+        "content": {
+          "type": "SYMBOL",
+          "name": "identifier"
+        },
+        "named": true,
+        "value": "param_name"
+      }
     },
     "fn_keyword_arg": {
       "type": "SEQ",
@@ -1241,21 +1248,25 @@
         "type": "SEQ",
         "members": [
           {
-            "type": "CHOICE",
-            "members": [
-              {
-                "type": "STRING",
-                "value": "~"
-              },
-              {
-                "type": "STRING",
-                "value": "+"
-              },
-              {
-                "type": "STRING",
-                "value": "-"
-              }
-            ]
+            "type": "FIELD",
+            "name": "unary_op",
+            "content": {
+              "type": "CHOICE",
+              "members": [
+                {
+                  "type": "STRING",
+                  "value": "~"
+                },
+                {
+                  "type": "STRING",
+                  "value": "+"
+                },
+                {
+                  "type": "STRING",
+                  "value": "-"
+                }
+              ]
+            }
           },
           {
             "type": "SYMBOL",

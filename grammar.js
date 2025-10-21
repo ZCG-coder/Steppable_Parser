@@ -104,7 +104,9 @@ export default grammar({
         ),
 
         assignment: $ => seq(
-            $.identifier, "=", $._expression, optional(";")
+            field("name", $.identifier),
+            "=",
+            $._expression, optional(";")
         ),
 
         member_access: $ => prec.left(seq(
@@ -115,9 +117,9 @@ export default grammar({
 
         // DECLARATION of arguments: name only or with optional default value
         pos_args_decl: $ => seq(
-            alias($.identifier, $.param_name),
+            $.fn_pos_arg,
             repeat(
-                seq(",", alias($.identifier, $.param_name))
+                seq(",", $.fn_pos_arg)
             )
         ),
         keyword_args_decl: $ => seq(
@@ -125,6 +127,11 @@ export default grammar({
             repeat(
                 seq(",", $.fn_keyword_arg)
             )
+        ),
+
+        fn_pos_arg: $ => field(
+            "argument_name",
+            alias($.identifier, $.param_name),
         ),
 
         fn_keyword_arg: $ => seq(
@@ -271,7 +278,10 @@ export default grammar({
         ),
 
         unary_expression: $ => prec.right(Prec.UNARY_EXPR, seq(
-            choice("~", "+", "-"),
+            field(
+                "unary_op",
+                choice("~", "+", "-")
+            ),
             $._expression
         )),
 

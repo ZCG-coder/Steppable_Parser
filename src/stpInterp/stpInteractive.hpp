@@ -24,6 +24,7 @@
 
 #include "stpInterp/stpInit.hpp"
 
+#include <replxx.hxx>
 #include <tree_sitter/api.h>
 
 namespace steppable::parser
