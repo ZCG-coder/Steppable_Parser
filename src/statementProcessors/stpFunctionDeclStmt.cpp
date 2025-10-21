@@ -35,8 +35,8 @@ namespace steppable::parser
         TSNode fnNameNode = ts_node_child_by_field_name(*node, "fn_name"s);
         std::string fnName = state->getChunk(&fnNameNode);
 
-        const TSNode posArgsNode = ts_node_next_named_sibling(fnNameNode);
-        TSNode keywordArgsNode{};
+        const TSNode posArgsNode = ts_node_child_by_field_name(*node, "pos_args"s);
+        const TSNode keywordArgsNode = ts_node_child_by_field_name(*node, "keyword_args"s);
 
         std::vector<std::string> posArgNames;
         STP_StringValMap keywordArgs;
@@ -51,8 +51,6 @@ namespace steppable::parser
                 std::string paramName = state->getChunk(&paramNode);
                 posArgNames.emplace_back(paramName);
             }
-
-            keywordArgsNode = ts_node_next_named_sibling(posArgsNode);
         }
         if (not ts_node_is_null(keywordArgsNode))
         {

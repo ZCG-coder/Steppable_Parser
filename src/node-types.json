@@ -1058,21 +1058,27 @@
             "named": true
           }
         ]
+      },
+      "keyword_args": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "keyword_args_decl",
+            "named": true
+          }
+        ]
+      },
+      "pos_args": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "pos_args_decl",
+            "named": true
+          }
+        ]
       }
-    },
-    "children": {
-      "multiple": true,
-      "required": false,
-      "types": [
-        {
-          "type": "keyword_args_decl",
-          "named": true
-        },
-        {
-          "type": "pos_args_decl",
-          "named": true
-        }
-      ]
     }
   },
   {

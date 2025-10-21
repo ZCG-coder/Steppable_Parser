@@ -23,6 +23,12 @@ fn fn1(m, n = 3) {
     ret a
 }
 
+fn fn2(a, b) {
+    ret a/b
+}
+
+"fn2(5, 8) = \{fn2(5,8)\}"
+
 fn1(3)
 i = 0;
 while i < 3 {

@@ -10,6 +10,7 @@
 ("else") @keyword
 ("while") @keyword
 ("for") @keyword
+("in") @keyword
 ("import") @keyword
 
 ; delimeters
@@ -52,7 +53,7 @@
 
 ; function call
 (function_call
-    fn_name: (identifier) @function.call
+    fn_name: (identifier) @function
 )
 
 ; function definition

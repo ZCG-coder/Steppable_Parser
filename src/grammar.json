@@ -672,16 +672,20 @@
             "value": "("
           },
           {
-            "type": "CHOICE",
-            "members": [
-              {
-                "type": "SYMBOL",
-                "name": "pos_args_decl"
-              },
-              {
-                "type": "BLANK"
-              }
-            ]
+            "type": "FIELD",
+            "name": "pos_args",
+            "content": {
+              "type": "CHOICE",
+              "members": [
+                {
+                  "type": "SYMBOL",
+                  "name": "pos_args_decl"
+                },
+                {
+                  "type": "BLANK"
+                }
+              ]
+            }
           },
           {
             "type": "CHOICE",
@@ -694,8 +698,12 @@
                     "value": ","
                   },
                   {
-                    "type": "SYMBOL",
-                    "name": "keyword_args_decl"
+                    "type": "FIELD",
+                    "name": "keyword_args",
+                    "content": {
+                      "type": "SYMBOL",
+                      "name": "keyword_args_decl"
+                    }
                   }
                 ]
               },

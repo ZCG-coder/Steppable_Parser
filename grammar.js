@@ -10,7 +10,8 @@ let Prec = {
 };
 
 let Expressions = {
-    suffixes: ["'", "!"]
+    suffixes: ["'", "!"],
+    unarySuffixes: ["~", "+", "-"]
 };
 
 function statement_group($) {
@@ -161,9 +162,17 @@ export default grammar({
                 alias($.identifier, $.function_name)
             ),
             "(",
-            optional($.pos_args_decl),
+            field(
+                "pos_args",
+                optional($.pos_args_decl)
+            ),
             optional(
-                seq(",", $.keyword_args_decl)
+                seq(",",
+                    field(
+                        "keyword_args",
+                        $.keyword_args_decl
+                    )
+                ),
             ),
             ")",
             "{",
@@ -280,7 +289,7 @@ export default grammar({
         unary_expression: $ => prec.right(Prec.UNARY_EXPR, seq(
             field(
                 "unary_op",
-                choice("~", "+", "-")
+                choice(...Expressions.unarySuffixes)
             ),
             $._expression
         )),
