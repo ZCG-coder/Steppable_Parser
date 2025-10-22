@@ -69,29 +69,6 @@ namespace steppable::parser
         ("import") @keyword
         )",  R"((number) @number)",
         R"R(
-        (";") @punctuation.delimiter
-        ("[") @punctuation.delimiter
-        ("]") @punctuation.delimiter
-        ("{") @punctuation.delimiter
-        ("}") @punctuation.delimiter
-        ("(") @punctuation.delimiter
-        (")") @punctuation.delimiter
-        )R",
-        R"R(
-        ("...") @operator
-        ("%") @operator
-        (binary_operator_left0) @operator
-        (binary_operator_left1) @operator
-        (binary_operator_left2) @operator
-        (binary_operator_right) @operator
-        (unary_expression
-            unary_op: _ @operator
-        )
-        (suffix_expression
-            operator: _ @operator
-        )
-        )R",
-        R"R(
         ; comment
         (comment) @comment
         )R",
@@ -123,8 +100,10 @@ namespace steppable::parser
         (escape_sequence) @string.escape
         (unicode_escape) @string.escape
         (octal_escape) @string.escape
+        )R",
+        R"R(
         (string_char) @string
-        )R"
+        )R",
     };
 
     void hookColor(std::string const& context,
