@@ -25,6 +25,7 @@ SET(PROJECT_SRC_COMMON
     src/exprProcessors/stpFnCallExpr.cpp
     src/exprProcessors/stpRangeExpr.cpp
     src/exprProcessors/stpSuffixExpr.cpp
+    src/stpHighlights.hpp
 )
 SET(PROJECT_SRC src/main.cpp ${PROJECT_SRC_COMMON})
 
@@ -43,3 +44,6 @@ TARGET_LINK_LIBRARIES(stp_parse PRIVATE replxx)
 TARGET_INCLUDE_DIRECTORIES(stp_parse PUBLIC replxx/include)
 
 INSTALL_TO_BIN(stp_parse)
+ADD_CUSTOM_COMMAND(TARGET stp_parse POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/queries ${CMAKE_BINARY_DIR}/bin/queries
+)
