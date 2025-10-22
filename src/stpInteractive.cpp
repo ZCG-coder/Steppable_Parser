@@ -120,8 +120,7 @@ namespace steppable::parser
         uint32_t errOffset = 0;
         TSQueryError errType{};
 
-        const TSTree* tree =
-            ts_parser_parse_string(parser, nullptr, context.c_str(), static_cast<uint32_t>(context.size()));
+        TSTree* tree = ts_parser_parse_string(parser, nullptr, context.c_str(), static_cast<uint32_t>(context.size()));
 
         for (const auto& querySource : queries)
         {
@@ -148,6 +147,8 @@ namespace steppable::parser
             }
             ts_query_delete(query);
         }
+
+        ts_tree_delete(tree);
     }
 
     int STP_startInteractiveMode(const STP_InterpState& state, TSParser* parser)
