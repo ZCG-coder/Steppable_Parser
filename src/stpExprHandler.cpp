@@ -128,7 +128,7 @@ namespace steppable::parser
             retVal = STP_handleSuffixExpr(exprNode, state);
 
     end:
-        if (printResult)
+        if (printResult and retVal.typeID != STP_TypeID::NONE)
             std::cout << retVal.present(exprName) << '\n';
 
         return retVal;
