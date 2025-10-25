@@ -25,15 +25,18 @@
 #include "replxx.hxx"
 #include "stpInterp/stpErrors.hpp"
 #include "stpInterp/stpInit.hpp"
+#include "stpInterp/stpInterrupt.hpp"
 #include "stpInterp/stpProcessor.hpp"
+#include "subprocess.hpp"
 #include "tree_sitter/api.h"
 
 #include <cstddef>
 #include <cstdint>
+#include <cstring>
 #include <filesystem>
 #include <fstream>
-#include <functional>
 #include <sstream>
+#include <thread>
 
 using namespace std::literals;
 
@@ -44,17 +47,18 @@ namespace steppable::parser
     using namespace std::placeholders;
 
     using ColorMap = std::map<std::string, Replxx::Color>;
-    static const ColorMap STP_colorMap = { { "keyword", Replxx::Color::BRIGHTMAGENTA },
-                                           { "number", Replxx::Color::YELLOW },
-                                           { "function", Replxx::Color::CYAN },
-                                           { "comment", Replxx::Color::BROWN },
-                                           { "string", Replxx::Color::GREEN },
-                                           { "string.escape", Replxx::Color::BRIGHTGREEN } };
 
-    void hookColor(std::string const& context,
-                   Replxx::colors_t& colors,
-                   TSParser* parser,
-                   const std::string& querySource)
+    // NOLINTNEXTLINE(cert-err58-cpp)
+    static const ColorMap STP_colorMap = {
+        { "keyword", Replxx::Color::BRIGHTMAGENTA }, { "number", Replxx::Color::YELLOW },
+        { "function", Replxx::Color::CYAN },         { "comment", Replxx::Color::BROWN },
+        { "string", Replxx::Color::GREEN },          { "string.escape", Replxx::Color::BRIGHTGREEN }
+    };
+
+    void STP_interactiveHookColor(std::string const& context,
+                                  Replxx::colors_t& colors,
+                                  TSParser* parser,
+                                  const std::string& querySource)
     {
         colors.assign(context.length(), replxx::Replxx::Color::DEFAULT); // Default color for all characters
 
@@ -95,7 +99,7 @@ namespace steppable::parser
         ts_tree_delete(tree);
     }
 
-    int STP_startInteractiveMode(const STP_InterpState& state, TSParser* parser)
+    int STP_startInteractiveMode(int argc, const char** argv, const STP_InterpState& state, TSParser* parser)
     {
         std::cout << "Steppable " STEPPABLE_VERSION "\n";
         std::cout << "Written by Andy Zhang, licensed under MIT license (C) 2023-2025.\n";
@@ -109,9 +113,19 @@ namespace steppable::parser
 
         Replxx rx;
         rx.set_highlighter_callback([&](auto&& PH1, auto&& PH2) {
-            hookColor(std::forward<decltype(PH1)>(PH1), std::forward<decltype(PH2)>(PH2), parser, querySource.str());
+            STP_interactiveHookColor(
+                std::forward<decltype(PH1)>(PH1), std::forward<decltype(PH2)>(PH2), parser, querySource.str());
         });
         rx.set_max_history_size(1024);
+
+        Subprocess process;
+        STP_addCtrlCHandler([&]() {
+            if (process.is_running())
+                process.killProc();
+            std::cout << "\n";
+        });
+
+        STP_IPC ipc("/stp-4795", 128, true);
 
         while (true)
         {
@@ -127,18 +141,21 @@ namespace steppable::parser
             }
             else
                 break;
-
-            TSTree *tree = ts_parser_parse_string(parser, nullptr, source.c_str(), static_cast<uint32_t>(source.size()));
-            TSNode rootNode = ts_tree_root_node(tree);
-            state->setChunk(source, 0, static_cast<long>(source.size()));
-            if (STP_checkRecursiveNodeSanity(rootNode, state))
-                continue;
-
             rx.history_add(source);
 
-            STP_processChunkChild(rootNode, state);
-            ts_tree_delete(tree);
+            char* data = static_cast<char*>(ipc.data());
+            std::istringstream inputStream(source);
+            process.start(argv[0], {}, &inputStream, nullptr);
+            process.wait();
+
+            if (data != nullptr)
+            {
+                if (strncmp(data, "exit", 4) == 0)
+                    break;
+            }
         }
+
+        ipc.unlink();
         return 0;
     }
 } // namespace steppable::parser

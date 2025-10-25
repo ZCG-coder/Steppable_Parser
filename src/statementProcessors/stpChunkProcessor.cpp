@@ -27,6 +27,7 @@
 #include "stpInterp/stpErrors.hpp"
 #include "stpInterp/stpExprHandler.hpp"
 #include "stpInterp/stpProcessor.hpp"
+#include "subprocess.hpp"
 
 #include <iostream>
 #include <string>
@@ -74,6 +75,17 @@ namespace steppable::parser
 
         if (type == "exit")
         {
+            try
+            {
+                STP_IPC ipc("/stp-4795", 128, false);
+                char* mem = static_cast<char*>(ipc.data());
+                strncpy(mem, "exit", 5);
+                ipc.flush();
+            }
+            catch (const std::runtime_error&)
+            {
+                output::error("parser"s, "Unable to set IPC exit flag!"s);
+            }
             programSafeExit(0);
             return;
         }
@@ -156,9 +168,7 @@ namespace steppable::parser
             default:
             {
                 STP_throwError(
-                    node,
-                    state,
-                    format::format("Object of type {0} is not itertable"s, { exprValue.typeName }));
+                    node, state, format::format("Object of type {0} is not itertable"s, { exprValue.typeName }));
                 break;
             }
             }

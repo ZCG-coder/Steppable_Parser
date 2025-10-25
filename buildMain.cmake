@@ -13,6 +13,7 @@ SET(PROJECT_SRC_COMMON
     src/stpErrors.cpp
     src/stpExprHandler.cpp
     src/stpInteractive.cpp
+    src/stpInterrupt.cpp
     # Statement processors
     src/statementProcessors/stpAssignment.cpp
     src/statementProcessors/stpChunkProcessor.cpp

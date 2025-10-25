@@ -21,14 +21,12 @@
  **************************************************************************************************/
 
 #include "argParse.hpp"
+#include "colors.hpp"
 #include "output.hpp"
-#include "steppable/number.hpp"
-#include "stpInterp/stpBetterTS.hpp"
 #include "stpInterp/stpErrors.hpp"
 #include "stpInterp/stpInit.hpp"
 #include "stpInterp/stpInteractive.hpp"
 #include "stpInterp/stpProcessor.hpp"
-#include "stpInterp/stpStore.hpp"
 
 #include <cassert>
 #include <fstream>
@@ -75,31 +73,42 @@ int main(int argc, const char** argv) // NOLINT(*-exception-escape)
     ProgramArgs program(argc, argv);
     program.addPosArg('p', "Path to STP file", false);
 
-    if (argc < 2)
+    if (argc == 1)
     {
-        // Start interactive mode
-        state->setInteractive();
+        if (isInputTerminal())
+        {
+            // Start interactive mode
+            state->setInteractive();
+            state->setFile("<interactive>");
 
-        ret = STP_startInteractiveMode(state, parser);
-        goto end;
+            ret = STP_startInteractiveMode(argc, argv, state, parser);
+            goto end;
+        }
+        else
+        {
+            // Read from stdin
+            for (std::string line; std::getline(std::cin, line);)
+                source += line + "\n";
+        }
     }
-
-    program.parseArgs();
-    path = program.getPosArg(0);
-
-    state->setFile(path);
-
-    // Read the entire file at once
-    file = std::ifstream(path, std::ios::in | std::ios::binary);
-    if (not file)
+    else
     {
-        ret = 1;
-        steppable::output::error("parser"s, "Unable to open file {0}"s, { path });
-        goto end;
-    }
+        program.parseArgs();
+        path = program.getPosArg(0);
 
-    source = std::string(std::istreambuf_iterator(file), std::istreambuf_iterator<char>());
-    file.close();
+        state->setFile(path);
+        // Read the entire file at once
+        file = std::ifstream(path, std::ios::in | std::ios::binary);
+        if (not file)
+        {
+            ret = 1;
+            steppable::output::error("parser"s, "Unable to open file {0}"s, { path });
+            goto end;
+        }
+
+        source = std::string(std::istreambuf_iterator(file), std::istreambuf_iterator<char>());
+        file.close();
+    }
 
     tree = ts_parser_parse_string(parser, nullptr, source.c_str(), static_cast<uint32_t>(source.size()));
     rootNode = ts_tree_root_node(tree);
