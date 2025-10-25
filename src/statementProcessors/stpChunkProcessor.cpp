@@ -29,6 +29,7 @@
 #include "stpInterp/stpProcessor.hpp"
 #include "subprocess.hpp"
 
+#include <cstring>
 #include <iostream>
 #include <string>
 #include <tree_sitter/api.h>
