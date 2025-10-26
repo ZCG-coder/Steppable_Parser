@@ -1,6 +1,8 @@
 #include <functional>
 #ifndef WINDOWS
     #include <csignal>
+#else
+    #include <windows.h>
 #endif
 
 namespace steppable::parser
@@ -8,7 +10,6 @@ namespace steppable::parser
     void STP_addCtrlCHandler(const std::function<void(void)>& predicate)
     {
 #ifdef WINDOWS
-    #include <windows.h>
         static std::function<void(void)> handler;
         handler = predicate;
         static BOOL WINAPI CtrlHandler(DWORD fdwCtrlType)

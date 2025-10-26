@@ -28,7 +28,6 @@
 #include "stpInterp/stpInit.hpp"
 #include "stpInterp/stpInterrupt.hpp"
 #include "stpInterp/stpProcessor.hpp"
-#include "subprocess.hpp"
 #include "tree_sitter/api.h"
 
 #include <atomic>
@@ -120,7 +119,7 @@ namespace steppable::parser
         });
         rx.set_max_history_size(1024);
 
-        std::jthread thread;
+        std::thread thread;
         std::atomic<TSTree*> tree = nullptr;
         STP_addCtrlCHandler([&]() {
             state->setExecState(STP_ExecState::REQUEST_STOP);
@@ -144,7 +143,7 @@ namespace steppable::parser
                 break;
             rx.history_add(source);
 
-            thread = std::jthread([&]() -> void {
+            thread = std::thread([&]() -> void {
                 tree = ts_parser_parse_string(parser, nullptr, source.c_str(), static_cast<uint32_t>(source.size()));
                 TSNode rootNode = ts_tree_root_node(tree);
                 state->setChunk(source, 0, static_cast<long>(source.size()));
