@@ -43,7 +43,7 @@ namespace steppable::parser
      * @param node The assignment statement node.
      * @param state The current state of the interpreter.
      */
-    void handleAssignment(const TSNode* node, const STP_InterpState& state = nullptr);
+    void STP_handleAssignment(const TSNode* node, const STP_InterpState& state = nullptr);
 
     /**
      * @brief Handle an if-else statement.
@@ -59,7 +59,7 @@ namespace steppable::parser
      * @param node The symbol declaration node.
      * @param state The current state of the interpreter.
      */
-    void handleSymbolDeclStmt(const TSNode* node, const STP_InterpState& state);
+    void STP_handleSymbolDeclStmt(const TSNode* node, const STP_InterpState& state);
 
     /**
      * @brief Process a function declaration statement.
@@ -68,4 +68,6 @@ namespace steppable::parser
      * @param state The current state of the interpreter.
      */
     void STP_processFuncDefinition(const TSNode* node, const STP_InterpState& state);
+
+    void STP_processWhileStmt(const TSNode* node, const STP_InterpState& state);
 } // namespace steppable::parser

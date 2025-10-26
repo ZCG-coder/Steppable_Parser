@@ -22,11 +22,10 @@
 
 #include "stpInterp/stpExprHandler.hpp"
 
-#include "steppable/mat2d.hpp"
 #include "steppable/number.hpp"
 #include "steppable/stpArgSpace.hpp"
+#include "steppable/stpTypeName.hpp"
 #include "stpInterp/stpBetterTS.hpp"
-#include "stpInterp/stpErrors.hpp"
 #include "stpInterp/stpInit.hpp"
 #include "stpInterp/stpStore.hpp"
 
@@ -42,6 +41,9 @@ namespace steppable::parser
                              const bool printResult,
                              const std::string& exprName)
     {
+        if (state->getExecState() == STP_ExecState::REQUEST_STOP)
+            return STP_Value(STP_TypeID::NONE);
+
         assert(exprNode != nullptr);
         std::string exprType = ts_node_type(*exprNode);
 

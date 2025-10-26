@@ -23,6 +23,7 @@
 #include "output.hpp"
 #include "platform.hpp"
 #include "replxx.hxx"
+#include "steppable/stpTypeName.hpp"
 #include "stpInterp/stpErrors.hpp"
 #include "stpInterp/stpInit.hpp"
 #include "stpInterp/stpInterrupt.hpp"
@@ -30,6 +31,7 @@
 #include "subprocess.hpp"
 #include "tree_sitter/api.h"
 
+#include <atomic>
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
@@ -118,17 +120,16 @@ namespace steppable::parser
         });
         rx.set_max_history_size(1024);
 
-        Subprocess process;
+        std::jthread thread;
+        std::atomic<TSTree*> tree = nullptr;
         STP_addCtrlCHandler([&]() {
-            if (process.is_running())
-                process.killProc();
-            std::cout << "\n";
+            state->setExecState(STP_ExecState::REQUEST_STOP);
+            std::cout << "BREAK\n";
         });
 
-        STP_IPC ipc("/stp-4795", 128, true);
-
-        while (true)
+        while (state->getExecState() != STP_ExecState::EXIT)
         {
+            state->setExecState(STP_ExecState::NORMAL);
             source.clear();
 
             if (char const* inputText = rx.input(": "); inputText != nullptr)
@@ -143,19 +144,19 @@ namespace steppable::parser
                 break;
             rx.history_add(source);
 
-            char* data = static_cast<char*>(ipc.data());
-            std::istringstream inputStream(source);
-            process.start(argv[0], {}, &inputStream, nullptr);
-            process.wait();
+            thread = std::jthread([&]() -> void {
+                tree = ts_parser_parse_string(parser, nullptr, source.c_str(), static_cast<uint32_t>(source.size()));
+                TSNode rootNode = ts_tree_root_node(tree);
+                state->setChunk(source, 0, static_cast<long>(source.size()));
+                if (STP_checkRecursiveNodeSanity(rootNode, state))
+                    return;
 
-            if (data != nullptr)
-            {
-                if (strncmp(data, "exit", 4) == 0)
-                    break;
-            }
+                STP_processChunkChild(rootNode, state);
+                ts_tree_delete(tree);
+            });
+            if (thread.joinable())
+                thread.join();
         }
-
-        ipc.unlink();
         return 0;
     }
 } // namespace steppable::parser

@@ -30,7 +30,7 @@ using namespace std::literals;
 
 namespace steppable::parser
 {
-    void handleAssignment(const TSNode* node, const STP_InterpState& state = nullptr)
+    void STP_handleAssignment(const TSNode* node, const STP_InterpState& state = nullptr)
     {
         // assignment := nameNode "=" exprNode
         const TSNode nameNode = ts_node_child(*node, 0);

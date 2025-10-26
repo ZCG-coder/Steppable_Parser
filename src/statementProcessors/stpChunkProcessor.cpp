@@ -20,17 +20,13 @@
  * SOFTWARE.                                                                                      *
  **************************************************************************************************/
 
-#include "output.hpp"
-#include "platform.hpp"
-#include "steppable/mat2dBase.hpp"
+#include "steppable/stpTypeName.hpp"
 #include "stpInterp/stpBetterTS.hpp"
 #include "stpInterp/stpErrors.hpp"
 #include "stpInterp/stpExprHandler.hpp"
 #include "stpInterp/stpProcessor.hpp"
-#include "subprocess.hpp"
 
 #include <cstring>
-#include <iostream>
 #include <string>
 #include <tree_sitter/api.h>
 
@@ -76,18 +72,7 @@ namespace steppable::parser
 
         if (type == "exit")
         {
-            try
-            {
-                STP_IPC ipc("/stp-4795", 128, false);
-                char* mem = static_cast<char*>(ipc.data());
-                strncpy(mem, "exit", 5);
-                ipc.flush();
-            }
-            catch (const std::runtime_error&)
-            {
-                output::error("parser"s, "Unable to set IPC exit flag!"s);
-            }
-            programSafeExit(0);
+            state->setExecState(STP_ExecState::EXIT);
             return;
         }
 
@@ -104,43 +89,7 @@ namespace steppable::parser
         }
         if (type == "while_stmt")
         {
-            const TSNode exprNode = ts_node_child_by_field_name(node, "loop_expr"s);
-            const TSNode bodyNode = ts_node_next_named_sibling(exprNode);
-
-            if (ts_node_is_null(bodyNode))
-            {
-                STP_throwError(node, state, "No statements in while loop"s);
-                programSafeExit(1);
-            }
-
-            // Create one scope for the entire loop body
-            auto loopScope = std::make_shared<STP_Scope>(state->addChildScope());
-            state->setCurrentScope(loopScope);
-
-            STP_Value loopVal = STP_handleExpr(&exprNode, state);
-            while (true)
-            {
-                loopVal = STP_handleExpr(&exprNode, state);
-                if (not loopVal.asBool(&exprNode))
-                    break;
-
-                processChunk(bodyNode, state);
-
-                // Loop flow control
-                if (state->getExecState() == STP_ExecState::CONT)
-                {
-                    state->setExecState(STP_ExecState::NORMAL);
-                    continue;
-                }
-                if (state->getExecState() == STP_ExecState::BREAK)
-                {
-                    state->setExecState(STP_ExecState::NORMAL);
-                    break;
-                }
-            }
-
-            // Restore the parent scope after the entire loop
-            state->setCurrentScope(loopScope->parentScope);
+            STP_processWhileStmt(&node, state);
             return;
         }
         if (type == "foreach_in_stmt")
@@ -177,7 +126,7 @@ namespace steppable::parser
         }
         if (type == "assignment")
         {
-            handleAssignment(&node, state);
+            STP_handleAssignment(&node, state);
             return;
         }
         if (type == "expression_statement")
@@ -193,7 +142,7 @@ namespace steppable::parser
         }
         if (type == "symbol_decl_statement")
         {
-            handleSymbolDeclStmt(&node, state);
+            STP_handleSymbolDeclStmt(&node, state);
             return;
         }
 

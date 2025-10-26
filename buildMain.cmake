@@ -20,6 +20,7 @@ SET(PROJECT_SRC_COMMON
     src/statementProcessors/stpFunctionDeclStmt.cpp
     src/statementProcessors/stpIfElseStmt.cpp
     src/statementProcessors/stpSymbolDecl.cpp
+    src/statementProcessors/stpWhileStmt.cpp
     # Expression processors
     src/exprProcessors/stpStringExpr.cpp
     src/exprProcessors/stpMatrixExpr.cpp
