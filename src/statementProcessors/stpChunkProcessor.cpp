@@ -151,11 +151,10 @@ namespace steppable::parser
 
     void STP_processChunkChild(const TSNode& parent, const STP_InterpState& stpState, const bool createNewScope)
     {
-        std::shared_ptr<STP_Scope> newScope;
         if (createNewScope)
         {
-            newScope = std::make_shared<STP_Scope>(stpState->addChildScope());
-            stpState->setCurrentScope(newScope);
+            STP_Scope newScope = stpState->addChildScope();
+            stpState->setCurrentScope(&newScope);
         }
 
         if (ts_node_is_null(parent))
@@ -173,6 +172,6 @@ namespace steppable::parser
         }
 
         if (createNewScope)
-            stpState->setCurrentScope(newScope->parentScope);
+            stpState->setCurrentScope(stpState->getCurrentScope()->parentScope);
     };
 } // namespace steppable::parser

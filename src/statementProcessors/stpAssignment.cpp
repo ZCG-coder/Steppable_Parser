@@ -20,6 +20,7 @@
  * SOFTWARE.                                                                                      *
  **************************************************************************************************/
 
+#include "stpInterp/stpErrors.hpp"
 #include "stpInterp/stpExprHandler.hpp"
 #include "stpInterp/stpInit.hpp"
 #include "tree_sitter/api.h"
@@ -46,8 +47,18 @@ namespace steppable::parser
         else if (ts_node_type(semicolonSibling) != ";"s)
             printValue = true;
 
-        const STP_Value val = STP_handleExpr(&exprNode, state, printValue, name);
+        STP_Scope* current_scope = state->getCurrentScope();
+        if (current_scope->variables.contains(name))
+        {
+            const STP_Value existingVar = current_scope->getVariable(node, name);
+            if (existingVar.getIsConstant())
+            {
+                STP_throwError(*node, STP_getState(), "Re-assigning constant variables.");
+                return;
+            }
+        }
         // Write to scope / global variables
-        state->getCurrentScope()->addVariable(name, val);
+        const STP_Value val = STP_handleExpr(&exprNode, state, printValue, name);
+        current_scope->addVariable(name, val);
     }
 } // namespace steppable::parser

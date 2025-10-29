@@ -25,8 +25,8 @@ namespace steppable::parser
         }
 
         // Create one scope for the entire loop body
-        auto loopScope = std::make_shared<STP_Scope>(state->addChildScope());
-        state->setCurrentScope(loopScope);
+        auto loopScope = state->addChildScope();
+        state->setCurrentScope(&loopScope);
 
         STP_Value loopVal = STP_handleExpr(&exprNode, state);
 
@@ -58,6 +58,6 @@ namespace steppable::parser
         }
 
         // Restore the parent scope after the entire loop
-        state->setCurrentScope(loopScope->parentScope);
+        state->setCurrentScope(loopScope.parentScope);
     }
 } // namespace steppable::parser

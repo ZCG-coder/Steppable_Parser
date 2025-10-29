@@ -180,7 +180,7 @@ namespace steppable::parser
 
     void STP_Scope::addVariable(const std::string& name, const STP_Value& data)
     {
-        auto currentScope = std::shared_ptr<STP_Scope>(this, [](STP_Scope*) {});
+        auto *currentScope = this;
         while (currentScope != nullptr)
         {
             if (currentScope->variables.contains(name))
@@ -264,19 +264,19 @@ namespace steppable::parser
         return text;
     }
 
-    STP_Scope STP_InterpStoreLocal::addChildScope(std::shared_ptr<STP_Scope> parent) const
+    STP_Scope STP_InterpStoreLocal::addChildScope(STP_Scope* parent) const
     {
         STP_Scope scope;
-        if (not parent)
+        if (parent == nullptr)
             scope.parentScope = currentScope;
         else
-            scope.parentScope = std::move(parent);
+            scope.parentScope = parent;
         return scope;
     }
 
-    void STP_InterpStoreLocal::setCurrentScope(std::shared_ptr<STP_Scope> newScope)
+    void STP_InterpStoreLocal::setCurrentScope(STP_Scope* newScope)
     {
-        currentScope = std::move(newScope);
+        currentScope = newScope;
     }
 
     void STP_InterpStoreLocal::setFile(const std::string& newFile) { file = newFile; }

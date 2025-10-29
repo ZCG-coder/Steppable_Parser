@@ -29,7 +29,9 @@
 namespace steppable::parser
 {
     using STP_InterpState = std::shared_ptr<STP_InterpStoreLocal>;
-    const extern STP_InterpState _storage;
+    extern const STP_InterpState _storage;
+
+    void STP_init();
 
     /**
      * @brief Gets the current state of the interpreter.

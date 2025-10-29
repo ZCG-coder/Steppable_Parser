@@ -22,6 +22,7 @@
 
 #include "stpInterp/stpInit.hpp"
 
+#include "constants.hpp"
 #include "stpInterp/stpStore.hpp"
 
 #include <memory>
@@ -31,7 +32,13 @@ using namespace std::literals;
 
 namespace steppable::parser
 {
-    const STP_InterpState _storage = std::make_shared<STP_InterpStoreLocal>(); // NOLINT(*-err58-cpp)
+    const auto _storage = std::make_shared<STP_InterpStoreLocal>();
+
+    void STP_init()
+    {
+        _storage->getGlobalScope()->addVariable("pi", STP_Value(STP_TypeID::NUMBER, Number(constants::PI), true));
+        _storage->getGlobalScope()->addVariable("e", STP_Value(STP_TypeID::NUMBER, Number(constants::E), true));
+    }
 
     STP_InterpState STP_getState() { return _storage; }
 

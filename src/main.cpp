@@ -73,6 +73,8 @@ int main(int argc, const char** argv) // NOLINT(*-exception-escape)
     ProgramArgs program(argc, argv);
     program.addPosArg('p', "Path to STP file", false);
 
+    STP_init();
+
     if (argc == 1)
     {
         if (isInputTerminal())

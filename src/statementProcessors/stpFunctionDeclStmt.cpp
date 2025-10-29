@@ -85,7 +85,7 @@ namespace steppable::parser
             // default return value
             scope.addVariable("04795", STP_Value(STP_TypeID::NUMBER, Number()));
 
-            state->setCurrentScope(std::make_shared<STP_Scope>(scope));
+            state->setCurrentScope(&scope);
 
             STP_processChunkChild(fn.fnNode, state, false);
             STP_Value ret = state->getCurrentScope()->getVariable(node, "04795");

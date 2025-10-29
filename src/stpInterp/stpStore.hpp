@@ -89,8 +89,11 @@ namespace steppable::parser
      * @struct STP_Value
      * @brief A more advanced version of `STP_ValuePrimitive` that allows operations to be done on.
      */
-    struct STP_Value : STP_ValuePrimitive
+    class STP_Value : public STP_ValuePrimitive
     {
+        bool isConstant = false;
+
+    public:
         /**
          * @brief Apply a binary operator to the value.
          *
@@ -128,8 +131,14 @@ namespace steppable::parser
          *
          * @param type The type of the value stored.
          * @param data The data value of the object.
+         * @param isConstant_ Whether the value is supposed to be constant.
          */
-        explicit STP_Value(const STP_TypeID& type, const std::any& data = {}) : STP_ValuePrimitive(type, data) {}
+        explicit STP_Value(const STP_TypeID& type, const std::any& data = {}, const bool& isConstant_ = false) :
+            STP_ValuePrimitive(type, data), isConstant(isConstant_)
+        {
+        }
+
+        [[nodiscard]] bool getIsConstant() const { return isConstant; }
     };
 
     /**
@@ -177,8 +186,8 @@ namespace steppable::parser
 
         std::map<std::string, STP_FunctionDefinition> functions; ///< Functions in the current scope.
 
-        std::shared_ptr<STP_Scope> parentScope = nullptr; ///< A pointer to the parent scope of the current scope. The
-                                                          ///< scope becomes global if it has `nullptr` as parent.
+        STP_Scope* parentScope = nullptr; ///< A pointer to the parent scope of the current scope. The scope becomes
+                                          ///< global if it has `nullptr` as parent.
 
         /**
          * @brief Add a variable to the current scope.
@@ -237,8 +246,8 @@ namespace steppable::parser
     {
         STP_Scope globalScope; ///< The global scope of the program.
 
-        std::shared_ptr<STP_Scope> currentScope = std::make_shared<STP_Scope>(
-            globalScope); ///< The current scope the code is executing in. Defaults to the global scope.
+        STP_Scope* currentScope =
+            &globalScope; ///< The current scope the code is executing in. Defaults to the global scope.
 
         std::string chunk; ///< The chunk that the interpreter is executing.
         size_t chunkStart = 0; ///< Not used.
@@ -292,14 +301,14 @@ namespace steppable::parser
          * @param parent Parent scope.
          * @return A new `STP_Scope` scope object.
          */
-        [[nodiscard]] STP_Scope addChildScope(std::shared_ptr<STP_Scope> parent = nullptr) const;
+        [[nodiscard]] STP_Scope addChildScope(STP_Scope* parent = nullptr) const;
 
         /**
          * @brief Set a new scope to execute code in.
          *
          * @param newScope New scope to execute code in.
          */
-        void setCurrentScope(std::shared_ptr<STP_Scope> newScope);
+        void setCurrentScope(STP_Scope* newScope);
 
         /**
          * @brief Get the current scope that code is executing in.
@@ -311,7 +320,7 @@ namespace steppable::parser
          * @brief Get the global scope of a program.
          * @return The global scope of a program.
          */
-        auto getGlobalScope() { return std::make_shared<STP_Scope>(globalScope); };
+        auto getGlobalScope() { return &globalScope; };
 
         /**
          * @brief Set a new parsing file name.
