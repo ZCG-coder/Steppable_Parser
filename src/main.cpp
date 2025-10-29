@@ -34,6 +34,7 @@
 #include <memory>
 #include <string>
 #include <string_view>
+#include <utility>
 
 extern "C" {
 #include <tree_sitter/api.h>
@@ -104,11 +105,34 @@ int main(int argc, const char** argv) // NOLINT(*-exception-escape)
         if (not file)
         {
             ret = 1;
-            steppable::output::error("parser"s, "Unable to open file {0}"s, { path });
+            output::error("parser"s, "Unable to open file {0}"s, { path });
             goto end;
         }
 
-        source = std::string(std::istreambuf_iterator(file), std::istreambuf_iterator<char>());
+        std::array<char, 32> buffer{};
+        file.read(buffer.data(), buffer.size());
+        std::streamsize bytesRead = file.gcount();
+        std::string firstPart(buffer.data(), bytesRead);
+        if (const size_t offset = stringUtils::findFirstNonUtf8(firstPart); std::cmp_less(offset , bytesRead))
+        {
+            output::error("parser"s, "Input is not UTF-8!"s);
+            output::info("parser"s, "\\x{0} at offset {1} is not valid UTF-8"s, {
+                stringUtils::intToHex(firstPart[offset]),
+                std::to_string(offset),
+            });
+
+            ret = 1;
+            file.close();
+            goto end;
+        }
+
+        std::string rest;
+        if (file)
+        { // If not at EOF
+            rest.assign(std::istreambuf_iterator(file), std::istreambuf_iterator<char>());
+        }
+        source = firstPart + rest;
+
         file.close();
     }
 
